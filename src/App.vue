@@ -1,9 +1,13 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <vue-extend-layouts />
   </div>
 </template>
+
+<script>
+import VueExtendLayouts from 'vue-extend-layout'
+export default {
+  name: 'App',
+  components: { VueExtendLayouts }
+}
+</script>

@@ -1,123 +1,115 @@
 <template>
-    <v-card elevation="2">
-        <v-card-title>Inicia Sesión</v-card-title>
-        <v-card-actions class="pa-5">
-            <form>
-                <v-text-field
-                        v-model="name"
-                        :error-messages="nameErrors"
-                        :counter="10"
-                        label="Name"
-                        required
-                        @input="$v.name.$touch()"
-                        @blur="$v.name.$touch()"
-                ></v-text-field>
-                <v-text-field
-                        v-model="email"
-                        :error-messages="emailErrors"
-                        label="E-mail"
-                        required
-                        @input="$v.email.$touch()"
-                        @blur="$v.email.$touch()"
-                ></v-text-field>
-                <v-select
-                        v-model="select"
-                        :items="items"
-                        :error-messages="selectErrors"
-                        label="Item"
-                        required
-                        @change="$v.select.$touch()"
-                        @blur="$v.select.$touch()"
-                ></v-select>
-                <v-checkbox
-                        v-model="checkbox"
-                        :error-messages="checkboxErrors"
-                        label="Do you agree?"
-                        required
-                        @change="$v.checkbox.$touch()"
-                        @blur="$v.checkbox.$touch()"
-                ></v-checkbox>
+    <v-layout
+            justify-center
+            row
+            wrap
+            class="fill-height">
+        <v-flex md5>
+            <v-card elevation="2">
+                <v-card-title class="blue"><h1 class="mx-auto white--text">Inicio de Sesión</h1></v-card-title>
+                <v-form style="width:100%" ref="form" v-model="valid" lazy-validation>
 
-                <v-btn @click="submit">submit</v-btn>
-                <v-btn @click="clear">clear</v-btn>
-            </form>
-        </v-card-actions>
-    </v-card>
+                    <v-card-text class="px-5 py-3">
+                        <v-text-field
+                                v-model="username"
+                                :rules="nameRules"
+                                label="Nombre de Usuario"
+                                required
+                                :counter="20"
+                        ></v-text-field>
+
+                        <v-text-field
+                                v-model="password"
+                                type="password"
+                                :rules="passwordRules"
+                                label="Contraseña"
+                                required
+                        ></v-text-field>
+                    </v-card-text>
+
+                    <v-divider light class="px-3"></v-divider>
+
+                    <v-card-actions class=" py-3 ">
+                        <v-layout row wrap justify-space-around>
+                            <v-btn color="success"
+                                   @click="submit"
+                                   :loading="loading"
+                                   :disabled="!valid"
+                                   class="mb-2"
+                            >
+                                Ingresar
+                            </v-btn>
+                            <v-btn color="info" @click="credentials_snack = true">¿Olvidaste tu contraseña?</v-btn>
+                        </v-layout>
+
+                    </v-card-actions>
+                </v-form>
+            </v-card>
+        </v-flex>
+
+        <v-snackbar
+                v-model="credentials_snack"
+                color="error"
+                :timeout="5000"
+                top
+        >
+            Nombre de Usuario o Contraseña incorrectos
+            <v-btn
+                    dark
+                    flat
+                    @click="credentials_snack = false"
+            >
+                Cerrar
+            </v-btn>
+        </v-snackbar>
+
+    </v-layout>
+
 
 </template>
 
 <script>
-  import { validationMixin } from 'vuelidate'
-  import { required, maxLength, email } from 'vuelidate/lib/validators'
+  import {AUTH_REQUEST} from '../store/actions/auth'
 
   export default {
     name: "Login",
-    mixins: [validationMixin],
-
-    validations: {
-      name: { required, maxLength: maxLength(10) },
-      email: { required, email },
-      select: { required },
-      checkbox: {
-        checked (val) {
-          return val
-        }
-      }
-    },
 
     data: () => ({
-      name: '',
-      email: '',
-      select: null,
-      items: [
-        'Item 1',
-        'Item 2',
-        'Item 3',
-        'Item 4'
+      valid: true,
+      username: '',
+      nameRules: [
+        v => !!v || 'Nombre de usuario requerido',
+        v => (v && v.length <= 20) || 'Máximo 20 caracteres'
       ],
-      checkbox: false
+      password: '',
+      passwordRules: [
+        v => !!v || 'Introduce una contraseña',
+      ],
+      loading: false,
+      credentials_snack: false,
     }),
 
-    computed: {
-      checkboxErrors () {
-        const errors = []
-        if (!this.$v.checkbox.$dirty) return errors
-        !this.$v.checkbox.checked && errors.push('You must agree to continue!')
-        return errors
-      },
-      selectErrors () {
-        const errors = []
-        if (!this.$v.select.$dirty) return errors
-        !this.$v.select.required && errors.push('Item is required')
-        return errors
-      },
-      nameErrors () {
-        const errors = []
-        if (!this.$v.name.$dirty) return errors
-        !this.$v.name.maxLength && errors.push('Name must be at most 10 characters long')
-        !this.$v.name.required && errors.push('Name is required.')
-        return errors
-      },
-      emailErrors () {
-        const errors = []
-        if (!this.$v.email.$dirty) return errors
-        !this.$v.email.email && errors.push('Must be valid e-mail')
-        !this.$v.email.required && errors.push('E-mail is required')
-        return errors
-      }
-    },
 
     methods: {
-      submit () {
-        this.$v.$touch()
+      submit() {
+        if (this.$refs.form.validate()) {
+          this.loading = true;
+          const { username, password } = this
+          this.$store.dispatch(AUTH_REQUEST, { username, password }).then(() => {
+            this.$router.push('/')
+          })
+        }
       },
-      clear () {
-        this.$v.$reset()
-        this.name = ''
-        this.email = ''
-        this.select = null
-        this.checkbox = false
-      }
     }
   }
 </script>
+
+<style scoped lang="sass">
+
+    .v-btn
+        min-width: 150px
+        @media(max-width: 500px)
+            width: 80%
+
+
+</style>

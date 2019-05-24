@@ -31,6 +31,15 @@ export default new Router({
   base: process.env.BASE_URL,
   routes: [
     {
+      path: '/login',
+      name: 'login',
+      component: Login,
+      beforeEnter: ifNotAuthenticated,
+      meta: {
+        layout: 'Auth'
+      }
+    },
+    {
       path: '/',
       name: 'home',
       beforeEnter: ifAuthenticated, // Using guard before entering the route
@@ -48,21 +57,23 @@ export default new Router({
         layout: 'App'
       }
     },
+
     {
-      path: '/login',
-      name: 'login',
-      component: Login,
-      beforeEnter: ifNotAuthenticated,
+      path: '/users',
+      name: 'users',
+      component: () => import('./views/users/UserIndex.vue'),
+      beforeEnter: ifAuthenticated,
       meta: {
-        layout: 'Auth'
+        layout: 'App'
       }
     },
+
     {
       path: '*',
       name: 'Error',
-      // component: () => import('@/pages/Error') (Optional)
+      component: () => import('./views/404.vue'),
       meta: {
-        layout: 'Error' // name of the layout
+        layout: 'App' // name of the layout
       }
     }
   ]

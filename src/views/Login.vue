@@ -16,6 +16,7 @@
                                 label="Nombre de Usuario"
                                 required
                                 :counter="20"
+                                class="mb-3"
                         ></v-text-field>
 
                         <v-text-field
@@ -39,7 +40,10 @@
                             >
                                 Ingresar
                             </v-btn>
-                            <v-btn color="info" @click="credentials_snack = true">¿Olvidaste tu contraseña?</v-btn>
+                            <v-btn color="info"
+                                   @click="$store.commit('setSnack', {text: 'Favor de contactar a un administrador para cambio de contraseña.', color: 'warning'})"
+                            >¿Olvidaste tu contraseña?
+                            </v-btn>
                         </v-layout>
 
                     </v-card-actions>
@@ -48,16 +52,16 @@
         </v-flex>
 
         <v-snackbar
-                v-model="credentials_snack"
+                v-model="error_snack"
                 color="error"
                 :timeout="5000"
                 top
         >
-            Nombre de Usuario o Contraseña incorrectos
+            {{error_text}}
             <v-btn
                     dark
                     flat
-                    @click="credentials_snack = false"
+                    @click="error_snack = false"
             >
                 Cerrar
             </v-btn>
@@ -86,7 +90,8 @@
         v => !!v || 'Introduce una contraseña',
       ],
       loading: false,
-      credentials_snack: false,
+      error_snack: false,
+      error_text: '',
     }),
 
 
@@ -94,13 +99,18 @@
       submit() {
         if (this.$refs.form.validate()) {
           this.loading = true;
-          const { username, password } = this
-          this.$store.dispatch(AUTH_REQUEST, { username, password }).then(() => {
+          const {username, password} = this;
+          this.$store.dispatch(AUTH_REQUEST, {username, password}).then(() => {
             this.$router.push('/')
+          }).catch(error => {
+            this.$store.commit('setSnack', {text: error, color: 'red'});
+            this.loading = false;
           })
         }
       },
-    }
+
+
+    },
   }
 </script>
 

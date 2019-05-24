@@ -2,6 +2,7 @@
 <template>
   <div id="app" class="application theme--light">
     <vue-extend-layouts />
+    <Snackbar/>
   </div>
 </template>
 
@@ -9,10 +10,11 @@
   /* eslint-disable no-unused-vars */
   import VueExtendLayouts from 'vue-extend-layout'
   import {AUTH_LOGOUT} from "./store/actions/auth";
+  import Snackbar from './components/Snackbar'
 
   export default {
   name: 'App',
-  components: { VueExtendLayouts },
+  components: { VueExtendLayouts, Snackbar },
 
   created: function () {
     this.axios.interceptors.response.use(undefined, function (err) {
@@ -27,7 +29,6 @@
       });
     });
   },
-
 
 }
 </script>

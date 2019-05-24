@@ -3,6 +3,7 @@
 import { AUTH_REQUEST, AUTH_ERROR, AUTH_SUCCESS, AUTH_LOGOUT } from '../actions/auth'
 import { USER_REQUEST } from '../actions/user'
 import apiCall from '../../utils/api'
+import axios from 'axios'
 
 const state = { token: localStorage.getItem('user-token') || '', status: '', hasLoadedOnce: false };
 
@@ -18,9 +19,10 @@ const actions = {
       apiCall({url: 'auth', data: user, method: 'POST'})
           .then(resp => {
             localStorage.setItem('user-token', resp.token);
+            localStorage.setItem('permissions', resp.permissions);
             // Here set the header of your ajax library to the token value.
             // example with axios
-            // axios.defaults.headers.common['Authorization'] = resp.token
+            axios.defaults.headers.common['Authorization'] = resp.token;
             commit(AUTH_SUCCESS, resp);
             dispatch(USER_REQUEST);
             resolve(resp)
@@ -36,7 +38,8 @@ const actions = {
     return new Promise((resolve, reject) => {
       commit(AUTH_LOGOUT);
       localStorage.removeItem('user-token');
-      resolve()
+      localStorage.removeItem('permissions');
+      resolve();
     })
   }
 };
@@ -46,18 +49,18 @@ const mutations = {
     state.status = 'loading'
   },
   [AUTH_SUCCESS]: (state, resp) => {
-    state.status = 'success'
-    state.token = resp.token
-    state.hasLoadedOnce = true
+    state.status = 'success';
+    state.token = resp.token;
+    state.hasLoadedOnce = true;
   },
   [AUTH_ERROR]: (state) => {
-    state.status = 'error'
-    state.hasLoadedOnce = true
+    state.status = 'error';
+    state.hasLoadedOnce = true;
   },
   [AUTH_LOGOUT]: (state) => {
-    state.token = ''
+    state.token = '';
   }
-}
+};
 
 export default {
   state,

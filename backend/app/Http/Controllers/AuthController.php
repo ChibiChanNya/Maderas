@@ -89,6 +89,10 @@ class AuthController extends Controller
      */
     public function logout()
     {
+        $user = auth()->user();
+        $user->access_token = null;
+        $user->save();
+        
         auth()->logout();
 
         return response()->json(['message' => 'Successfully logged out']);
@@ -99,11 +103,18 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function refresh()
+    public function refresh(Request $request)
     {
-        $token= request(['token']);
-        // dd($token);
-        return $this->respondWithToken(auth()->refresh());
+        $token= explode(" ", $request->header('authorization'))[1];
+        $user = $request->input('name');
+        $possible_user = User::where('name',$user)->where('access_token',$token)->get();
+        if($possible_user->count() > 0){
+            return $this->respondWithToken(auth()->refresh());
+            // return response()->json(['success','user found'], 200);
+        } else {
+            return response()->json(['error','user not found'], 400);
+        }
+        // return $this->respondWithToken(auth()->refresh());
     }
 
     public function prueba()

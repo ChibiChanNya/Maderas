@@ -24,12 +24,12 @@ Route::prefix('auth')->group(function () {
     // Login User
     Route::post('login', 'AuthController@login');
     // Refresh the JWT Token
-    Route::get('refresh', 'AuthController@refresh');
+    Route::post('refresh', 'AuthController@refresh');
     
     // Below mention routes are available only for the authenticated users.
     Route::middleware('auth:api')->group(function () {
         // Get user info
-        Route::get('me', 'AuthController@user');
+        Route::post('me', 'AuthController@me');
         // Logout user from application
         Route::post('logout', 'AuthController@logout');
     });

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Validator;
+use Carbon\Carbon;
+use App\User;
 
 class AuthController extends Controller
 {
@@ -14,19 +17,35 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login','refresh']]);
+        // $this->middleware('auth:api', ['except' => ['login','refresh']]);
     }
 
     public function register(Request $request)
     {
-        $user = User::create([
-             'email'    => $request->email,
-             'password' => $request->password,
-         ]);
-
-        $token = auth()->login($user);
-
-        return $this->respondWithToken($token);
+        $v = Validator::make($request->all(), [
+            'name' => 'required|min:3',
+            'password'  => 'required|min:3',
+            'device_ip'  => 'min:3',
+            'description'  => 'min:10',
+            'email' => 'email|unique:users',
+        ]);
+        if ($v->fails())
+        {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $v->errors()
+            ], 422);
+        }
+        $user = new User();
+        $user->name = $request->name;
+        // dd(bcrypt($request->password));
+        $user->password = $request->password;
+        $user->device_ip = $request->device_ip;
+        $user->description = $request->description;
+        $user->permissions = '00000';
+        $user->email = $request->email ? $request->email : $request->name . '@email.com';
+        $user->save();
+        return response()->json(['status' => 'success'], 200);
     }
 
     /**
@@ -36,15 +55,18 @@ class AuthController extends Controller
      */
     public function login()
     {
-        $credentials = request(['email', 'password']);
+        $credentials = request(['name', 'password']);
         $token = auth()->attempt($credentials);
         if (!$token) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Bad Credentials'], 401);
         }
 
+        $device_ip = request(['device_ip']);
         $user = auth()->user();
-        // dd($user);
-        $user->remember_token = $token;
+        // dd($device_ip);
+        $user->last_login = Carbon::now();
+        $user->device_ip = $device_ip['device_ip'];
+        $user->access_token = $token;
         $user->save();
 
         return $this->respondWithToken($token);

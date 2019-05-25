@@ -92,7 +92,7 @@ class AuthController extends Controller
         $user = auth()->user();
         $user->access_token = null;
         $user->save();
-        
+
         auth()->logout();
 
         return response()->json(['message' => 'Successfully logged out']);
@@ -107,9 +107,12 @@ class AuthController extends Controller
     {
         $token= explode(" ", $request->header('authorization'))[1];
         $user = $request->input('name');
-        $possible_user = User::where('name',$user)->where('access_token',$token)->get();
+        $possible_user = User::where('name',$user)->where('access_token',$token)->first();
         if($possible_user->count() > 0){
-            return $this->respondWithToken(auth()->refresh());
+            $new_token = auth()->refresh();
+            $possible_user->access_token = $new_token;
+            $possible_user->save();
+            return $this->respondWithToken($new_token);
             // return response()->json(['success','user found'], 200);
         } else {
             return response()->json(['error','user not found'], 400);

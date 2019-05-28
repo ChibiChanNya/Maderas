@@ -20,35 +20,6 @@ class AuthController extends Controller
         // $this->middleware('auth:api', ['except' => ['login','refresh']]);
     }
 
-    public function register(Request $request)
-    {
-        $v = Validator::make($request->all(), [
-            'username' => 'required|min:3',
-            'full_name' => 'required|min:3',
-            'password'  => 'required|min:3',
-            'description'  => 'min:10',
-            'email' => 'email|unique:users',
-        ]);
-        if ($v->fails())
-        {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $v->errors()
-            ], 422);
-        }
-        $user = new User();
-        $user->username = $request->username;
-        $user->full_name = $request->full_name;
-        // dd(bcrypt($request->password));
-        $user->password = $request->password;
-        $user->device_ip = $request->ip();
-        $user->description = $request->description;
-        $user->permissions = '00000';
-        $user->email = $request->email ? $request->email : $request->username . '@email.com';
-        $user->save();
-        return response()->json(['status' => 'success'], 200);
-    }
-
     /**
      * Get a JWT via given credentials.
      *
@@ -74,16 +45,6 @@ class AuthController extends Controller
         $response->original['permissions'] = $user->permissions;
 
         return $response->original;
-    }
-
-    /**
-     * Get the authenticated User.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function me()
-    {
-        return response()->json(auth()->user());
     }
 
     /**

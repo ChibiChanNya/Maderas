@@ -101,7 +101,7 @@
           this.loading = true;
           const {username, password} = this;
           this.$store.dispatch(AUTH_REQUEST, {username, password}).then(() => {
-            this.$router.push('/')
+            this.$router.push('/');
           }).catch(error => {
             this.$store.commit('setSnack', {text: error, color: 'red'});
             this.loading = false;

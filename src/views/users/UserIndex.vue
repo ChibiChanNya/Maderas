@@ -40,7 +40,7 @@
 </template>
 
 <script>
-  import apiCall from '../../utils/api'
+  import apiCall from '../../utils/api_fake'
 
   export default {
     name: "UserIndex",

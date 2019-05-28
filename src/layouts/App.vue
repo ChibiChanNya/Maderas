@@ -75,7 +75,7 @@
 </template>
 
 <script>
-  import {AUTH_LOGOUT} from '../store/actions/auth'
+  import {AUTH_LOGOUT, AUTH_REFRESH} from '../store/actions/auth'
 
   export default {
     name: 'appLayout',
@@ -115,10 +115,30 @@
     methods: {
       logout() {
         this.$store.dispatch(AUTH_LOGOUT).then(() => {
-          this.$router.push('/login');
           this.$store.commit('setSnack', {text: "Sesión Cerrada exitosamente", color: 'info'});
         })
-      }
+      },
+
+      refresh_token() {
+        setInterval(() => {
+          if (this.$store.getters.isAuthenticated) {
+            this.$store.dispatch(AUTH_REFRESH).then(() => {
+              this.$store.commit('setSnack', {text: "Token Refreshed", color: 'info'});
+            }).catch(() => {
+              this.$router.push('/login');
+              this.$store.commit('setSnack', {
+                text: "Tu sesión ha expirado, por favor ingresa de nuevo.",
+                color: 'warning'
+              });
+            })
+          }
+        }, 300000);
+      },
+
     },
+
+    mounted() {
+        this.refresh_token();
+    }
   }
 </script>

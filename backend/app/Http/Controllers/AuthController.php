@@ -24,8 +24,8 @@ class AuthController extends Controller
     {
         $v = Validator::make($request->all(), [
             'name' => 'required|min:3',
+            'full_name' => 'required|min:3',
             'password'  => 'required|min:3',
-            'device_ip'  => 'min:3',
             'description'  => 'min:10',
             'email' => 'email|unique:users',
         ]);
@@ -38,9 +38,10 @@ class AuthController extends Controller
         }
         $user = new User();
         $user->name = $request->name;
+        $user->full_name = $request->full_name;
         // dd(bcrypt($request->password));
         $user->password = $request->password;
-        $user->device_ip = $request->device_ip;
+        $user->device_ip = $request->ip();
         $user->description = $request->description;
         $user->permissions = '00000';
         $user->email = $request->email ? $request->email : $request->name . '@email.com';
@@ -53,7 +54,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login()
+    public function login(Request $request)
     {
         $credentials = request(['name', 'password']);
         $token = auth()->attempt($credentials);
@@ -65,11 +66,14 @@ class AuthController extends Controller
         $user = auth()->user();
         // dd($device_ip);
         $user->last_login = Carbon::now();
-        $user->device_ip = $device_ip['device_ip'];
+        $user->device_ip = $request->ip();
         $user->access_token = $token;
         $user->save();
 
-        return $this->respondWithToken($token);
+        $response = $this->respondWithToken($token);
+        $response->original['permissions'] = $user->permissions;
+
+        return $response->original;
     }
 
     /**

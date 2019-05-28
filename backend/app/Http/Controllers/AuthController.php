@@ -23,7 +23,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $v = Validator::make($request->all(), [
-            'name' => 'required|min:3',
+            'username' => 'required|min:3',
             'full_name' => 'required|min:3',
             'password'  => 'required|min:3',
             'description'  => 'min:10',
@@ -37,14 +37,14 @@ class AuthController extends Controller
             ], 422);
         }
         $user = new User();
-        $user->name = $request->name;
+        $user->username = $request->username;
         $user->full_name = $request->full_name;
         // dd(bcrypt($request->password));
         $user->password = $request->password;
         $user->device_ip = $request->ip();
         $user->description = $request->description;
         $user->permissions = '00000';
-        $user->email = $request->email ? $request->email : $request->name . '@email.com';
+        $user->email = $request->email ? $request->email : $request->username . '@email.com';
         $user->save();
         return response()->json(['status' => 'success'], 200);
     }
@@ -56,7 +56,7 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = request(['name', 'password']);
+        $credentials = request(['username', 'password']);
         $token = auth()->attempt($credentials);
         if (!$token) {
             return response()->json(['error' => 'Bad Credentials'], 401);
@@ -110,8 +110,8 @@ class AuthController extends Controller
     public function refresh(Request $request)
     {
         $token= explode(" ", $request->header('authorization'))[1];
-        $user = $request->input('name');
-        $possible_user = User::where('name',$user)->where('access_token',$token)->first();
+        $user = $request->input('username');
+        $possible_user = User::where('username',$user)->where('access_token',$token)->first();
         if($possible_user->count() > 0){
             $new_token = auth()->refresh();
             $possible_user->access_token = $new_token;

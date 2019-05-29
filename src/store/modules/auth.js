@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import {AUTH_REQUEST, AUTH_ERROR, AUTH_SUCCESS, AUTH_LOGOUT, AUTH_REFRESH} from '../actions/auth'
 import {USER_REQUEST} from '../actions/user'
-import apiCall from '../../utils/api_fake'
+import {login, refresh, logout} from '../../api/auth_controller'
 import axios from 'axios'
 import router from '../../router'
 
@@ -10,7 +10,6 @@ const state = {token: localStorage.getItem('user-token') || '', status: '', hasL
 
 const getters = {
   isAuthenticated: state => !!state.token,
-  authStatus: state => state.status,
 };
 
 const actions = {
@@ -18,20 +17,16 @@ const actions = {
   [AUTH_REQUEST]: ({commit, dispatch}, user) => {
     return new Promise((resolve, reject) => {
       commit(AUTH_REQUEST);
-      apiCall({
-        url: '/auth/login',
-        data: {name: user.username, password: user.password, device_ip: "0.0.0.0"},
-        method: 'POST'
-      })
-          .then(resp => {
-            localStorage.setItem('user-token', resp.access_token);
-            localStorage.setItem('permissions', resp.permissions);
+      login(user)
+          .then(({data}) => {
+            localStorage.setItem('user-token', data.access_token);
+            // localStorage.setItem('permissions', data.permissions);
             // Here set the header of your ajax library to the token value.
             // example with axios
-            axios.defaults.headers.common['Authorization'] = resp.access_token;
-            commit(AUTH_SUCCESS, resp);
-            // dispatch(USER_REQUEST);
-            resolve(resp)
+            axios.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
+            commit(AUTH_SUCCESS, data);
+            dispatch(USER_REQUEST);
+            resolve(data)
           })
           .catch(err => {
             commit(AUTH_ERROR, err);
@@ -40,30 +35,38 @@ const actions = {
           })
     })
   },
+
   [AUTH_LOGOUT]: ({commit}) => {
     return new Promise((resolve, reject) => {
-      apiCall({url: '/auth/logout', method: 'POST'});
-      commit(AUTH_LOGOUT);
-      localStorage.removeItem('user-token');
-      localStorage.removeItem('permissions');
-      router.push('/login');
-      resolve();
+      logout()
+          .then( () => {
+            resolve();
+          })
+          .catch(err => {
+            reject(err);
+          })
+          .finally( () => {
+            commit(AUTH_LOGOUT);
+            localStorage.removeItem('user-token');
+            router.push('/login');
+          })
     })
   },
 
-  [AUTH_REFRESH]: ({commit, dispatch}) => {
-    return new Promise((resolve, reject) => {
-      apiCall({url: '/auth/refresh', method: 'POST'}).then(resp => {
-        localStorage.setItem('user-token', resp.access_token);
-        axios.defaults.headers.common['Authorization'] = resp.access_token;
-        commit(AUTH_SUCCESS, resp);
-        resolve();
-      }).catch(err => {
-        dispatch(AUTH_LOGOUT);
-        reject(err);
-      })
-    });
-  },
+  [AUTH_REFRESH]:
+      ({commit, dispatch}, username) => {
+        return new Promise((resolve, reject) => {
+          refresh(username).then(({data}) => {
+            localStorage.setItem('user-token', data.access_token);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
+            commit(AUTH_SUCCESS, data);
+            resolve();
+          }).catch(err => {
+            dispatch(AUTH_LOGOUT);
+            reject(err);
+          })
+        });
+      },
 
 };
 

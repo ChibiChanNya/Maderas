@@ -5,7 +5,7 @@
 </template>
 
 <script>
-  import apiCall from '../utils/api_fake'
+  import apiCall from '../api/api_fake'
 
   export default {
     name: "About",

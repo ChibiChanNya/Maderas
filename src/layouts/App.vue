@@ -61,7 +61,7 @@
 
         <v-toolbar color="indigo" dark fixed app>
             <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-            <v-toolbar-title>Application</v-toolbar-title>
+            <v-toolbar-title>Hola {{user_name}}</v-toolbar-title>
         </v-toolbar>
         <v-content>
             <v-container fluid>
@@ -103,9 +103,14 @@
     computed: {
       //Filter menu if user lacks permissions for some of the modules
       menu_permissions() {
-        const access = localStorage.permissions;
+        const access = parseInt(this.$store.getters.getPermissions, 2);
         return this.menu.filter(({permission}) => (permission & access) === permission)
+      },
+
+      user_name() {
+        return this.$store.getters.getName;
       }
+
     },
 
     props: {
@@ -122,10 +127,9 @@
       refresh_token() {
         setInterval(() => {
           if (this.$store.getters.isAuthenticated) {
-            this.$store.dispatch(AUTH_REFRESH).then(() => {
+            this.$store.dispatch(AUTH_REFRESH, {username: this.$store.getters.getUsername}).then(() => {
               this.$store.commit('setSnack', {text: "Token Refreshed", color: 'info'});
             }).catch(() => {
-              this.$router.push('/login');
               this.$store.commit('setSnack', {
                 text: "Tu sesión ha expirado, por favor ingresa de nuevo.",
                 color: 'warning'
@@ -138,7 +142,7 @@
     },
 
     mounted() {
-        this.refresh_token();
+      this.refresh_token();
     }
   }
 </script>

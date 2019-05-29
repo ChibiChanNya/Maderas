@@ -2,45 +2,184 @@
     <section id="users">
 
         <h1 class="text-md-center my-4">Usuarios en la plataforma</h1>
+        <v-card>
+            <v-card-title>
+                <v-dialog v-model="dialog" max-width="500px">
+                    <template v-slot:activator="{ on }">
+                        <v-btn color="primary" dark class="mb-2" v-on="on">Crear Usuario</v-btn>
+                    </template>
+                    <v-card>
+                        <v-card-title>
+                            <span class="headline">{{ formTitle }}</span>
+                        </v-card-title>
 
-        <v-data-table
-                :headers="headers"
-                :items="users"
-                class="elevation-1"
-                :loading="loading"
-        >
-            <template v-slot:items="props">
-                <td class="text-xs-center">{{ props.item.name }}</td>
-                <td class="text-xs-center">{{ props.item.username }}</td>
-                <td class="text-xs-center">
-                    <v-icon>{{ (props.item.permissions & 1) === 1? 'check' : ''}}</v-icon>
-                </td>
-                <td class="text-xs-center">
-                    <v-icon>{{ (props.item.permissions & 16) === 16? 'check' : ''}}</v-icon>
-                </td>
-                <td class="text-xs-center">
-                    <v-icon>{{ (props.item.permissions & 4) === 4? 'check' : ''}}</v-icon>
-                </td>
-                <td class="text-xs-center">
-                    <v-icon>{{ (props.item.permissions & 2) === 2? 'check' : ''}}</v-icon>
-                </td>
-                <td class="text-xs-center">
-                    <v-icon>{{ (props.item.permissions & 8) === 8? 'check' : ''}}</v-icon>
-                </td>
-            </template>
+                        <v-card-text>
+                            <v-form ref="form" v-model="valid_form" lazy-validation>
+                                <v-container grid-list-md>
+                                    <v-layout wrap>
+                                        <v-flex xs12 sm6>
+                                            <v-text-field v-model="editedItem.username"
+                                                          :rules="usernameRules"
+                                                          label="Nombre de Usuario"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs12 sm6>
+                                            <v-text-field v-model="editedItem.full_name"
+                                                          :rules="nameRules" label="Nombre Completo"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs12 sm6>
+                                            <v-text-field type="password" v-model="editedItem.password"
+                                                          :rules="passwordRules" label="Contraseña"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs12 sm6>
+                                            <v-text-field type="password" v-model="editedItem.re_password"
+                                                          :rules="re_passwordRules"
+                                                          label="Repetir Contraseña"></v-text-field>
+                                        </v-flex>
+                                        <v-flex sm4>
+                                            <v-checkbox v-model="permissions_array.dashboard"
+                                                        label="Dashboard"></v-checkbox>
+                                        </v-flex>
+                                        <v-flex sm4>
+                                            <v-checkbox v-model="permissions_array.usuarios"
+                                                        label="Usuarios"></v-checkbox>
+                                        </v-flex>
 
-            <template v-slot:no-data>
-                <h1 v-if="loading" class="text-md-center my-3"><v-icon>timelapse</v-icon> Cargando datos ...</h1>
-                <h1 v-else class="text-md-center my-3"> <v-icon>warning</v-icon> No se encontraron datos</h1>
-            </template>
+                                        <v-flex sm4>
+                                            <v-checkbox v-model="permissions_array.materia_prima"
+                                                        label="Materia Prima"></v-checkbox>
+                                        </v-flex>
 
-        </v-data-table>
+                                        <v-flex sm4>
+                                            <v-checkbox v-model="permissions_array.produccion"
+                                                        label="Producción"></v-checkbox>
+                                        </v-flex>
+
+                                        <v-flex sm4>
+                                            <v-checkbox v-model="permissions_array.documentos"
+                                                        label="Documentos"></v-checkbox>
+                                        </v-flex>
+                                    </v-layout>
+                                </v-container>
+                            </v-form>
+
+                        </v-card-text>
+
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+                            <v-btn color="blue darken-1" flat @click="save">Save</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+                <v-spacer></v-spacer>
+                <v-text-field
+                        v-model="search"
+                        append-icon="search"
+                        label="Buscar..."
+                        single-line
+                        hide-details
+                ></v-text-field>
+            </v-card-title>
+
+            <v-data-table
+                    :headers="headers"
+                    :items="users"
+                    class="elevation-1"
+                    :loading="loading"
+                    :search="search"
+                    hide-actions
+            >
+                <template v-slot:items="props">
+                    <tr>
+                        <td class="">{{ props.item.username }}</td>
+                        <td class="">{{ props.item.full_name }}</td>
+                        <td class="justify-start layout px-0">
+                            <v-icon
+                                    small
+                                    class="mr-5 "
+                                    @click="editItem(props.item)"
+                            >
+                                edit
+                            </v-icon>
+                            <v-icon
+                                    small
+                                    class="mr-4"
+
+                                    @click="deleteItem(props.item)"
+                            >
+                                delete
+                            </v-icon>
+                        </td>
+                        <td>
+                            <v-btn flat small color="primary" @click="props.expanded = !props.expanded">Permisos</v-btn>
+                            <v-btn flat small color="primary">Actividades</v-btn>
+                        </td>
+                    </tr>
+                </template>
+                <template v-slot:expand="props">
+                    <div class="grey lighten-3 pl-5">
+                        <tr>
+                            <th>Dashboard</th>
+                            <th>Usuarios</th>
+                            <th>Materia Prima</th>
+                            <th>Producción</th>
+                            <th>Documentos</th>
+
+                        </tr>
+                        <tr>
+                            <td class="text-xs-center">
+                                <v-icon :color="(parseInt(props.item.permissions, 2) & 1) === 1? 'green' : 'red'">
+                                    {{(parseInt(props.item.permissions, 2) & 1) === 1? 'check' : 'close'}}
+                                </v-icon>
+                            </td>
+                            <td class="text-xs-center">
+                                <v-icon :color="(parseInt(props.item.permissions, 2) & 16) === 16? 'green' : 'red'">
+                                    {{(parseInt(props.item.permissions, 2) & 16) === 16? 'check' : 'close'}}
+                                </v-icon>
+                            </td>
+                            <td class="text-xs-center">
+                                <v-icon :color="(parseInt(props.item.permissions, 2) & 4) === 4? 'green' : 'red'">
+                                    {{(parseInt(props.item.permissions, 2) & 4) === 4? 'check' : 'close'}}
+                                </v-icon>
+                            </td>
+                            <td class="text-xs-center">
+                                <v-icon :color="(parseInt(props.item.permissions, 2) & 2) === 2? 'green' : 'red'">
+                                    {{(parseInt(props.item.permissions, 2) & 2) === 2? 'check' : 'close'}}
+                                </v-icon>
+                            </td>
+                            <td class="text-xs-center">
+                                <v-icon :color="(parseInt(props.item.permissions, 2) & 8) === 8? 'green' : 'red'">
+                                    {{(parseInt(props.item.permissions, 2) & 8) === 8? 'check' : 'close'}}
+                                </v-icon>
+                            </td>
+                        </tr>
+                    </div>
+
+                </template>
+
+                <template v-slot:no-data>
+                    <h1 v-if="loading" class="text-md-center my-3">
+                        <v-icon>timelapse</v-icon>
+                        Cargando datos ...
+                    </h1>
+                    <h1 v-else class="text-md-center my-3">
+                        <v-icon>warning</v-icon>
+                        No se encontraron datos
+                    </h1>
+                </template>
+                <template v-slot:pageText="props">
+                    Elementos {{ props.pageStart }} - {{ props.pageStop }} de {{ props.itemsLength }}
+                </template>
+
+            </v-data-table>
+        </v-card>
+
 
     </section>
 </template>
 
 <script>
-  import apiCall from '../../utils/api_fake'
+  import {index, create, remove, update} from '../../api/users_controller';
 
   export default {
     name: "UserIndex",
@@ -49,36 +188,166 @@
       return {
 
         loading: true,
+        dialog: false,
+        search: '',
         headers: [
-          {
-            text: 'Nombre',
-            align: 'left',
-            value: 'name'
-          },
           {text: 'Nombre de Usuario', value: 'username'},
-          {text: 'Dashboard'},
-          {text: 'Usuarioz'},
-          {text: 'Materia Prima'},
-          {text: 'Producción'},
-          {text: 'Documentos'},
+
+          {
+            text: 'Nombre Completo',
+            align: 'left',
+            value: 'full_name'
+          },
+          {text: 'Acciones', value: 'permissions', sortable: false},
+          {text: 'Ver más', value: 'permissions', sortable: false},
         ],
 
         users: [],
+
+        valid_form: true,
+
+        usernameRules: [
+          v => !!v || 'Nombre de usuario requerido',
+          v => (v && v.length <= 20) || 'Máximo 20 caracteres'
+        ],
+        nameRules: [
+          v => !!v || 'Nombre requerido',
+          v => (v && v.length <= 20) || 'Máximo 20 caracteres'
+        ],
+        passwordRules: [
+          v => !!v || 'Contraseña obligatoria',
+        ],
+        re_passwordRules: [
+          v => (!this.editedItem.password || v === this.editedItem.password) || 'Las contraseñas no coinciden',
+        ],
+
+        editedIndex: -1,
+        editedItem: {
+          id: '',
+          username: '',
+          full_name: '',
+          password: '',
+          re_password: '',
+          description: "Nuevo usuario",
+          permissions: 0,
+        },
+        defaultItem: {
+          id: '',
+          username: '',
+          full_name: '',
+          password: '',
+          re_password: '',
+          description: "Nuevo usuario",
+          permissions: 0,
+        }
+      }
+    },
+
+    computed: {
+      formTitle() {
+        return this.editedIndex === -1 ? 'Nuevo Usuario' : 'Editar Usuario'
+      },
+
+      permissions_array: {
+        get: function () {
+          return {
+            dashboard: (parseInt(this.editedItem.permissions, 2) & 1) > 0,
+            usuarios: (parseInt(this.editedItem.permissions, 2) & 16) > 0,
+            materia_prima: (parseInt(this.editedItem.permissions,) & 4) > 0,
+            produccion: (parseInt(this.editedItem.permissions, 2) & 2) > 0,
+            documentos: (parseInt(this.editedItem.permissions, 2) & 8) > 0,
+          }
+        },
       }
     },
 
 
     mounted() {
-      apiCall({url: 'users', method: 'GET'})
-          .then(data => {
+      index()
+          .then(({data}) => {
             this.users = data;
-            this.loading = false;
           })
           .catch(error => {
             this.$store.commit('setSnack', {text: error, color: 'red'});
+          })
+          .finally(() => {
             this.loading = false;
           })
-    }
+    },
+
+    methods: {
+
+      calc_permissions_decimal() {
+        let total = 0;
+        if (this.permissions_array.dashboard) total += 1;
+        if (this.permissions_array.usuarios) total += 16;
+        if (this.permissions_array.materia_prima) total += 4;
+        if (this.permissions_array.produccion) total += 2;
+        if (this.permissions_array.documentos) total += 8;
+        this.editedItem.permissions = (total >>> 0).toString(2);
+      },
+
+
+      editItem(item) {
+        this.editedIndex = this.users.indexOf(item);
+        this.editedItem = Object.assign({}, item);
+        this.$refs.form.resetValidation();
+        this.dialog = true;
+      },
+
+      deleteItem(item) {
+        const index = this.users.indexOf(item);
+        confirm('¿Estás seguro de que quieres borrar a este usuario?') && remove({id: item.id}).then(() => {
+          this.users.splice(index, 1);
+          this.$store.commit('setSnack', {text: "Usuario borrado exitosamente", color: 'success'});
+
+        }).catch(err => {
+          this.$store.commit('setSnack', {text: err, color: 'red'});
+        });
+      },
+
+      close() {
+        this.dialog = false;
+        setTimeout(() => {
+          this.editedItem = Object.assign({}, this.defaultItem);
+          this.editedIndex = -1;
+          this.$refs.form.reset();
+        }, 300);
+      },
+
+      save() {
+        if (this.$refs.form.validate()) {
+          this.loading = true;
+          // Editing an User
+          if (this.editedIndex > -1) {
+            this.calc_permissions_decimal();
+            update(this.editedItem).then(() => {
+              Object.assign(this.users[this.editedIndex], this.editedItem);
+              this.$store.commit('setSnack', {text: "Usuario actualizado exitosamente", color: 'success'});
+              this.close();
+            }).catch(err => {
+              this.$store.commit('setSnack', {text: err, color: 'red'});
+            }).finally(() => {
+              this.loading = false
+            });
+            //  Creating a new User
+          } else {
+            this.calc_permissions_decimal();
+            create(this.editedItem).then(() => {
+              this.users.push(Object.assign({}, this.editedItem));
+              this.$store.commit('setSnack', {text: "Usuario creado exitosamente", color: 'success'});
+              this.close();
+            }).catch(err => {
+              this.$store.commit('setSnack', {text: err, color: 'red'});
+            }).finally(() => {
+              this.loading = false
+            });
+          }
+
+        }
+      }
+    },
+
   }
 </script>
 

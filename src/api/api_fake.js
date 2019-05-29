@@ -10,9 +10,10 @@ const mocks = {
       'users': {'GET': mock_users },
       'about': {'GET' : {error: 401}},
       '/auth/refresh': {'POST': {access_token: 'new_token'} },
+      '/auth/logout': {'POST': "ok" },
 };
 
-const apiCall = ({url, method, ...args}) => new Promise((resolve, reject) => {
+const fApiCall = ({url, method, ...args}) => new Promise((resolve, reject) => {
   setTimeout(() => {
     try {
       console.log(`Mocked '${url}' - ${method || 'GET'}`);
@@ -31,4 +32,4 @@ const apiCall = ({url, method, ...args}) => new Promise((resolve, reject) => {
   }, 1000);
 });
 
-export default apiCall
+export default fApiCall

@@ -143,10 +143,10 @@ class UserController extends Controller
         return $all_log;
     }
 
-    public function user_log(Request $request){
-        $user_id = $request->input('id');
+    public function user_log($id){
+        // $user_id = $request->input('id');
         // dd($user_id);
-        $all_log = LogAction::where('user_id',$user_id)->get();
+        $all_log = LogAction::where('user_id',$id)->get();
         return $all_log;
     }
 

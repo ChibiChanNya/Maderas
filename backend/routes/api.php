@@ -52,7 +52,7 @@ Route::prefix('user')->group(function () {
 
         // Log part
         Route::get('all_log', 'UserController@all_log');
-        Route::get('user_log', 'UserController@user_log');
+        Route::get('user_log/{id}', 'UserController@user_log');
     });
 });
 

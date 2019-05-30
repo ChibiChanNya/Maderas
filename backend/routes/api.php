@@ -49,6 +49,10 @@ Route::prefix('user')->group(function () {
         Route::post('update', 'UserController@user_update');
         // Delete a user
         Route::post('delete', 'UserController@user_delete');
+
+        // Log part
+        Route::get('all_log', 'UserController@all_log');
+        Route::get('user_log', 'UserController@user_log');
     });
 });
 

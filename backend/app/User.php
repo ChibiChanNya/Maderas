@@ -6,10 +6,12 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Traits\ActionsLogger;
 
 class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
+    use ActionsLogger;
 
     /**
      * The attributes that are mass assignable.
@@ -64,4 +66,8 @@ class User extends Authenticatable implements JWTSubject
             $this->attributes['password'] = bcrypt($password);
         }
     }  
+
+    public function logAction(){
+        return $this->hasMany('\App\LogAction')->orderBy('dt_action', 'desc');
+    }
 }

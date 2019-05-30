@@ -36,11 +36,11 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::prefix('user')->group(function () {
-    Route::post('register', 'UserController@register');
+    // Route::post('register', 'UserController@register');
     // Below mention routes are available only for the authenticated users.
     Route::middleware('auth:api')->group(function () {
         // Create New User
-        // Route::post('register', 'UserController@register');
+        Route::post('register', 'UserController@register');
         // Get user info
         Route::get('me', 'UserController@me');
         // Get all users

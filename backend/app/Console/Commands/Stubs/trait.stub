@@ -1,0 +1,12 @@
+<?php
+
+namespace DummyNamespace;
+
+use Auth;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+
+trait DummyClass
+{
+    //
+}

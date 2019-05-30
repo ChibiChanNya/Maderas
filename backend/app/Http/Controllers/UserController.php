@@ -33,9 +33,13 @@ class UserController extends Controller
         $user->password = $request->password;
         $user->device_ip = $request->ip();
         $user->description = $request->description;
-        $user->permissions = '00000';
+        $user->permissions = $request->permissions;
         $user->email = $request->email ? $request->email : $request->username . '@email.com';
         $user->save();
+
+        $admin_user = auth()->user();
+
+        $admin_user->registerLog('creates user '. $user->id);
         return response()->json(['status' => 'success'], 200);
     }
 
@@ -89,6 +93,9 @@ class UserController extends Controller
                 $user = $user->first();
                 $user->fill($request->all());
                 $user->save();
+
+                $admin_user = auth()->user();
+                $admin_user->registerLog('updates user '. $user->id);
                 return $user;
             }
             
@@ -120,6 +127,10 @@ class UserController extends Controller
 
         $user_id = $request->input('id');
         $deletion = User::find($user_id)->delete();
+
+        $admin_user = auth()->user();
+
+        $admin_user->registerLog('deletes user '. $user_id);
 
         return response()->json([
             'status' => 'done'

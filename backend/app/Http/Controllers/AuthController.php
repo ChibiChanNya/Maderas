@@ -41,6 +41,8 @@ class AuthController extends Controller
         $user->access_token = $token;
         $user->save();
 
+        $user->registerLog('login');
+
         $response = $this->respondWithToken($token);
         $response->original['permissions'] = $user->permissions;
 
@@ -57,6 +59,8 @@ class AuthController extends Controller
         $user = auth()->user();
         $user->access_token = null;
         $user->save();
+
+        $user->registerLog('logout');
 
         auth()->logout();
 

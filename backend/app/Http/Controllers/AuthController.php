@@ -20,42 +20,14 @@ class AuthController extends Controller
         // $this->middleware('auth:api', ['except' => ['login','refresh']]);
     }
 
-    public function register(Request $request)
-    {
-        $v = Validator::make($request->all(), [
-            'name' => 'required|min:3',
-            'password'  => 'required|min:3',
-            'device_ip'  => 'min:3',
-            'description'  => 'min:10',
-            'email' => 'email|unique:users',
-        ]);
-        if ($v->fails())
-        {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $v->errors()
-            ], 422);
-        }
-        $user = new User();
-        $user->name = $request->name;
-        // dd(bcrypt($request->password));
-        $user->password = $request->password;
-        $user->device_ip = $request->device_ip;
-        $user->description = $request->description;
-        $user->permissions = '00000';
-        $user->email = $request->email ? $request->email : $request->name . '@email.com';
-        $user->save();
-        return response()->json(['status' => 'success'], 200);
-    }
-
     /**
      * Get a JWT via given credentials.
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login()
+    public function login(Request $request)
     {
-        $credentials = request(['name', 'password']);
+        $credentials = request(['username', 'password']);
         $token = auth()->attempt($credentials);
         if (!$token) {
             return response()->json(['error' => 'Bad Credentials'], 401);
@@ -65,21 +37,16 @@ class AuthController extends Controller
         $user = auth()->user();
         // dd($device_ip);
         $user->last_login = Carbon::now();
-        $user->device_ip = $device_ip['device_ip'];
+        $user->device_ip = $request->ip();
         $user->access_token = $token;
         $user->save();
 
-        return $this->respondWithToken($token);
-    }
+        $user->registerLog('login');
 
-    /**
-     * Get the authenticated User.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function me()
-    {
-        return response()->json(auth()->user());
+        $response = $this->respondWithToken($token);
+        $response->original['permissions'] = $user->permissions;
+
+        return $response->original;
     }
 
     /**
@@ -92,6 +59,8 @@ class AuthController extends Controller
         $user = auth()->user();
         $user->access_token = null;
         $user->save();
+
+        $user->registerLog('logout');
 
         auth()->logout();
 
@@ -106,8 +75,8 @@ class AuthController extends Controller
     public function refresh(Request $request)
     {
         $token= explode(" ", $request->header('authorization'))[1];
-        $user = $request->input('name');
-        $possible_user = User::where('name',$user)->where('access_token',$token)->first();
+        $user = $request->input('username');
+        $possible_user = User::where('username',$user)->where('access_token',$token)->first();
         if($possible_user->count() > 0){
             $new_token = auth()->refresh();
             $possible_user->access_token = $new_token;

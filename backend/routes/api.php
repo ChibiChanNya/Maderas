@@ -20,7 +20,7 @@ use Illuminate\Http\Request;
 Route::prefix('auth')->group(function () {
     // Below mention routes are public, user can access those without any restriction.
     // Create New User
-    Route::post('register', 'AuthController@register');
+    // Route::post('register', 'AuthController@register');
     // Login User
     Route::post('login', 'AuthController@login');
     // Refresh the JWT Token
@@ -29,9 +29,26 @@ Route::prefix('auth')->group(function () {
     // Below mention routes are available only for the authenticated users.
     Route::middleware('auth:api')->group(function () {
         // Get user info
-        Route::post('me', 'AuthController@me');
+        // Route::post('me', 'AuthController@me');
         // Logout user from application
         Route::post('logout', 'AuthController@logout');
+    });
+});
+
+Route::prefix('user')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New User
+        Route::post('register', 'UserController@register');
+        // Get user info
+        Route::get('me', 'UserController@me');
+        // Get all users
+        Route::get('list', 'UserController@users_list');
+        // Update a user
+        Route::post('update', 'UserController@user_update');
+        // Delete a user
+        Route::post('delete', 'UserController@user_delete');
     });
 });
 

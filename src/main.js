@@ -5,7 +5,13 @@ import router from './router'
 import store from './store/index.js'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
+const moment = require('moment');
 
+require('moment/locale/es');
+
+Vue.use(require('vue-moment'), {
+  moment
+});
 
 Vue.use(VueAxios, axios);
 

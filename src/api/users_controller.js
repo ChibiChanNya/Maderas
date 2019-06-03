@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 import apiCall from "./api"
-import fApiCall from "./api_fake"
 
 
 
@@ -39,6 +38,14 @@ export const create = (user) => new Promise((resolve, reject) => {
 
 export const remove = (user) => new Promise((resolve, reject) => {
   apiCall({url: '/user/delete', method: 'POST', data: user}).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});
+
+export const user_log = ({id}) => new Promise((resolve, reject) => {
+  apiCall({url: `/user/user_log/${id}`, method: 'GET'}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);

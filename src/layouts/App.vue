@@ -89,13 +89,18 @@
         {icon: 'supervised_user_circle', url: '/users', text: 'Usuarios', permission: 16},
         {
           icon: 'dashboard', text: 'Producción', active: false, permission: 2, options: [
-            {icon: 'account_box', url: '/produccion/clientes', text: 'Clientes'},
-            {icon: 'assignment', url: '/produccion/pedidos', text: 'Pedidos'},
-            {icon: 'local_shipping', url: '/produccion/envios', text: 'Envíos'},
-            {icon: 'notes', url: '/produccion/reportes', text: 'Reportes'},
+            {icon: 'list', url: '/production/inventory', text: 'Inventario'},
+            {icon: 'account_box', url: '/production/clients', text: 'Clientes'},
+            {icon: 'assignment', url: '/production/orders', text: 'Pedidos'},
+            {icon: 'local_shipping', url: '/production/shipments', text: 'Envíos'},
+            {icon: 'notes', url: '/production/reports', text: 'Reportes'},
           ]
         },
-        {icon: 'storage', url: '/materia', text: 'Materia Prima', permission: 4},
+        {icon: 'storage', text: 'Materia Prima', permission: 4, options: [
+            {icon: 'list', url: '/materials/inventory', text: 'Inventario'},
+            {icon: 'account_box', url: '/materials/suppliers', text: 'Proveedores'},
+            {icon: 'assignment', url: '/materials/orders', text: 'Pedidos'},
+          ]},
         {icon: 'attach_file', url: '/documentos', text: 'Documentos', permission: 8},
       ],
     }),

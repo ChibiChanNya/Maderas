@@ -112,7 +112,7 @@
                         </td>
                         <td>
                             <v-btn flat small color="primary" @click="props.expanded = !props.expanded">Permisos</v-btn>
-                            <v-btn flat small color="primary">Actividades</v-btn>
+                            <v-btn flat small color="primary" @click="view_history(props.item)">Actividades</v-btn>
                         </td>
                     </tr>
                 </template>
@@ -174,12 +174,46 @@
             </v-data-table>
         </v-card>
 
+        <!--        HISTORY MODAL     -->
+        <v-dialog
+                v-model="history_dialog"
+                scrollable
+                max-width="400"
+        >
+            <v-card>
+                <v-card-title class="blue white--text" dark>
+                    <v-toolbar-title>Registro de <b>{{ history_name }}</b></v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-btn icon @click="history_dialog = false">
+                        <v-icon color="white">close</v-icon>
+                    </v-btn>
+                </v-card-title>
+                <v-card-text style="height: 500px; padding-top:0">
+                    <v-list two-line>
+                        <template v-for="(item, index) in current_history">
+                            <v-list-tile :key="item.id">
+                                <v-list-tile-content>
+                                    <v-list-tile-title>{{item.action}}</v-list-tile-title>
+                                    <v-list-tile-sub-title>{{item.dt_action | moment('calendar')}}
+                                    </v-list-tile-sub-title>
+                                </v-list-tile-content>
+
+                            </v-list-tile>
+                            <v-divider
+                                    v-if="index + 1 < current_history.length" :key="index"
+                            ></v-divider>
+                        </template>
+                    </v-list>
+                </v-card-text>
+            </v-card>
+
+        </v-dialog>
 
     </section>
 </template>
 
 <script>
-  import {index, create, remove, update} from '../../api/users_controller';
+  import {index, create, remove, update, user_log} from '../../api/users_controller';
 
   export default {
     name: "UserIndex",
@@ -189,6 +223,7 @@
 
         loading: true,
         dialog: false,
+        history_dialog: false,
         search: '',
         headers: [
           {text: 'Nombre de Usuario', value: 'username'},
@@ -215,7 +250,7 @@
           v => (v && v.length <= 20) || 'Máximo 20 caracteres'
         ],
         passwordRules: [
-          v => !!v || 'Contraseña obligatoria',
+          v => (this.editedIndex >= 0 || !!v) || 'Contraseña obligatoria',
         ],
         re_passwordRules: [
           v => (!this.editedItem.password || v === this.editedItem.password) || 'Las contraseñas no coinciden',
@@ -239,7 +274,10 @@
           re_password: '',
           description: "Nuevo usuario",
           permissions: 0,
-        }
+        },
+
+        current_history: [],
+        history_name: "",
       }
     },
 
@@ -287,6 +325,18 @@
         this.editedItem.permissions = (total >>> 0).toString(2);
       },
 
+      view_history(item) {
+        this.loading = true;
+        user_log(item).then(({data}) => {
+          this.current_history = data;
+          this.history_dialog = true;
+          this.history_name = item.full_name;
+        }).catch(err => {
+          this.$store.commit('setSnack', {text: err, color: 'red'});
+        }).finally(() => {
+          this.loading = false;
+        });
+      },
 
       editItem(item) {
         this.editedIndex = this.users.indexOf(item);
@@ -321,6 +371,9 @@
           // Editing an User
           if (this.editedIndex > -1) {
             this.calc_permissions_decimal();
+            if (!this.editedItem.password) {
+              delete this.editedItem.password;
+            }
             update(this.editedItem).then(() => {
               Object.assign(this.users[this.editedIndex], this.editedItem);
               this.$store.commit('setSnack', {text: "Usuario actualizado exitosamente", color: 'success'});

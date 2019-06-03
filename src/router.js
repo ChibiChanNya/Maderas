@@ -24,6 +24,22 @@ const ifAuthenticated = (to, from, next) => {
     return
   }
   next('/login');
+  this.$store.commit('setSnack', {text: "Debes iniciar sesión para continuar", color: 'warning'});
+};
+
+//Check for permissions
+const hasPermissions = (to, from, next) => {
+  if (store.getters.isAuthenticated) {
+    if ((parseInt(store.getters.getPermissions, 2) & to.meta.permission) > 0) {
+      next();
+    } else {
+      next(false);
+      this.$store.commit('setSnack', {text: "No tienes permisos para acceder a este módulo", color: 'error'});
+    }
+  } else {
+    next('login');
+    this.$store.commit('setSnack', {text: "Debes iniciar sesión para continuar", color: 'warning'});
+  }
 };
 
 export default new Router({
@@ -61,10 +77,32 @@ export default new Router({
     {
       path: '/users',
       name: 'users',
-      component: () => import('./views/users/UserIndex.vue'),
-      beforeEnter: ifAuthenticated,
+      component: () => import('./views/users/Index.vue'),
+      beforeEnter: hasPermissions,
       meta: {
-        layout: 'App'
+        layout: 'App',
+        permission: 16,
+      }
+    },
+
+    {
+      path: '/materials/inventory',
+      name: 'materials-inventory',
+      component: () => import('./views/materials/Inventory.vue'),
+      beforeEnter: hasPermissions,
+      meta: {
+        layout: 'App',
+        permission: 4,
+      }
+    },
+    {
+      path: '/materials/provider',
+      name: 'materials-provider',
+      component: () => import('./views/materials/Providers.vue'),
+      beforeEnter: hasPermissions,
+      meta: {
+        layout: 'App',
+        permission: 4,
       }
     },
 

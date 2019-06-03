@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Validator;
 use Carbon\Carbon;
 use App\User;
+use App\LogAction;
 
 class UserController extends Controller
 {
@@ -90,7 +91,6 @@ class UserController extends Controller
         if($user_id) {
             $user = User::find($user_id);
             if($user){
-                $user = $user->first();
                 $user->fill($request->all());
                 $user->save();
 
@@ -136,6 +136,18 @@ class UserController extends Controller
             'status' => 'done'
         ], 200);
         
+    }
+
+    public function all_log(){
+        $all_log = LogAction::all();
+        return $all_log;
+    }
+
+    public function user_log($id){
+        // $user_id = $request->input('id');
+        // dd($user_id);
+        $all_log = LogAction::where('user_id',$id)->get();
+        return $all_log;
     }
 
     protected function respondWithError($error)

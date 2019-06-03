@@ -56,6 +56,36 @@ Route::prefix('user')->group(function () {
     });
 });
 
+Route::prefix('providers')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New Provider
+        Route::post('create', 'ProviderController@create');
+        // Get all Providers
+        Route::get('list', 'ProviderController@providers_list');
+        // Update a Provider
+        Route::post('update', 'ProviderController@provider_update');
+        // Delete a Provider
+        Route::post('delete', 'ProviderController@provider_delete');
+    });
+});
+
+Route::prefix('materials')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New User
+        Route::post('create', 'SupplyController@create');
+        // Get all Supplies
+        Route::get('list', 'SupplyController@supplies_list');
+        // Update a Supply
+        Route::post('update', 'SupplyController@supply_update');
+        // Delete a user
+        Route::post('delete', 'SupplyController@supply_delete');
+    });
+});
+
 // Route::group([
 //     'prefix' => 'auth'
 // ], function ($router) {

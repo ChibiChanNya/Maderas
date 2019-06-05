@@ -7,7 +7,7 @@ const state = {
   status: '', profile: {
     username: localStorage.getItem('username') || '',
     permissions: localStorage.getItem('permissions') || '',
-    full_name: localStorage.getItem('full_name') || '',
+    full_name: localStorage.getItem('name') || '',
   },
 };
 

@@ -96,9 +96,9 @@ export default new Router({
       }
     },
     {
-      path: '/materials/provider',
-      name: 'materials-provider',
-      component: () => import('./views/materials/Providers.vue'),
+      path: '/materials/suppliers',
+      name: 'materials-suppliers',
+      component: () => import('./views/materials/Suppliers.vue'),
       beforeEnter: hasPermissions,
       meta: {
         layout: 'App',

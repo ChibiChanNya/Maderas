@@ -806,3 +806,7 @@ a {
     color: #6f0018 !important;
     caret-color: #6f0018 !important;
 }
+
+.v-table tbody tr td{
+    text-align: center;
+}

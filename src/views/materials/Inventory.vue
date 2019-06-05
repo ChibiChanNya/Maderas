@@ -1,5 +1,5 @@
 <template>
-    <section id="users">
+    <section id="materials_inventory">
 
         <h1 class="text-md-center my-4">Inventario de Insumos</h1>
         <v-card>
@@ -29,31 +29,30 @@
                                         </v-flex>
                                         <v-flex xs12 sm6>
                                             <v-select
-                                                    v-model="editedItem.provider"
+                                                    v-model="editedItem.provider_id"
                                                     hint="Proveedor"
                                                     :items="providers"
                                                     item-text="name"
                                                     item-value="id"
                                                     label="Elije al proveedor"
                                                     persistent-hint
-                                                    return-object
                                                     single-line
                                             ></v-select>
                                         </v-flex>
 
                                         <v-flex sm6>
-                                            <v-text-field v-model="editedItem.price"
+                                            <v-text-field v-model="editedItem.recent_price"
                                                           :rules="priceRules"
-                                                          label="Precio"></v-text-field>
+                                                          label="Precio (más reciente)"></v-text-field>
                                         </v-flex>
                                         <v-flex sm4>
-                                            <v-text-field v-model="editedItem.stock"
-                                                          :rules="priceRules"
+                                            <v-text-field v-model="editedItem.available_stock"
+                                                          :rules="stockRules"
                                                           label="Stock Disponible"></v-text-field>
                                         </v-flex>
                                         <v-flex sm4>
                                             <v-text-field v-model="editedItem.pending_stock"
-                                                          :rules="priceRules"
+                                                          :rules="stockRules"
                                                           label="Stock Pendiente"></v-text-field>
                                         </v-flex>
                                     </v-layout>
@@ -91,9 +90,9 @@
                     <tr>
                         <td class="">{{ props.item.name }}</td>
                         <td class="">{{ props.item.type }}</td>
-                        <td class="">{{ props.item.provider.name }}</td>
-                        <td class="">{{ props.item.price }}</td>
-                        <td class="">{{ props.item.stock }}</td>
+                        <td class="">{{ provider_name(props.item.provider_id) }}</td>
+                        <td class="">{{ props.item.recent_price }}</td>
+                        <td class="">{{ props.item.available_stock }}</td>
                         <td class="">{{ props.item.pending_stock }}</td>
                         <td class="justify-start layout px-0">
                             <v-icon
@@ -142,7 +141,7 @@
     create_material,
     remove_material,
     update_material,
-    index_providers
+    index_suppliers
   } from '../../api/materials_controller';
 
   export default {
@@ -170,6 +169,7 @@
         ],
 
         items: [],
+        providers: [],
 
         valid_form: true,
 
@@ -181,8 +181,11 @@
           v => !!v || 'Tipo requerido',
         ],
         priceRules: [
-          v => !!v || 'Precio requerido',
+          v => !!v || 'Campo requerido',
           v => (!isNaN(v) && v > 0) || "Debe ser un número positivo",
+        ],
+        stockRules: [
+          v => (!v || (!isNaN(v) && v >= 0)) || "Debe ser un número positivo",
         ],
 
 
@@ -191,26 +194,21 @@
           id: '',
           name: '',
           type: '',
-          provider: {},
-          price: '',
-          stock: 0,
+          provider_id: '',
+          recent_price: '',
+          available_stock: 0,
           pending_stock: 0,
         },
         defaultItem: {
           id: '',
           name: '',
           type: '',
-          provider: {},
-          price: '',
-          stock: 0,
+          provider_id: '',
+          recent_price: '',
+          available_stock: 0,
           pending_stock: 0,
         },
 
-        providers: [
-          {id: 1, name: "Empresa 1"},
-          {id: 2, name: "Empresa 2"},
-          {id: 3, name: "Empresa 3"},
-        ],
       }
     },
 
@@ -223,12 +221,13 @@
 
 
     mounted() {
-      this.axios.all([index_materials(), index_providers()])
+      this.axios.all([index_materials(), index_suppliers()])
           .then(this.axios.spread(function (materials, providers) {
-            // Both requests are now complete
-            this.items = materials;
-            this.providers = providers;
-          }))
+                // Both requests are now complete
+                this.items = materials.data;
+                this.providers = providers.data;
+              }.bind(this)
+          ))
           .catch(error => {
             this.$store.commit('setSnack', {text: error, color: 'red'});
           })
@@ -239,17 +238,21 @@
 
     methods: {
 
+      provider_name(id){
+        return this.providers.find( (prov) => prov.id === id).name;
+      },
+
       editItem(item) {
-        this.editedIndex = this.users.indexOf(item);
+        this.editedIndex = this.items.indexOf(item);
         this.editedItem = Object.assign({}, item);
         this.$refs.form.resetValidation();
         this.dialog = true;
       },
 
       deleteItem(item) {
-        const index = this.users.indexOf(item);
+        const index = this.items.indexOf(item);
         confirm('¿Estás seguro de que quieres borrar este insumo?') && remove_material({id: item.id}).then(() => {
-          this.users.splice(index, 1);
+          this.items.splice(index, 1);
           this.$store.commit('setSnack', {text: "Insumo borrado exitosamente", color: 'success'});
 
         }).catch(err => {
@@ -272,7 +275,7 @@
           // Editing an User
           if (this.editedIndex > -1) {
             update_material(this.editedItem).then(() => {
-              Object.assign(this.users[this.editedIndex], this.editedItem);
+              Object.assign(this.items[this.editedIndex], this.editedItem);
               this.$store.commit('setSnack', {text: "Usuario actualizado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {
@@ -282,9 +285,8 @@
             });
             //  Creating a new User
           } else {
-            this.calc_permissions_decimal();
             create_material(this.editedItem).then(() => {
-              this.users.push(Object.assign({}, this.editedItem));
+              this.items.push(Object.assign({}, this.editedItem));
               this.$store.commit('setSnack', {text: "Usuario creado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {

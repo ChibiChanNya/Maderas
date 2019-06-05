@@ -226,15 +226,15 @@
         history_dialog: false,
         search: '',
         headers: [
-          {text: 'Nombre de Usuario', value: 'username'},
+          {text: 'Nombre de Usuario', value: 'username', align: 'center'},
 
           {
             text: 'Nombre Completo',
-            align: 'left',
+            align: 'center',
             value: 'full_name'
           },
           {text: 'Acciones', value: 'permissions', sortable: false},
-          {text: 'Ver más', value: 'permissions', sortable: false},
+          {text: 'Ver más', value: 'permissions', sortable: false, align: 'center'},
         ],
 
         users: [],

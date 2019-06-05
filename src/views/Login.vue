@@ -7,7 +7,7 @@
         <v-flex md5>
             <v-card elevation="2">
                 <v-card-title class="blue"><h1 class="mx-auto white--text">Inicio de Sesión</h1></v-card-title>
-                <v-form style="width:100%" ref="form" v-model="valid" lazy-validation>
+                <v-form style="width:100%" ref="form" v-model="valid" lazy-validation @submit.prevent="submit">
 
                     <v-card-text class="px-5 py-3">
                         <v-text-field
@@ -33,7 +33,7 @@
                     <v-card-actions class=" py-3 ">
                         <v-layout row wrap justify-space-around>
                             <v-btn color="success"
-                                   @click="submit"
+                                   type="submit"
                                    :loading="loading"
                                    :disabled="!valid"
                                    class="mb-2"

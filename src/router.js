@@ -107,6 +107,17 @@ export default new Router({
     },
 
     {
+      path: '/materials/orders',
+      name: 'materials-orders',
+      component: () => import('./views/materials/Orders.vue'),
+      beforeEnter: hasPermissions,
+      meta: {
+        layout: 'App',
+        permission: 4,
+      }
+    },
+
+    {
       path: '*',
       name: 'Error',
       component: () => import('./views/404.vue'),

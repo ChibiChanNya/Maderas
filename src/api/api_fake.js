@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 import mock_users from "./mock-users";
+import mock_orders from "./mock-orders";
 import {AUTH_LOGOUT} from '../store/actions/auth'
 import store from "../store"
 
@@ -11,6 +12,7 @@ const mocks = {
       'about': {'GET' : {error: 401}},
       '/auth/refresh': {'POST': {access_token: 'new_token'} },
       '/auth/logout': {'POST': "ok" },
+      '/material_orders/list' : {'GET': mock_orders},
 };
 
 const fApiCall = ({url, method, ...args}) => new Promise((resolve, reject) => {
@@ -18,12 +20,13 @@ const fApiCall = ({url, method, ...args}) => new Promise((resolve, reject) => {
     try {
       console.log(`Mocked '${url}' - ${method || 'GET'}`);
       let result = mocks[url][method || 'GET'];
+
       if(result.error === 401){
         reject(new Error(result.error));
         store.dispatch(AUTH_LOGOUT);
         return;
       }
-      resolve(mocks[url][method || 'GET']);
+      resolve({data: mocks[url][method || 'GET'] });
       console.log('response: ', mocks[url][method || 'GET']);
     } catch (err) {
       console.log("error",err);

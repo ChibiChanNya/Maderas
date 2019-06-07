@@ -4,7 +4,7 @@
         <h1 class="text-md-center my-4">Inventario de Insumos</h1>
         <v-card>
             <v-card-title>
-                <v-dialog v-model="dialog" max-width="500px">
+                <v-dialog v-model="dialog" max-width="500px" persistent>
                     <template v-slot:activator="{ on }">
                         <v-btn color="primary" dark class="mb-2" v-on="on">Crear Insumo</v-btn>
                     </template>
@@ -63,8 +63,8 @@
 
                         <v-card-actions>
                             <v-spacer></v-spacer>
-                            <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                            <v-btn color="blue darken-1" flat @click="save">Save</v-btn>
+                            <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
+                            <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
                         </v-card-actions>
                     </v-card>
                 </v-dialog>

@@ -81,8 +81,23 @@ Route::prefix('materials')->group(function () {
         Route::get('list', 'SupplyController@supplies_list');
         // Update a Supply
         Route::post('update', 'SupplyController@supply_update');
-        // Delete a user
+        // Delete a Supply
         Route::post('delete', 'SupplyController@supply_delete');
+    });
+});
+
+Route::prefix('orders/providers')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New Order
+        Route::post('create', 'OrderToProviderController@create');
+        // Get all Orders
+        Route::get('list', 'OrderToProviderController@orders_list');
+        // Update an Order
+        Route::post('update', 'OrderToProviderController@order_update');
+        // Delete an Order
+        Route::post('delete', 'OrderToProviderController@order_delete');
     });
 });
 

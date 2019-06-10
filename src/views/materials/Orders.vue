@@ -34,7 +34,7 @@
                                             <v-select
                                                     v-model="editedItem.material_id"
                                                     hint="Insumo"
-                                                    :items="materials"
+                                                    :items="material_choices"
                                                     item-text="name"
                                                     item-value="id"
                                                     label="Elije un insumo"
@@ -44,17 +44,20 @@
                                             ></v-select>
                                         </v-flex>
                                         <v-flex xs4 sm4>
-                                            <v-text-field v-model="editedItem.amount"
+                                            <v-text-field v-model="editedItem.units"
                                                           :rules="numberRules"
+                                                          type="number"
                                                           label="Cantidad"></v-text-field>
                                         </v-flex>
                                         <v-flex xs4 sm4>
-                                            <v-text-field v-model="editedItem.total_cost"
+                                            <v-text-field v-model.number="editedItem.total_cost"
                                                           :rules="numberRules"
+                                                          type="number"
                                                           label="Precio Total"></v-text-field>
                                         </v-flex>
                                         <v-flex xs4 sm4>
                                             <v-select
+                                                    v-model="editedItem.status"
                                                     :items="status_list"
                                                     label="Status"
                                                     item-text="name"
@@ -66,35 +69,40 @@
                                         </v-flex>
                                         <v-flex xs12 sm6>
                                             <v-dialog
-                                                      ref="dialog1"
-                                                      v-model="modal_date_1"
-                                                      :return-value.sync="editedItem.order_date"
-                                                      persistent
-                                                      lazy
-                                                      full-width
-                                                      width="290px"
+                                                    ref="dialog1"
+                                                    v-model="modal_date_1"
+                                                    :return-value.sync="editedItem.request_date"
+                                                    persistent
+                                                    lazy
+                                                    full-width
+                                                    width="290px"
                                             >
                                                 <template v-slot:activator="{ on }">
                                                     <v-text-field
-                                                            v-model="editedItem.order_date"
-                                                            label="Fecha de entrega"
+                                                            v-model="editedItem.request_date"
+                                                            label="Fecha de solicitud"
                                                             prepend-icon="event"
                                                             readonly
+                                                            clearable
+                                                            :value="formatted_date(editedItem.request_date)"
                                                             v-on="on"
                                                     ></v-text-field>
                                                 </template>
-                                                <v-date-picker v-model="editedItem.order_date" scrollable locale="es-mx">
+                                                <v-date-picker v-model="editedItem.request_date" scrollable
+                                                               locale="es-mx"
+                                                >
                                                     <v-spacer></v-spacer>
-                                                    <v-btn flat color="primary" @click="modal_date_1 = false">Cancelar</v-btn>
-                                                    <v-btn flat color="primary" @click="$refs.dialog1.save(editedItem.order_date)">OK
+                                                    <v-btn flat color="primary" @click="modal_date_1 = false">Cancelar
+                                                    </v-btn>
+                                                    <v-btn flat color="primary"
+                                                           @click="$refs.dialog1.save(editedItem.request_date)">OK
                                                     </v-btn>
                                                 </v-date-picker>
                                             </v-dialog>
                                         </v-flex>
                                         <v-flex xs12 sm6>
-                                            <v-dialog v-if="editedIndex > 0"
+                                            <v-dialog v-if="editedIndex > -1"
                                                       ref="dialog2"
-                                                      v-model="modal_date_2"
                                                       :return-value.sync="editedItem.delivery_date"
                                                       persistent
                                                       lazy
@@ -103,23 +111,26 @@
                                             >
                                                 <template v-slot:activator="{ on }">
                                                     <v-text-field
-                                                            v-model="editedItem.delivery_date"
                                                             label="Fecha de entrega"
                                                             prepend-icon="event"
+                                                            clearable
+                                                            :value="formatted_date(editedItem.delivery_date)"
                                                             readonly
                                                             v-on="on"
                                                     ></v-text-field>
                                                 </template>
-                                                <v-date-picker v-model="editedItem.delivery_date" scrollable locale="es-mx">
+                                                <v-date-picker v-model="editedItem.delivery_date" scrollable
+                                                               locale="es-mx"
+                                                >
                                                     <v-spacer></v-spacer>
-                                                    <v-btn flat color="primary" @click="modal_date_2 = false">Cancelar</v-btn>
-                                                    <v-btn flat color="primary" @click="$refs.dialog2.save(editedItem.delivery_date)">OK
+                                                    <v-btn flat color="primary" @click="modal_date_2 = false">Cancelar
+                                                    </v-btn>
+                                                    <v-btn flat color="primary"
+                                                           @click="$refs.dialog2.save(editedItem.delivery_date)">OK
                                                     </v-btn>
                                                 </v-date-picker>
                                             </v-dialog>
                                         </v-flex>
-
-
                                     </v-layout>
                                 </v-container>
                             </v-form>
@@ -156,9 +167,9 @@
                     <tr>
                         <td class="">{{ provider_name(props.item.provider_id) }}</td>
                         <td class="">{{ material_name(props.item.material_id) }}</td>
-                        <td class="">{{ props.item.amount }}</td>
+                        <td class="">{{ props.item.units }}</td>
                         <td class="">$ {{ props.item.total_cost }}</td>
-                        <td class="">{{ props.item.order_date | moment('DD/M/YYYY')}}</td>
+                        <td class="">{{ props.item.request_date | moment('DD/M/YYYY')}}</td>
                         <td class="">{{ props.item.delivery_date | moment('DD/M/YYYY')}}</td>
                         <td class="">{{ status_name(props.item.status) }}</td>
                         <td class="">$ {{ props.item.remaining_cost }}</td>
@@ -225,7 +236,7 @@
         modal_date_2: false,
         search: '',
         pagination: {
-          sortBy: 'order_date'
+          sortBy: 'request_date'
         },
         headers: [
           {text: 'Proveedor', value: 'provider_id', align: 'centr'},
@@ -235,7 +246,7 @@
             align: 'center',
             value: 'material_id'
           },
-          {text: 'Unidades', value: 'amount', align: 'center'},
+          {text: 'Unidades', value: 'units', align: 'center'},
           {text: 'Costo Total', value: 'total_cost', align: 'center'},
           {text: 'Fecha Solicitud', value: 'order_dat', align: 'center'},
           {text: 'Fecha Entrega', value: 'delivery_date', align: 'center'},
@@ -266,22 +277,24 @@
 
         editedIndex: -1,
         editedItem: {
+          id: '',
           provider_id: '',
           material_id: '',
-          amount: 0,
+          units: 0,
           total_cost: 0,
-          order_date: new Date().toISOString().slice(0,10),
-          delivery_date: null,
+          request_date: new Date().toISOString().slice(0, 10),
+          delivery_date: new Date().toISOString().slice(0, 10),
           status: null,
           remaining_cost: 0,
         },
         defaultItem: {
+          id: '',
           provider_id: '',
           material_id: '',
-          amount: 0,
+          units: 0,
           total_cost: 0,
-          order_date: new Date().toISOString().slice(0,10),
-          delivery_date: null,
+          request_date: new Date().toISOString().slice(0, 10),
+          delivery_date: new Date().toISOString().slice(0, 10),
           status: null,
           remaining_cost: 0,
         },
@@ -293,6 +306,10 @@
       formTitle() {
         return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
       },
+
+      material_choices(){
+        return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id) ) || [];
+      }
 
     },
 
@@ -315,12 +332,16 @@
 
     methods: {
 
+      formatted_date(date) {
+        return date ? this.$moment(date).format("DD/M/YYYY") : "";
+      },
+
       provider_name(id) {
-        return this.providers.find((prov) => prov.id === id).name;
+        return (this.providers.length > 0 && this.providers.find((prov) => prov.id === id).name) || "Proveedor no encontrado";
       },
 
       material_name(id) {
-        return this.materials.find((mat) => mat.id === id).name;
+        return (this.materials.length > 0 && this.materials.find((mat) => mat.id === id).name) || "Insumo no encontrado";
       },
 
       status_name(val) {

@@ -69,14 +69,14 @@ export const remove_supplier = (item) => new Promise((resolve, reject) => {
 });
 
 export const index_orders = () => new Promise((resolve, reject) => {
-  f_apiCall({url: '/material_orders/list', method: 'GET'}).then(resp => {
+  apiCall({url: '/orders/providers/list', method: 'GET'}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);
   });
 });
 export const update_order = (item) => new Promise((resolve, reject) => {
-  apiCall({url: '/material_orders/update', method: 'POST', data: item}).then(resp => {
+  apiCall({url: '/orders/providers/update', method: 'POST', data: item}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);
@@ -84,7 +84,7 @@ export const update_order = (item) => new Promise((resolve, reject) => {
 });
 
 export const create_order = (item) => new Promise((resolve, reject) => {
-  apiCall({url: '/material_orders/create', method: 'POST', data: item}).then(resp => {
+  apiCall({url: '/orders/providers/create', method: 'POST', data: item}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);
@@ -92,7 +92,7 @@ export const create_order = (item) => new Promise((resolve, reject) => {
 });
 
 export const remove_order = (item) => new Promise((resolve, reject) => {
-  apiCall({url: '/material_orders/delete', method: 'POST', data: item}).then(resp => {
+  apiCall({url: '/orders/providers/delete', method: 'POST', data: item}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);

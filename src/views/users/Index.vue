@@ -31,7 +31,7 @@
                                                           :rules="passwordRules" label="Contraseña"></v-text-field>
                                         </v-flex>
                                         <v-flex xs12 sm6>
-                                            <v-text-field type="password" v-model="editedItem.re_password"
+                                            <v-text-field type="password" v-model.lazy="editedItem.re_password"
                                                           :rules="re_passwordRules"
                                                           label="Repetir Contraseña"></v-text-field>
                                         </v-flex>
@@ -67,7 +67,7 @@
                         <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
-                            <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
+                            <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
                         </v-card-actions>
                     </v-card>
                 </v-dialog>

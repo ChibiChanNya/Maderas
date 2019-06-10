@@ -23,11 +23,6 @@
                                                           label="Nombre"></v-text-field>
                                         </v-flex>
                                         <v-flex xs12 sm6>
-                                            <v-text-field v-model="editedItem.type"
-                                                          :rules="typeRules"
-                                                          label="Tipo"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs12 sm6>
                                             <v-select
                                                     v-model="editedItem.provider_id"
                                                     hint="Proveedor"
@@ -40,18 +35,23 @@
                                             ></v-select>
                                         </v-flex>
 
-                                        <v-flex sm6>
-                                            <v-text-field v-model="editedItem.recent_price"
+                                        <v-flex xs6 sm6>
+                                            <v-text-field v-model="editedItem.type"
+                                                          :rules="typeRules"
+                                                          label="Tipo"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs6 sm6>
+                                            <v-text-field v-model.number="editedItem.recent_price"
                                                           :rules="priceRules"
                                                           label="Precio (más reciente)"></v-text-field>
                                         </v-flex>
-                                        <v-flex sm4>
-                                            <v-text-field v-model="editedItem.available_stock"
+                                        <v-flex xs6 sm4>
+                                            <v-text-field v-model.number="editedItem.available_stock"
                                                           :rules="stockRules"
                                                           label="Stock Disponible"></v-text-field>
                                         </v-flex>
-                                        <v-flex sm4>
-                                            <v-text-field v-model="editedItem.pending_stock"
+                                        <v-flex xs6 sm4>
+                                            <v-text-field v-model.number="editedItem.pending_stock"
                                                           :rules="stockRules"
                                                           label="Stock Pendiente"></v-text-field>
                                         </v-flex>
@@ -64,7 +64,7 @@
                         <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
-                            <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
+                            <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
                         </v-card-actions>
                     </v-card>
                 </v-dialog>

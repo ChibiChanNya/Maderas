@@ -27,12 +27,12 @@
                                                           label="Razón Social"></v-text-field>
                                         </v-flex>
                                         <v-flex xs12 sm6>
-                                            <v-text-field v-model="editedItem.rfc"
+                                            <v-text-field v-model.lazy="editedItem.rfc"
                                                           :rules="rfcRules"
                                                           label="RFC"></v-text-field>
                                         </v-flex>
                                         <v-flex xs12 sm6>
-                                            <v-text-field v-model="editedItem.clabe"
+                                            <v-text-field v-model.lazy="editedItem.clabe"
                                                           :rules="clabeRules"
                                                           label="CLABE"></v-text-field>
                                         </v-flex>
@@ -45,7 +45,7 @@
                                                           label="Descripción"></v-text-field>
                                         </v-flex>
                                         <v-flex xs12 sm6>
-                                            <v-text-field v-model="editedItem.money_debt"
+                                            <v-text-field v-model.number="editedItem.money_debt"
                                                           :rules="moneyRules"
                                                           label="Saldo"></v-text-field>
                                         </v-flex>
@@ -59,7 +59,7 @@
                         <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
-                            <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
+                            <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
                         </v-card-actions>
                     </v-card>
                 </v-dialog>
@@ -254,9 +254,9 @@
       close() {
         this.dialog = false;
         setTimeout(() => {
+          this.$refs.form.reset();
           this.editedItem = Object.assign({}, this.defaultItem);
           this.editedIndex = -1;
-          this.$refs.form.reset();
         }, 300);
       },
 

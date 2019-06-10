@@ -14,8 +14,7 @@ class ProviderController extends Controller
         $v = Validator::make($request->all(), [
             'name' => 'required|min:3',
             'business_name' => 'required|min:3',
-            'description'  => 'required|min:3',
-            'money_debt'  => 'required',
+            'description'  => 'required',
             'rfc' => 'required|min:3',
             'clabe' => 'required|min:3',
             'bank' => 'required|min:3',
@@ -32,8 +31,7 @@ class ProviderController extends Controller
         $provider->business_name = $request->business_name;
         // dd(bcrypt($request->password));
         $provider->description = $request->description;
-        $provider->logo = $request->logo;
-        $provider->money_debt = $request->money_debt;
+        $provider->money_debt = $request->money_debt ?? 0.0;
         $provider->rfc = $request->rfc;
         $provider->clabe = $request->clabe;
         $provider->bank = $request->bank;

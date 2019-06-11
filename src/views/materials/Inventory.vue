@@ -50,11 +50,11 @@
                                                           :rules="stockRules"
                                                           label="Stock Disponible"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs6 sm4>
-                                            <v-text-field v-model.number="editedItem.pending_stock"
-                                                          :rules="stockRules"
-                                                          label="Stock Pendiente"></v-text-field>
-                                        </v-flex>
+                                        <!--                                        <v-flex xs6 sm4>-->
+                                        <!--                                            <v-text-field v-model.number="editedItem.pending_stock"-->
+                                        <!--                                                          :rules="stockRules"-->
+                                        <!--                                                          label="Stock Pendiente"></v-text-field>-->
+                                        <!--                                        </v-flex>-->
                                     </v-layout>
                                 </v-container>
                             </v-form>
@@ -93,7 +93,9 @@
                         <td class="">{{ provider_name(props.item.provider_id) }}</td>
                         <td class="">{{ props.item.recent_price }}</td>
                         <td class="">{{ props.item.available_stock }}</td>
-                        <td class="">{{ props.item.pending_stock }}</td>
+                        <td class="">
+                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">{{ calc_pending_stock(props.item) }}</v-btn>
+                        </td>
                         <td class="justify-start layout px-0">
                             <v-icon
                                     small
@@ -112,6 +114,30 @@
                             </v-icon>
                         </td>
                     </tr>
+                </template>
+
+                <template v-slot:expand="props">
+                    <div class="grey lighten-3 pl-5">
+                        <template v-if="item_orders(props.item).length >0">
+                            <tr>
+                                <th>Unidades</th>
+                                <th>Fecha Solicitud</th>
+                            </tr>
+                            <tr v-for="order in item_orders(props.item)" :key="order.id">
+                                <td class="text-xs-center">
+                                    {{order.units}}
+                                </td>
+                                <td class="text-xs-center">
+                                    {{order.request_date | moment('DD/M/YYYY')}}
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <h3 class="py-3">No hay pedidos pendientes para este insumo.</h3>
+                        </template>
+
+                    </div>
+
                 </template>
 
                 <template v-slot:no-data>
@@ -141,7 +167,8 @@
     create_material,
     remove_material,
     update_material,
-    index_suppliers
+    index_suppliers,
+    index_orders,
   } from '../../api/materials_controller';
 
   export default {
@@ -170,6 +197,7 @@
 
         items: [],
         providers: [],
+        orders: [],
 
         valid_form: true,
 
@@ -221,11 +249,13 @@
 
 
     mounted() {
-      this.axios.all([index_materials(), index_suppliers()])
-          .then(this.axios.spread(function (materials, providers) {
+      this.axios.all([index_materials(), index_suppliers(), index_orders()])
+          .then(this.axios.spread(function (materials, providers, orders) {
                 // Both requests are now complete
                 this.items = materials.data;
                 this.providers = providers.data;
+                this.orders = orders.data;
+
               }.bind(this)
           ))
           .catch(error => {
@@ -238,9 +268,21 @@
 
     methods: {
 
-      provider_name(id){
-        return this.providers.find( (prov) => prov.id === id).name;
+      item_orders(item) {
+        return this.orders.filter((order) => order.material_id === item.id && order.status === "pending");
       },
+
+      calc_pending_stock(item) {
+        return this.item_orders(item).reduce(function (a, b) {
+          return a + b.units;
+        },0);
+      },
+
+      provider_name(id) {
+        return this.providers.find((prov) => prov.id === id).name;
+      },
+
+
 
       editItem(item) {
         this.editedIndex = this.items.indexOf(item);

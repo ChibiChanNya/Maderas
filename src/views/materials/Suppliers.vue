@@ -44,11 +44,11 @@
                                             <v-text-field v-model="editedItem.description"
                                                           label="Descripción"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs12 sm6>
-                                            <v-text-field v-model.number="editedItem.money_debt"
-                                                          :rules="moneyRules"
-                                                          label="Saldo"></v-text-field>
-                                        </v-flex>
+<!--                                        <v-flex xs12 sm6>-->
+<!--                                            <v-text-field v-model.number="editedItem.money_debt"-->
+<!--                                                          :rules="moneyRules"-->
+<!--                                                          label="Saldo"></v-text-field>-->
+<!--                                        </v-flex>-->
 
                                     </v-layout>
                                 </v-container>
@@ -89,7 +89,12 @@
                         <td class="">{{ props.item.clabe }}</td>
                         <td class="">{{ props.item.bank }}</td>
                         <td class="">{{ props.item.description }}</td>
-                        <td v-bind:class="{ 'green--text': props.item.money_debt >0, 'red--text': props.item.money_debt <0}">${{ Number(props.item.money_debt).toFixed(2) }}</td>
+<!--                        <td v-bind:class="{ 'green&#45;&#45;text': props.item.money_debt >0, 'red&#45;&#45;text': props.item.money_debt <0}">-->
+<!--                            ${{ Number(props.item.money_debt).toFixed(2) }}-->
+<!--                        </td>-->
+                        <td >
+                            <v-btn flat small color="red" @click="props.expanded = !props.expanded">${{ Number(calc_debt(props.item)).toFixed(2) }}</v-btn>
+                        </td>
                         <td class="justify-start layout px-0">
                             <v-icon
                                     small
@@ -108,6 +113,38 @@
                             </v-icon>
                         </td>
                     </tr>
+                </template>
+
+                <template v-slot:expand="props">
+                    <div class="grey lighten-3 pl-5">
+                        <template v-if="unpaid_orders(props.item).length >0">
+                            <tr>
+                                <th>Fecha Solicitud</th>
+                                <th>Fecha Entrega</th>
+                                <th>Status</th>
+                                <th>Precio</th>
+                            </tr>
+                            <tr v-for="order in unpaid_orders(props.item)" :key="order.id">
+                                <td class="text-xs-center">
+                                    {{order.request_date | moment('DD/M/YYYY')}}
+                                </td>
+                                <td class="text-xs-center">
+                                    {{order.delivery_date | moment('DD/M/YYYY')}}
+                                </td>
+                                <td class="text-xs-center">
+                                    {{ status_name(order.status) }}
+                                </td>
+                                <td class="text-xs-center">
+                                    ${{order.total_cost}}
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <h3 class="py-3">No hay pedidos sin pagar para este proveedor</h3>
+                        </template>
+
+                    </div>
+
                 </template>
 
                 <template v-slot:no-data>
@@ -132,7 +169,13 @@
 </template>
 
 <script>
-  import {index_suppliers, create_supplier, update_supplier, remove_supplier} from '../../api/materials_controller';
+  import {
+    index_suppliers,
+    create_supplier,
+    update_supplier,
+    remove_supplier,
+    index_orders
+  } from '../../api/materials_controller';
 
   export default {
     name: "MaterialsInventory",
@@ -155,13 +198,20 @@
           {text: 'CLABE', value: 'clabe'},
           {text: 'Banco', value: 'bank'},
           {text: 'Descripción', value: 'description'},
-          {text: 'Saldo', value: 'money_debt'},
+          {text: 'Por Pagar', value: 'money_debt'},
           {text: 'Acciones', value: 'id'},
         ],
 
         items: [],
+        orders: [],
 
         valid_form: true,
+
+        status_list: [
+          {name: "Pendiente", value: "pending"},
+          {name: "Entregado", value: "delivered"},
+          {name: "Pagado", value: "paid"},
+        ],
 
         nameRules: [
           v => !!v || 'Campo requerido',
@@ -182,7 +232,7 @@
         ],
 
         moneyRules: [
-          v => (!v || (!isNaN(v) )) || 'Debe ser una cantidad'
+          v => (!v || (!isNaN(v))) || 'Debe ser una cantidad'
         ],
 
 
@@ -201,10 +251,10 @@
           name: '',
           business_name: '',
           rfc: '',
-          clabe:'',
+          clabe: '',
           bank: '',
           description: '',
-          logo:'/fd/',
+          logo: '/fd/',
           money_debt: 0,
         },
 
@@ -219,10 +269,13 @@
     },
 
     mounted() {
-      index_suppliers()
-          .then(({data}) => {
-            this.items = data;
-          })
+      this.axios.all([index_suppliers(), index_orders()])
+          .then(this.axios.spread(function (providers, orders) {
+                // Both requests are now complete
+                this.items = providers.data;
+                this.orders = orders.data;
+              }.bind(this)
+          ))
           .catch(error => {
             this.$store.commit('setSnack', {text: error, color: 'red'});
           })
@@ -232,6 +285,20 @@
     },
 
     methods: {
+
+      unpaid_orders(item) {
+        return this.orders.filter((order) => order.material_id === item.id && order.status !== "paid");
+      },
+
+      calc_debt(item) {
+        return this.unpaid_orders(item).reduce(function (a, b) {
+          return parseInt(a) + parseInt(b.total_cost);
+        }, 0);
+      },
+
+      status_name(val) {
+        return this.status_list.find((stat) => stat.value === val).name;
+      },
 
       editItem(item) {
         this.editedIndex = this.items.indexOf(item);

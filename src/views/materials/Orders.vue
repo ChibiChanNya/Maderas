@@ -63,7 +63,6 @@
                                                     item-text="name"
                                                     item-value="value"
                                                     persistent-hint
-                                                    single-line
                                                     :rules="required"
                                             ></v-select>
                                         </v-flex>

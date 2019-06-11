@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 import axios from 'axios';
+import store from '../store'
+
 
 const apiCall = ({url, method, ...args}) => new Promise((resolve, reject) => {
   try {
@@ -13,10 +15,14 @@ const apiCall = ({url, method, ...args}) => new Promise((resolve, reject) => {
       console.log(response);
       if(response.status === 500)
         reject("Error de Servidor, contacta a los desarrolladores");
-      else if(response.error === 401){
+      else if(response.status === 401){
         reject("No cuentas con los permisos necesarios para realizar esta acción");
       }
-      else if(response.error === 504){
+      else if(response.status === 400){
+        reject("Tu sesión ha expirado");
+        store.dispatch("AUTH_LOGOUT");
+      }
+      else if(response.status === 504){
         reject("Sin respuesta del servidor. Intenta de nuevo más tarde");
       }
       else

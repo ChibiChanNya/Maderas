@@ -1,12 +1,12 @@
 <template>
-    <section id="materials_inventory">
+    <section id="suppliers">
 
-        <h1 class="text-md-center my-4">Inventario de Insumos</h1>
+        <h1 class="text-md-center my-4">Lista de Clientes</h1>
         <v-card>
             <v-card-title>
                 <v-dialog v-model="dialog" max-width="500px" persistent>
                     <template v-slot:activator="{ on }">
-                        <v-btn color="primary" dark class="mb-2" v-on="on">Crear Insumo</v-btn>
+                        <v-btn color="primary" dark class="mb-2" v-on="on">Agregar Cliente</v-btn>
                     </template>
                     <v-card>
                         <v-card-title>
@@ -23,38 +23,19 @@
                                                           label="Nombre"></v-text-field>
                                         </v-flex>
                                         <v-flex xs12 sm6>
-                                            <v-select
-                                                    v-model="editedItem.provider_id"
-                                                    hint="Proveedor"
-                                                    :items="providers"
-                                                    item-text="name"
-                                                    item-value="id"
-                                                    label="Elije al proveedor"
-                                                    persistent-hint
-                                                    single-line
-                                            ></v-select>
+                                            <v-text-field v-model="editedItem.business_name"
+                                                          label="Razón Social"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs12 sm6>
+                                            <v-text-field v-model.lazy="editedItem.rfc"
+                                                          :rules="rfcRules"
+                                                          label="RFC"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs12 sm6>
+                                            <v-text-field v-model="editedItem.description"
+                                                          label="Descripción"></v-text-field>
                                         </v-flex>
 
-                                        <v-flex xs6 sm6>
-                                            <v-text-field v-model="editedItem.type"
-                                                          :rules="typeRules"
-                                                          label="Tipo"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs6 sm6>
-                                            <v-text-field v-model.number="editedItem.recent_price"
-                                                          :rules="priceRules"
-                                                          label="Precio (más reciente)"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs6 sm4>
-                                            <v-text-field v-model.number="editedItem.available_stock"
-                                                          :rules="stockRules"
-                                                          label="Stock Disponible"></v-text-field>
-                                        </v-flex>
-                                        <!--                                        <v-flex xs6 sm4>-->
-                                        <!--                                            <v-text-field v-model.number="editedItem.pending_stock"-->
-                                        <!--                                                          :rules="stockRules"-->
-                                        <!--                                                          label="Stock Pendiente"></v-text-field>-->
-                                        <!--                                        </v-flex>-->
                                     </v-layout>
                                 </v-container>
                             </v-form>
@@ -89,13 +70,15 @@
                 <template v-slot:items="props">
                     <tr>
                         <td class="">{{ props.item.name }}</td>
-                        <td class="">{{ props.item.type }}</td>
-                        <td class="">{{ provider_name(props.item.provider_id) }}</td>
-                        <td class="">${{ Number(props.item.recent_price).toFixed(2) }}</td>
-                        <td class="">{{ props.item.available_stock }}</td>
-                        <td class="">
-                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">{{ calc_pending_stock(props.item) }}</v-btn>
-                        </td>
+                        <td class="">{{ props.item.business_name }}</td>
+                        <td class="">{{ props.item.rfc }}</td>
+                        <td class="">{{ props.item.description }}</td>
+
+                        <!--                        <td>-->
+                        <!--                            <v-btn flat small color="red" @click="props.expanded = !props.expanded">${{-->
+                        <!--                                Number(calc_debt(props.item)).toFixed(2) }}-->
+                        <!--                            </v-btn>-->
+                        <!--                        </td>-->
                         <td class="justify-start layout px-0">
                             <v-icon
                                     small
@@ -114,30 +97,6 @@
                             </v-icon>
                         </td>
                     </tr>
-                </template>
-
-                <template v-slot:expand="props">
-                    <div class="grey lighten-3 pl-5">
-                        <template v-if="item_orders(props.item).length >0">
-                            <tr>
-                                <th>Unidades</th>
-                                <th>Fecha Solicitud</th>
-                            </tr>
-                            <tr v-for="order in item_orders(props.item)" :key="order.id">
-                                <td class="text-xs-center">
-                                    {{order.units}}
-                                </td>
-                                <td class="text-xs-center">
-                                    {{order.request_date | moment('DD/M/YYYY')}}
-                                </td>
-                            </tr>
-                        </template>
-                        <template v-else>
-                            <h3 class="py-3">No hay pedidos pendientes para este insumo.</h3>
-                        </template>
-
-                    </div>
-
                 </template>
 
                 <template v-slot:no-data>
@@ -163,16 +122,15 @@
 
 <script>
   import {
-    index_materials,
-    create_material,
-    remove_material,
-    update_material,
-    index_suppliers,
-    index_orders,
-  } from '../../api/materials_controller';
+    index_clients,
+    create_client,
+    update_client,
+    remove_client,
+    index_orders
+  } from '../../api/production_controller';
 
   export default {
-    name: "MaterialsInventory",
+    name: "ProductsClientes",
 
     data() {
       return {
@@ -181,60 +139,54 @@
         dialog: false,
         search: '',
         headers: [
-          {text: 'Nombre', value: 'name'},
+          {text: 'Nombre', value: 'name', align: 'center'},
 
           {
-            text: 'Tipo',
-            align: 'left',
-            value: 'type'
+            text: 'Razón Social',
+            align: 'center',
+            value: 'business_name'
           },
-          {text: 'Proveedor', value: 'provider'},
-          {text: 'Precio más reciente', value: 'price'},
-          {text: 'Stock Disponible', value: 'stock'},
-          {text: 'Stock Pendiente', value: 'pending_stock'},
-          {text: 'Acciones', value: 'id', sortable: false},
+          {text: 'RFC', value: 'rfc'},
+          {text: 'Descripción', value: 'description'},
+          {text: 'Acciones', value: 'id'},
         ],
 
         items: [],
-        providers: [],
         orders: [],
 
         valid_form: true,
 
+        status_list: [
+          {name: "Pendiente", value: "pending"},
+          {name: "Entregado", value: "delivered"},
+          {name: "Pagado", value: "paid"},
+        ],
+
         nameRules: [
-          v => !!v || 'Nombre requerido',
-          v => (v && v.length <= 30) || 'Máximo 30 caracteres'
-        ],
-        typeRules: [
-          v => !!v || 'Tipo requerido',
-        ],
-        priceRules: [
           v => !!v || 'Campo requerido',
-          v => (!isNaN(v) && v > 0) || "Debe ser un número positivo",
+          v => (v && v.length <= 70) || 'Máximo 70 caracteres'
         ],
-        stockRules: [
-          v => (!v || (!isNaN(v) && v >= 0)) || "Debe ser un número positivo",
+
+        descRules: [
+          v => !!v || 'Campo requerido',
+          v => (v && v.length >= 3) || 'Mínimo 3 caracteres'
+        ],
+
+        moneyRules: [
+          v => (!v || (!isNaN(v))) || 'Debe ser una cantidad'
         ],
 
 
         editedIndex: -1,
         editedItem: {
-          id: '',
           name: '',
-          type: '',
-          provider_id: '',
-          recent_price: '',
-          available_stock: 0,
-          pending_stock: 0,
+          business_name: '',
+          description: '',
         },
         defaultItem: {
-          id: '',
           name: '',
-          type: '',
-          provider_id: '',
-          recent_price: '',
-          available_stock: 0,
-          pending_stock: 0,
+          business_name: '',
+          description: '',
         },
 
       }
@@ -242,20 +194,17 @@
 
     computed: {
       formTitle() {
-        return this.editedIndex === -1 ? 'Nuevo Insumo' : 'Editar Insumo'
+        return this.editedIndex === -1 ? 'Nuevo Cliente' : 'Editar Cliente'
       },
 
     },
 
-
     mounted() {
-      this.axios.all([index_materials(), index_suppliers(), index_orders()])
-          .then(this.axios.spread(function (materials, providers, orders) {
+      this.axios.all([index_clients(), index_orders()])
+          .then(this.axios.spread(function (providers, orders) {
                 // Both requests are now complete
-                this.items = materials.data;
-                this.providers = providers.data;
+                this.items = providers.data;
                 this.orders = orders.data;
-
               }.bind(this)
           ))
           .catch(error => {
@@ -268,21 +217,19 @@
 
     methods: {
 
-      item_orders(item) {
-        return this.orders.filter((order) => order.material_id === item.id && order.status === "pending");
+      unpaid_orders(item) {
+        return this.orders.filter((order) => order.material_id === item.id && order.status !== "paid");
       },
 
-      calc_pending_stock(item) {
-        return this.item_orders(item).reduce(function (a, b) {
-          return a + b.units;
-        },0);
+      calc_debt(item) {
+        return this.unpaid_orders(item).reduce(function (a, b) {
+          return parseInt(a) + parseInt(b.total_cost);
+        }, 0);
       },
 
-      provider_name(id) {
-        return this.providers.find((prov) => prov.id === id).name;
+      status_name(val) {
+        return this.status_list.find((stat) => stat.value === val).name;
       },
-
-
 
       editItem(item) {
         this.editedIndex = this.items.indexOf(item);
@@ -293,9 +240,9 @@
 
       deleteItem(item) {
         const index = this.items.indexOf(item);
-        confirm('¿Estás seguro de que quieres borrar este insumo?') && remove_material({id: item.id}).then(() => {
+        confirm('¿Estás seguro de que quieres borrar a este cliente? Se eliminara su historial de pedidos e insumos.') && remove_client({id: item.id}).then(() => {
           this.items.splice(index, 1);
-          this.$store.commit('setSnack', {text: "Insumo borrado exitosamente", color: 'success'});
+          this.$store.commit('setSnack', {text: "Cliente borrado exitosamente", color: 'success'});
 
         }).catch(err => {
           this.$store.commit('setSnack', {text: err, color: 'red'});
@@ -305,9 +252,9 @@
       close() {
         this.dialog = false;
         setTimeout(() => {
+          this.$refs.form.reset();
           this.editedItem = Object.assign({}, this.defaultItem);
           this.editedIndex = -1;
-          this.$refs.form.reset();
         }, 300);
       },
 
@@ -316,9 +263,9 @@
           this.loading = true;
           // Editing an User
           if (this.editedIndex > -1) {
-            update_material(this.editedItem).then(() => {
+            update_client(this.editedItem).then(() => {
               Object.assign(this.items[this.editedIndex], this.editedItem);
-              this.$store.commit('setSnack', {text: "Insumo actualizado exitosamente", color: 'success'});
+              this.$store.commit('setSnack', {text: "Cliente actualizado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {
               this.$store.commit('setSnack', {text: err, color: 'red'});
@@ -327,9 +274,9 @@
             });
             //  Creating a new User
           } else {
-            create_material(this.editedItem).then(() => {
+            create_client(this.editedItem).then(() => {
               this.items.push(Object.assign({}, this.editedItem));
-              this.$store.commit('setSnack', {text: "Insumo creado exitosamente", color: 'success'});
+              this.$store.commit('setSnack', {text: "Cliente creado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {
               this.$store.commit('setSnack', {text: err, color: 'red'});

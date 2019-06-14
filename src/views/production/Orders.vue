@@ -1,7 +1,7 @@
 <template>
     <section id="suppliers">
 
-        <h1 class="text-md-center my-4">Pedidos a Proveedores</h1>
+        <h1 class="text-md-center my-4">Pedidos por Clientes</h1>
         <v-card>
             <v-card-title>
                 <v-dialog v-model="dialog" max-width="500px" persistent>
@@ -19,12 +19,12 @@
                                     <v-layout wrap justify-center>
                                         <v-flex xs12 sm6>
                                             <v-select
-                                                    v-model="editedItem.provider_id"
-                                                    hint="Proveedor"
-                                                    :items="providers"
+                                                    v-model="editedItem.client_id"
+                                                    hint="Cliente"
+                                                    :items="clients"
                                                     item-text="name"
                                                     item-value="id"
-                                                    label="Elije al proveedor"
+                                                    label="Elije al cliente"
                                                     persistent-hint
                                                     single-line
                                                     :rules="required"
@@ -32,19 +32,23 @@
                                         </v-flex>
                                         <v-flex xs12 sm6>
                                             <v-select
-                                                    v-model="editedItem.material_id"
-                                                    hint="Insumo"
-                                                    :items="material_choices"
+                                                    v-model="editedItem.product_id"
+                                                    hint="Producto"
+                                                    :items="products"
                                                     item-text="name"
                                                     item-value="id"
-                                                    label="Elije un insumo"
+                                                    label="Elije un Producto"
                                                     persistent-hint
                                                     single-line
                                                     :rules="required"
                                             ></v-select>
                                         </v-flex>
                                         <v-flex xs4 sm4>
-                                            <v-text-field v-model="editedItem.units"
+                                            <v-text-field v-model="editedItem.contract"
+                                                          label="No. Contrato"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs4 sm4>
+                                            <v-text-field v-model.number="editedItem.units"
                                                           :rules="numberRules"
                                                           type="number"
                                                           label="Cantidad"></v-text-field>
@@ -102,7 +106,7 @@
                                         <v-flex xs12 sm6>
                                             <v-dialog v-if="editedIndex > -1"
                                                       ref="dialog2"
-                                                      :return-value.sync="editedItem.delivery_date"
+                                                      :return-value.sync="editedItem.finish_date"
                                                       persistent
                                                       lazy
                                                       full-width
@@ -110,22 +114,22 @@
                                             >
                                                 <template v-slot:activator="{ on }">
                                                     <v-text-field
-                                                            label="Fecha de entrega"
+                                                            label="Fecha de terminación"
                                                             prepend-icon="event"
                                                             clearable
-                                                            :value="formatted_date(editedItem.delivery_date)"
+                                                            :value="formatted_date(editedItem.finish_date)"
                                                             readonly
                                                             v-on="on"
                                                     ></v-text-field>
                                                 </template>
-                                                <v-date-picker v-model="editedItem.delivery_date" scrollable
+                                                <v-date-picker v-model="editedItem.finish_date" scrollable
                                                                locale="es-mx"
                                                 >
                                                     <v-spacer></v-spacer>
                                                     <v-btn flat color="primary" @click="modal_date_2 = false">Cancelar
                                                     </v-btn>
                                                     <v-btn flat color="primary"
-                                                           @click="$refs.dialog2.save(editedItem.delivery_date)">OK
+                                                           @click="$refs.dialog2.save(editedItem.finish_date)">OK
                                                     </v-btn>
                                                 </v-date-picker>
                                             </v-dialog>
@@ -164,14 +168,15 @@
             >
                 <template v-slot:items="props">
                     <tr>
-                        <td class="">{{ provider_name(props.item.provider_id) }}</td>
-                        <td class="">{{ material_name(props.item.material_id) }}</td>
+                        <td class="">{{ client_name(props.item.client_id) }}</td>
+                        <td class="">{{ product_name(props.item.product_id) }}</td>
+                        <td class="">{{ props.item.contract }}</td>
                         <td class="">{{ props.item.units }}</td>
                         <td class="">$ {{ props.item.total_cost }}</td>
                         <td class="">{{ props.item.request_date | moment('DD/M/YYYY')}}</td>
-                        <td class="">{{ props.item.delivery_date | moment('DD/M/YYYY')}}</td>
+                        <td class="">{{ props.item.finish_date | moment('DD/M/YYYY')}}</td>
                         <td class="">{{ status_name(props.item.status) }}</td>
-                        <td class="">$ {{ props.item.remaining_cost }}</td>
+                        <v-btn flat small color="warning" @click="props.expanded = !props.expanded">${{ Number(calc_remaining(props.item)) }}</v-btn>
                         <td class="justify-start layout px-0">
                             <v-icon
                                     small
@@ -215,16 +220,16 @@
 
 <script>
   import {
-    index_suppliers,
-    index_materials,
+    index_products,
+    index_clients,
     index_orders,
     update_order,
     create_order,
     remove_order
-  } from '../../api/materials_controller';
+  } from '../../api/production_controller';
 
   export default {
-    name: "MaterialOrders",
+    name: "ClientOrders",
 
     data() {
       return {
@@ -238,27 +243,30 @@
           sortBy: 'request_date'
         },
         headers: [
-          {text: 'Proveedor', value: 'provider_id', align: 'centr'},
+          {text: 'Cliente', value: 'client_id', align: 'center'},
 
           {
-            text: 'Insumo',
+            text: 'Producto',
             align: 'center',
-            value: 'material_id'
+            value: 'product_id'
           },
+          {text: 'No. Contrato', value: 'contract', align: 'center'},
+
           {text: 'Unidades', value: 'units', align: 'center'},
           {text: 'Costo Total', value: 'total_cost', align: 'center'},
           {text: 'Fecha Solicitud', value: 'order_dat', align: 'center'},
-          {text: 'Fecha Entrega', value: 'delivery_date', align: 'center'},
+          {text: 'Fecha Terminación', value: 'finish_date', align: 'center'},
           {text: 'Status', value: 'status', align: 'center'},
-          {text: 'Por Pagar', value: 'remaining_cost', align: 'center'},
+          {text: 'Por Entregar', value: 'remaining_cost', align: 'center'},
           {text: 'Acciones', value: 'id', align: 'center'},
         ],
         items: [],
-        providers: [],
-        materials: [],
+        clients: [],
+        products: [],
 
         status_list: [
           {name: "Pendiente", value: "pending"},
+          {name: "Parcial", value: "parcial"},
           {name: "Entregado", value: "delivered"},
           {name: "Pagado", value: "paid"},
         ],
@@ -277,25 +285,25 @@
         editedIndex: -1,
         editedItem: {
           id: '',
-          provider_id: '',
-          material_id: '',
+          client_id: '',
+          product_id: '',
+          contract: '',
           units: 0,
           total_cost: 0,
           request_date: new Date().toISOString().slice(0, 10),
-          delivery_date: new Date().toISOString().slice(0, 10),
+          finish_date: new Date().toISOString().slice(0, 10),
           status: null,
-          remaining_cost: 0,
         },
         defaultItem: {
           id: '',
-          provider_id: '',
-          material_id: '',
+          client_id: '',
+          product_id: '',
+          contract: '',
           units: 0,
           total_cost: 0,
           request_date: new Date().toISOString().slice(0, 10),
-          delivery_date: new Date().toISOString().slice(0, 10),
+          finish_date: new Date().toISOString().slice(0, 10),
           status: null,
-          remaining_cost: 0,
         },
 
       }
@@ -313,11 +321,11 @@
     },
 
     mounted() {
-      this.axios.all([index_orders(), index_materials(), index_suppliers()])
-          .then(this.axios.spread(function (orders, materials, providers) {
+      this.axios.all([index_orders(), index_products(), index_clients()])
+          .then(this.axios.spread(function (orders, products, clients) {
                 // Both requests are now complete
-                this.materials = materials.data;
-                this.providers = providers.data;
+                this.products = products.data;
+                this.clients = clients.data;
                 this.items = orders.data;
               }.bind(this)
           ))
@@ -335,12 +343,12 @@
         return date ? this.$moment(date).format("DD/M/YYYY") : "";
       },
 
-      provider_name(id) {
-        return (this.providers.length > 0 && this.providers.find((prov) => prov.id === id).name) || "Proveedor no encontrado";
+      client_name(id) {
+        return (this.providers.length > 0 && this.providers.find((prov) => prov.id === id).name) || "Cliente no encontrado";
       },
 
-      material_name(id) {
-        return (this.materials.length > 0 && this.materials.find((mat) => mat.id === id).name) || "Insumo no encontrado";
+      product_name(id) {
+        return (this.materials.length > 0 && this.materials.find((mat) => mat.id === id).name) || "Producto no encontrado";
       },
 
       status_name(val) {
@@ -356,7 +364,7 @@
 
       deleteItem(item) {
         const index = this.items.indexOf(item);
-        confirm('¿Estás seguro de que quieres borrar este pedido?') && remove_order({id: item.id}).then(() => {
+        confirm('¿Estás seguro de que quieres borrar este pedido? Se borrarán todas las entregas.') && remove_order({id: item.id}).then(() => {
           this.items.splice(index, 1);
           this.$store.commit('setSnack', {text: "Pedido borrado exitosamente", color: 'success'});
 

@@ -178,7 +178,7 @@
   } from '../../api/materials_controller';
 
   export default {
-    name: "MaterialsInventory",
+    name: "MaterialsSuppliers",
 
     data() {
       return {

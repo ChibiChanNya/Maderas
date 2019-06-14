@@ -118,6 +118,49 @@ export default new Router({
     },
 
     {
+      path: '/production/inventory',
+      name: 'production-inventory',
+      component: () => import('./views/production/Inventory.vue'),
+      beforeEnter: hasPermissions,
+      meta: {
+        layout: 'App',
+        permission: 2,
+      }
+    },
+    {
+      path: '/production/clients',
+      name: 'production-clients',
+      component: () => import('./views/production/Clients.vue'),
+      beforeEnter: hasPermissions,
+      meta: {
+        layout: 'App',
+        permission: 2,
+      }
+    },
+
+    {
+      path: '/production/orders',
+      name: 'production-orders',
+      component: () => import('./views/production/Orders.vue'),
+      beforeEnter: hasPermissions,
+      meta: {
+        layout: 'App',
+        permission: 2,
+      }
+    },
+
+    {
+      path: '/production/shipments',
+      name: 'production-shipments',
+      component: () => import('./views/production/Shipments.vue'),
+      beforeEnter: hasPermissions,
+      meta: {
+        layout: 'App',
+        permission: 2,
+      }
+    },
+
+    {
       path: '*',
       name: 'Error',
       component: () => import('./views/404.vue'),

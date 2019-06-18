@@ -247,7 +247,7 @@
           },
           {text: 'Unidades', value: 'units', align: 'center'},
           {text: 'Costo Total', value: 'total_cost', align: 'center'},
-          {text: 'Fecha Solicitud', value: 'order_dat', align: 'center'},
+          {text: 'Fecha Solicitud', value: 'order_date', align: 'center'},
           {text: 'Fecha Entrega', value: 'delivery_date', align: 'center'},
           {text: 'Status', value: 'status', align: 'center'},
           {text: 'Por Pagar', value: 'remaining_cost', align: 'center'},

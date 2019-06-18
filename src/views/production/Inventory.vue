@@ -18,11 +18,6 @@
                                 <v-container grid-list-md>
                                     <v-layout wrap justify-center>
                                         <v-flex xs12 sm6>
-                                            <v-text-field v-model="editedItem.sku"
-                                                          :rules="required"
-                                                          label="Nombre"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs12 sm6>
                                             <v-text-field v-model="editedItem.name"
                                                           :rules="nameRules"
                                                           label="Nombre"></v-text-field>
@@ -52,17 +47,17 @@
                                                           :rules="numberRules"
                                                           label="Volumen Materiales"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs6 sm4>
+                                        <v-flex xs4>
                                             <v-text-field v-model.number="editedItem.width" type="number"
                                                           :rules="numberRules"
                                                           label="Ancho"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs6 sm4>
+                                        <v-flex xs4 >
                                             <v-text-field v-model.number="editedItem.height" type="number"
                                                           :rules="numberRules"
                                                           label="Alto"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs6 sm4>
+                                        <v-flex xs4 >
                                             <v-text-field v-model.number="editedItem.length" type="number"
                                                           :rules="numberRules"
                                                           label="Largo"></v-text-field>

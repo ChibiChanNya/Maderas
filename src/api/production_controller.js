@@ -98,3 +98,35 @@ export const remove_order = (item) => new Promise((resolve, reject) => {
     reject(err);
   })
 });
+
+export const index_shipments = () => new Promise((resolve, reject) => {
+  apiCall({url: '/orders/shipments/list', method: 'GET'}).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  });
+});
+
+export const update_shipment = (item) => new Promise((resolve, reject) => {
+  apiCall({url: '/orders/shipment/update', method: 'POST', data: item}).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});
+
+export const create_shipment = (item) => new Promise((resolve, reject) => {
+  apiCall({url: '/orders/shipments/create', method: 'POST', data: item}).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});
+
+export const remove_shipment = (item) => new Promise((resolve, reject) => {
+  apiCall({url: '/orders/shipments/delete', method: 'POST', data: item}).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});

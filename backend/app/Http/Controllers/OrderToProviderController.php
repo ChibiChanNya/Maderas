@@ -7,19 +7,20 @@ use Validator;
 use App\OrderToProvider;
 use App\User;
 
+use Carbon\Carbon;
+
 class OrderToProviderController extends Controller
 {
     public function create(Request $request)
     {
         $v = Validator::make($request->all(), [
             'provider_id' => 'required',
-            'material_id' => 'required',
-            'units'  => 'required',
             'request_date' => 'required',
             'delivery_date' => 'required',
             'total_cost' => 'required',
             'status' => 'required',
             'remaining_cost' => 'required',
+            'order_details' => 'required',
         ]);
         if ($v->fails())
         {
@@ -30,9 +31,9 @@ class OrderToProviderController extends Controller
         }
         $order = new OrderToProvider();
         $order->provider_id = $request->provider_id;
-        $order->material_id = $request->material_id;
+        // $order->material_id = $request->material_id;
         // dd(bcrypt($request->password));
-        $order->units = $request->units;
+        // $order->units = $request->units;
         $order->request_date = $request->request_date;
         $order->delivery_date = $request->delivery_date;
         $order->total_cost = $request->total_cost;
@@ -41,15 +42,42 @@ class OrderToProviderController extends Controller
         $order->remaining_cost = $request->remaining_cost;
         $order->save();
 
+        $order_details = $request->order_details;
+        // dd($order_details);
+        foreach($order_details as $key => $value){
+            // dd($value['material_id']);
+            $order->details()->attach($value['material_id'],['units' => $value['units'], 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
+        }
+        // dd($order_details[0]['units']);
+        // $order->details()->attach($order_details, ['units' => $units]);
+        
         $admin_user = auth()->user();
 
         $admin_user->registerLog('creates order '. $order->id . ' to provider');
         return response()->json(['status' => 'success'], 200);
     }
 
-    public function orders_list(){
-        $order = OrderToProvider::all();
-        return $order;
+    public function orders_list(Request $request){
+
+        $per_page = $request->per_page ?? 10;
+        // dd($per_page);
+
+        $orders = OrderToProvider::with(['details' => function ($q){
+            $q->select('name');
+        }])->paginate($per_page);
+
+        $orders->map(function ($i) {
+            $details_arr = [];
+            $pru_details = [];
+            foreach ($i->details as $details) {
+                $pru_details['material_id'] = $details->pivot->material_id;
+                $pru_details['units'] = $details->pivot->units;
+                array_push($details_arr, $pru_details);
+            }
+            unset($i->details);
+            $i->order_details = $details_arr;
+        });
+        return $orders;
     }
 
     /**

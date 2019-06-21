@@ -17,9 +17,6 @@ class CreateOrdersToProviders extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('provider_id')->index();
             $table->foreign('provider_id')->references('id')->on('providers')->onDelete('cascade');
-            $table->unsignedBigInteger('material_id')->index();
-            $table->foreign('material_id')->references('id')->on('supplies')->onDelete('cascade');
-            $table->integer('units');
             $table->timestamp('request_date')->nullable();
             $table->timestamp('delivery_date')->nullable();
             $table->decimal('total_cost', 9, 2);

@@ -31,7 +31,6 @@ class ProviderController extends Controller
         $provider->business_name = $request->business_name;
         // dd(bcrypt($request->password));
         $provider->description = $request->description;
-        $provider->money_debt = $request->money_debt ?? 0.0;
         $provider->rfc = $request->rfc;
         $provider->clabe = $request->clabe;
         $provider->bank = $request->bank;

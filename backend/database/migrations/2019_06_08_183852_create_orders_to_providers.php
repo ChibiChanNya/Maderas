@@ -17,12 +17,11 @@ class CreateOrdersToProviders extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('provider_id')->index();
             $table->foreign('provider_id')->references('id')->on('providers')->onDelete('cascade');
-            $table->unsignedBigInteger('material_id')->index();
-            $table->foreign('material_id')->references('id')->on('supplies')->onDelete('cascade');
-            $table->integer('units');
             $table->timestamp('request_date')->nullable();
             $table->timestamp('delivery_date')->nullable();
-            $table->decimal('total_cost', 9, 2);
+            $table->timestamp('payment_date')->nullable();
+            $table->string('description')->nullable();
+            $table->decimal('total_cost', 9, 2)->nullable();
             $table->string('status');
             $table->unsignedBigInteger('invoice_id')->nullable();
             $table->decimal('remaining_cost', 9, 2);

@@ -16,8 +16,7 @@ class SupplyController extends Controller
             'type' => 'required|min:3',
             'provider_id'  => 'required|numeric',
             'recent_price'  => 'required',
-            'available_stock' => 'required',
-            'pending_stock' => 'required',
+            'available_stock' => 'required'
         ]);
         if ($v->fails())
         {
@@ -33,7 +32,6 @@ class SupplyController extends Controller
         $supply->provider_id = $request->provider_id;
         $supply->recent_price = $request->recent_price;
         $supply->available_stock = $request->available_stock;
-        $supply->pending_stock = $request->pending_stock;
         $supply->save();
 
         $admin_user = auth()->user();

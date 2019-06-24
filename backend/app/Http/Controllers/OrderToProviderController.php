@@ -34,6 +34,8 @@ class OrderToProviderController extends Controller
         // $order->units = $request->units;
         $order->request_date = $request->request_date;
         $order->delivery_date = $request->delivery_date ?? null;
+        $order->payment_date = $request->payment_date ?? null;
+        $order->description = $request->description;
         $order->total_cost = $request->total_cost;
         $order->status = $request->status;
         $order->invoice_id = $request->invoice_id ?? null;

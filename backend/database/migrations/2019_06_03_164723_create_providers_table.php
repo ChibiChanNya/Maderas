@@ -18,7 +18,7 @@ class CreateProvidersTable extends Migration
             $table->string('name');
             $table->string('business_name');
             $table->string('description');
-            $table->decimal('money_debt', 9, 2)->default(0.0);
+            // $table->decimal('money_debt', 9, 2)->default(0.0);
             $table->string('rfc');
             $table->string('clabe');
             $table->string('bank');

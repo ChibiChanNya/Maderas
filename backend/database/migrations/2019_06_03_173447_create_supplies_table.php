@@ -19,9 +19,10 @@ class CreateSuppliesTable extends Migration
             $table->string('type');
             $table->unsignedBigInteger('provider_id')->index();
             $table->foreign('provider_id')->references('id')->on('providers')->onDelete('cascade');
+            $table->string('description')->nullable();
             $table->decimal('recent_price', 9, 2);
             $table->string('available_stock');
-            $table->string('pending_stock');
+            // $table->string('pending_stock');
             $table->timestamps();
         });
     }

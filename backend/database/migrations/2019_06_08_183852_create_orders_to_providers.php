@@ -19,7 +19,9 @@ class CreateOrdersToProviders extends Migration
             $table->foreign('provider_id')->references('id')->on('providers')->onDelete('cascade');
             $table->timestamp('request_date')->nullable();
             $table->timestamp('delivery_date')->nullable();
-            $table->decimal('total_cost', 9, 2);
+            $table->timestamp('payment_date')->nullable();
+            $table->string('description')->nullable();
+            $table->decimal('total_cost', 9, 2)->nullable();
             $table->string('status');
             $table->unsignedBigInteger('invoice_id')->nullable();
             $table->decimal('remaining_cost', 9, 2);

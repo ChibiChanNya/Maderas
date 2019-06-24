@@ -16,8 +16,6 @@ class OrderToProviderController extends Controller
         $v = Validator::make($request->all(), [
             'provider_id' => 'required',
             'request_date' => 'required',
-            'delivery_date' => 'required',
-            'total_cost' => 'required',
             'status' => 'required',
             'remaining_cost' => 'required',
             'order_details' => 'required',
@@ -35,7 +33,7 @@ class OrderToProviderController extends Controller
         // dd(bcrypt($request->password));
         // $order->units = $request->units;
         $order->request_date = $request->request_date;
-        $order->delivery_date = $request->delivery_date;
+        $order->delivery_date = $request->delivery_date ?? null;
         $order->total_cost = $request->total_cost;
         $order->status = $request->status;
         $order->invoice_id = $request->invoice_id ?? null;

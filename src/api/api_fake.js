@@ -12,13 +12,14 @@ const mocks = {
       'about': {'GET' : {error: 401}},
       '/auth/refresh': {'POST': {access_token: 'new_token'} },
       '/auth/logout': {'POST': "ok" },
-      '/material_orders/list' : {'GET': mock_orders},
+      '/orders/providers/list' : {'GET': {total_items:mock_orders.length, items: mock_orders}},
 };
 
-const fApiCall = ({url, method, ...args}) => new Promise((resolve, reject) => {
+const fApiCall = ({url, method, args}) => new Promise((resolve, reject) => {
   setTimeout(() => {
     try {
       console.log(`Mocked '${url}' - ${method || 'GET'}`);
+      if(args) console.log("Args", args);
       let result = mocks[url][method || 'GET'];
 
       if(result.error === 401){

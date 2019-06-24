@@ -4,20 +4,20 @@
         <h1 class="text-md-center my-4">Pedidos a Proveedores</h1>
         <v-card>
             <v-card-title>
-                <v-dialog v-model="dialog" max-width="500px" persistent>
+                <v-dialog v-model="dialog" max-width="500px" persistent scrollable>
                     <template v-slot:activator="{ on }">
-                        <v-btn color="primary" dark class="mb-2" v-on="on">Registrar Pedido</v-btn>
+                        <v-btn color="primary" dark class="mb-0" v-on="on">Registrar Pedido</v-btn>
                     </template>
                     <v-card>
                         <v-card-title>
                             <span class="headline">{{ formTitle }}</span>
                         </v-card-title>
 
-                        <v-card-text>
+                        <v-card-text class="pt-0" style="height: 500px">
                             <v-form ref="form" v-model="valid_form" lazy-validation>
                                 <v-container grid-list-md>
                                     <v-layout wrap justify-center>
-                                        <v-flex xs12 sm6>
+                                        <v-flex xs12 sm8>
                                             <v-select
                                                     v-model="editedItem.provider_id"
                                                     hint="Proveedor"
@@ -30,32 +30,9 @@
                                                     :rules="required"
                                             ></v-select>
                                         </v-flex>
-                                        <v-flex xs12 sm6>
-                                            <v-select
-                                                    v-model="editedItem.material_id"
-                                                    hint="Insumo"
-                                                    :items="material_choices"
-                                                    item-text="name"
-                                                    item-value="id"
-                                                    label="Elije un insumo"
-                                                    persistent-hint
-                                                    single-line
-                                                    :rules="required"
-                                            ></v-select>
-                                        </v-flex>
-                                        <v-flex xs4 sm4>
-                                            <v-text-field v-model="editedItem.units"
-                                                          :rules="numberRules"
-                                                          type="number"
-                                                          label="Cantidad"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs4 sm4>
-                                            <v-text-field v-model.number="editedItem.total_cost"
-                                                          :rules="numberRules"
-                                                          type="number"
-                                                          label="Precio Total"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs4 sm4>
+
+
+                                        <v-flex xs6 md4>
                                             <v-select
                                                     v-model="editedItem.status"
                                                     :items="status_list"
@@ -66,6 +43,14 @@
                                                     :rules="required"
                                             ></v-select>
                                         </v-flex>
+
+                                        <v-flex xs12 class="mt-3">
+                                            <v-textarea outline auto-grow rows="2"
+                                                        v-model="editedItem.description"
+                                                        :rules="required"
+                                                        label="Descripción del pedido"></v-textarea>
+                                        </v-flex>
+
                                         <v-flex xs12 sm6>
                                             <v-dialog
                                                     ref="dialog1"
@@ -99,14 +84,16 @@
                                                 </v-date-picker>
                                             </v-dialog>
                                         </v-flex>
-                                        <v-flex xs12 sm6>
-                                            <v-dialog v-if="editedIndex > -1"
-                                                      ref="dialog2"
-                                                      :return-value.sync="editedItem.delivery_date"
-                                                      persistent
-                                                      lazy
-                                                      full-width
-                                                      width="290px"
+
+                                        <v-flex xs12 sm6 v-if="editedIndex > -1">
+                                            <v-dialog
+                                                    ref="dialog2"
+                                                    :return-value.sync="editedItem.delivery_date"
+                                                    persistent
+                                                    v-model="modal_date_2"
+                                                    lazy
+                                                    full-width
+                                                    width="290px"
                                             >
                                                 <template v-slot:activator="{ on }">
                                                     <v-text-field
@@ -130,11 +117,112 @@
                                                 </v-date-picker>
                                             </v-dialog>
                                         </v-flex>
+
+                                        <v-flex xs12 sm6 v-if="editedIndex > -1">
+                                            <v-dialog
+                                                    ref="dialog3"
+                                                    :return-value.sync="editedItem.payment_date"
+                                                    persistent
+                                                    lazy
+                                                    full-width
+                                                    v-model="modal_date_3"
+                                                    width="290px"
+                                            >
+                                                <template v-slot:activator="{ on }">
+                                                    <v-text-field
+                                                            label="Fecha de pago"
+                                                            prepend-icon="event"
+                                                            clearable
+                                                            :value="formatted_date(editedItem.payment_date)"
+                                                            readonly
+                                                            v-on="on"
+                                                    ></v-text-field>
+                                                </template>
+                                                <v-date-picker v-model="editedItem.payment_date" scrollable
+                                                               locale="es-mx"
+                                                >
+                                                    <v-spacer></v-spacer>
+                                                    <v-btn flat color="primary" @click="modal_date_3 = false">Cancelar
+                                                    </v-btn>
+                                                    <v-btn flat color="primary"
+                                                           @click="$refs.dialog3.save(editedItem.payment_date)">OK
+                                                    </v-btn>
+                                                </v-date-picker>
+                                            </v-dialog>
+                                        </v-flex>
+
+                                        <v-flex xs6 md6>
+                                            <v-text-field v-model.number="editedItem.total_cost"
+                                                          :rules="numberRules"
+                                                          type="number"
+                                                          label="Precio Total"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs6 md6 v-if="editedIndex > -1">
+                                            <v-text-field v-model.number="editedItem.money_debt"
+                                                          :rules="numberRules"
+                                                          type="number"
+
+                                                          label="Restante por Pagar"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs6 md6 v-if="editedIndex > -1">
+                                            <v-text-field v-model="editedItem.invoice"
+                                                          label="# Factura"></v-text-field>
+                                        </v-flex>
+
+                                        <v-flex xs12 v-if="editedIndex > -1">
+                                            <h3>Insumos recibidos</h3>
+                                        </v-flex>
+                                        <template v-if="editedIndex > -1">
+                                            <template
+                                                    v-for="mat in editedItem.order_details">
+
+                                                <v-flex xs9 :key="mat.material_id">
+                                                    <v-select
+                                                            v-model="mat.material_id"
+                                                            hint="Insumo"
+                                                            item-value="id"
+                                                            label="Elije un insumo"
+                                                            :items="material_choices"
+                                                            persistent-hint
+                                                            single-line
+                                                            :rules="required">
+
+                                                        <template v-slot:item="props">
+                                                            {{ props.item.name }} - {{ props.item.type }}
+                                                        </template>
+                                                        <template v-slot:selection="props">
+                                                            {{ props.item.name }} - {{ props.item.type }}
+                                                        </template>
+                                                    </v-select>
+                                                </v-flex>
+                                                <v-flex xs2 :key="mat.material_id">
+                                                    <v-text-field v-model="mat.units"
+                                                                  :rules="numberRules"
+                                                                  type="number"
+                                                                  label="Cantidad"></v-text-field>
+                                                </v-flex>
+                                                <v-flex xs1 :key="mat.material_id">
+                                                    <v-btn flat icon style="align-self:center"
+                                                           @click="removeMaterial(mat)">
+                                                        <v-icon class="red--text">close</v-icon>
+                                                    </v-btn>
+                                                </v-flex>
+                                            </template>
+                                            <template v-if="editedItem.order_details.length === 0">
+                                                <h3>No se han registrado insumos para este pedido</h3>
+                                            </template>
+                                            <v-flex>
+                                                <v-btn flat color="info" @click="addMaterial">Agregar nuevo insumo
+                                                </v-btn>
+                                            </v-flex>
+                                        </template>
+
                                     </v-layout>
                                 </v-container>
                             </v-form>
 
                         </v-card-text>
+
 
                         <v-card-actions>
                             <v-spacer></v-spacer>
@@ -160,18 +248,23 @@
                     :loading="loading"
                     :search="search"
                     :pagination.sync="pagination"
-                    hide-actions
+                    :total-items="total_items"
             >
                 <template v-slot:items="props">
                     <tr>
                         <td class="">{{ provider_name(props.item.provider_id) }}</td>
-                        <td class="">{{ material_name(props.item.material_id) }}</td>
-                        <td class="">{{ props.item.units }}</td>
-                        <td class="">$ {{ props.item.total_cost }}</td>
-                        <td class="">{{ props.item.request_date | moment('DD/M/YYYY')}}</td>
-                        <td class="">{{ props.item.delivery_date | moment('DD/M/YYYY')}}</td>
-                        <td class="">{{ status_name(props.item.status) }}</td>
-                        <td class="">$ {{ props.item.remaining_cost }}</td>
+                        <td class="">{{ (props.item.request_date || '--' ) | moment('DD/M/YYYY') }}</td>
+                        <td class="">$ {{ props.item.total_cost || 'Indefinido'}}</td>
+                        <td class="">{{ (props.item.delivery_date || '--' ) | moment('DD/M/YYYY') }}</td>
+                        <td class="">{{ status_name(props.item.status) || '--'}}</td>
+                        <td class="">
+                            <v-btn flat small :color="props.item.status === 'paid'? 'blue' : 'red'"
+                                   @click="props.expanded = !props.expanded">
+                                {{ isNumber(props.item.money_debt)? "$ "+ props.item.money_debt : "----"}}
+                            </v-btn>
+                        </td>
+                        <td class="">{{ props.item.invoice || '--'}}</td>
+                        <td class="">{{ (props.item.payment_date || '--' ) | moment('DD/M/YYYY') }}</td>
                         <td class="justify-start layout px-0">
                             <v-icon
                                     small
@@ -190,6 +283,35 @@
                             </v-icon>
                         </td>
                     </tr>
+                </template>
+
+                <template v-slot:expand="props">
+                    <div class="grey lighten-3 pl-2">
+                        <template v-if="props.item.order_details.length >0">
+                            <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
+                            <tr>
+                                <th>Insumo Recibido</th>
+                                <th>Unidades</th>
+
+                            </tr>
+                            <tr v-for="material in props.item.order_details" :key="material.material_id">
+                                <td class="text-xs-left">
+                                    {{ material_name(material.material_id)}}
+                                </td>
+                                <td class="text-xs-left">
+                                    {{ material.units || 0}}
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
+                            <div class="text-md-left pa-2" v-if="props.item.status === 'pending'">
+                                Pedido pendiente de recibir
+                            </div>
+                        </template>
+
+                    </div>
+
                 </template>
 
                 <template v-slot:no-data>
@@ -233,27 +355,24 @@
         dialog: false,
         modal_date_1: false,
         modal_date_2: false,
+        modal_date_3: false,
         search: '',
         pagination: {
           sortBy: 'request_date'
         },
         headers: [
-          {text: 'Proveedor', value: 'provider_id', align: 'centr'},
-
-          {
-            text: 'Insumo',
-            align: 'center',
-            value: 'material_id'
-          },
-          {text: 'Unidades', value: 'units', align: 'center'},
+          {text: 'Proveedor', value: 'provider_id', align: 'center'},
+          {text: 'Fecha Solicitud', value: 'request_date', align: 'center'},
           {text: 'Costo Total', value: 'total_cost', align: 'center'},
-          {text: 'Fecha Solicitud', value: 'order_date', align: 'center'},
           {text: 'Fecha Entrega', value: 'delivery_date', align: 'center'},
           {text: 'Status', value: 'status', align: 'center'},
-          {text: 'Por Pagar', value: 'remaining_cost', align: 'center'},
-          {text: 'Acciones', value: 'id', align: 'center'},
+          {text: 'Por Pagar', value: 'money_debt', align: 'center'},
+          {text: '# Factura', value: 'invoice', align: 'center'},
+          {text: 'Fecha de Pago', value: 'payment_date', align: 'center'},
+          {text: 'Acciones', value: 'id', align: 'center', sortable: false},
         ],
         items: [],
+        total_items: 0,
         providers: [],
         materials: [],
 
@@ -266,8 +385,7 @@
         valid_form: true,
 
         numberRules: [
-          v => !!v || 'Campo requerido',
-          v => (!isNaN(v) && v > 0) || "Debe ser un número positivo",
+          v => (!v || !isNaN(v) && v > 0) || "Debe ser un número positivo",
         ],
 
         required: [
@@ -278,26 +396,55 @@
         editedItem: {
           id: '',
           provider_id: '',
-          material_id: '',
-          units: 0,
-          total_cost: 0,
+          description: '',
+          order_details: [],
+          total_cost: null,
           request_date: new Date().toISOString().slice(0, 10),
           delivery_date: new Date().toISOString().slice(0, 10),
+          payment_date: new Date().toISOString().slice(0, 10),
           status: null,
           remaining_cost: 0,
+          invoice: '',
         },
         defaultItem: {
           id: '',
           provider_id: '',
-          material_id: '',
-          units: 0,
+          description: '',
+          order_details: [],
           total_cost: 0,
           request_date: new Date().toISOString().slice(0, 10),
           delivery_date: new Date().toISOString().slice(0, 10),
+          payment_date: new Date().toISOString().slice(0, 10),
           status: null,
           remaining_cost: 0,
+          invoice: '',
         },
+        editedOrder: [],
 
+      }
+    },
+
+    watch: {
+      pagination: {
+        handler() {
+          this.index_details()
+              .then(data => {
+                this.items = data.items;
+                this.total_items = data.total_items;
+              })
+        },
+        deep: true
+      },
+
+      search: {
+        handler() {
+          this.index_details()
+              .then(data => {
+                this.items = data.items;
+                this.total_items = data.total_items;
+              })
+        },
+        deep: true
       }
     },
 
@@ -306,19 +453,19 @@
         return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
       },
 
-      material_choices(){
-        return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id) ) || [];
+      material_choices() {
+        return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.length > 0 && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id)) || [];
       }
 
     },
 
     mounted() {
-      this.axios.all([index_orders(), index_materials(), index_suppliers()])
-          .then(this.axios.spread(function (orders, materials, providers) {
+      this.axios.all([index_materials(), index_suppliers()])
+          .then(this.axios.spread(function (materials, providers) {
                 // Both requests are now complete
                 this.materials = materials.data;
                 this.providers = providers.data;
-                this.items = orders.data;
+
               }.bind(this)
           ))
           .catch(error => {
@@ -340,18 +487,43 @@
       },
 
       material_name(id) {
-        return (this.materials.length > 0 && this.materials.find((mat) => mat.id === id).name) || "Insumo no encontrado";
+        const item = this.materials.find((mat) => mat.id === id);
+        if (item && item.name)
+          return `${item.name} - ${item.type}`;
+        else return "Insumo no encontrado";
       },
 
       status_name(val) {
         return this.status_list.find((stat) => stat.value === val).name;
       },
 
+      isNumber(val) {
+        return val > 0;
+      },
+
+      addMaterial() {
+        this.editedItem.order_details.push({material_id: null, units: 0});
+      },
+
+      removeMaterial(item) {
+        const index = this.editedItem.order_details.indexOf(item);
+        this.editedItem.order_details.splice(index, 1);
+      },
+
       editItem(item) {
         this.editedIndex = this.items.indexOf(item);
-        this.editedItem = Object.assign({}, item);
+        this.editedItem = JSON.parse(JSON.stringify(item));
         this.$refs.form.resetValidation();
         this.dialog = true;
+      },
+
+      close() {
+        this.dialog = false;
+        setTimeout(() => {
+          this.editedItem = Object.assign({}, this.defaultItem);
+          this.editedIndex = -1;
+          this.$refs.form.reset();
+        }, 300);
       },
 
       deleteItem(item) {
@@ -365,14 +537,6 @@
         });
       },
 
-      close() {
-        this.dialog = false;
-        setTimeout(() => {
-          this.editedItem = Object.assign({}, this.defaultItem);
-          this.editedIndex = -1;
-          this.$refs.form.reset();
-        }, 300);
-      },
 
       save() {
         if (this.$refs.form.validate()) {
@@ -402,9 +566,56 @@
           }
 
         }
-      }
-    },
+      },
 
+      index_details() {
+        this.loading = true;
+        return new Promise((resolve, reject) => {
+          const {sortBy, descending, page, rowsPerPage} = this.pagination;
+
+          let items = this.items;
+
+          if (this.pagination.sortBy) {
+            items = items.sort((a, b) => {
+              const sortA = a[sortBy];
+              const sortB = b[sortBy];
+
+              if (descending) {
+                if (sortA < sortB) return 1;
+                if (sortA > sortB) return -1;
+                return 0
+              } else {
+                if (sortA < sortB) return -1;
+                if (sortA > sortB) return 1;
+                return 0
+              }
+            })
+          }
+
+          if (rowsPerPage > 0) {
+            this.items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+          }
+
+          index_orders({
+            sortBy: sortBy,
+            descending: descending,
+            page: page,
+            per_page: rowsPerPage,
+            search: this.search
+          }).then(res => {
+            resolve({
+              items: res.data.items,
+              total_items: res.data.total_items
+            })
+          }).catch(err => {
+            reject(err);
+          }).finally(() => {
+            this.loading = false;
+          });
+        });
+
+      }
+    }
   }
 </script>
 

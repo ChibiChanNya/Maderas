@@ -93,9 +93,9 @@
                         <td class="">{{ provider_name(props.item.provider_id) }}</td>
                         <td class="">${{ Number(props.item.recent_price).toFixed(2) }}</td>
                         <td class="">{{ props.item.available_stock }}</td>
-                        <td class="">
-                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">{{ calc_pending_stock(props.item) }}</v-btn>
-                        </td>
+                        <!--                        <td class="">-->
+                        <!--                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">{{ calc_pending_stock(props.item) }}</v-btn>-->
+                        <!--                        </td>-->
                         <td class="justify-start layout px-0">
                             <v-icon
                                     small
@@ -116,29 +116,29 @@
                     </tr>
                 </template>
 
-                <template v-slot:expand="props">
-                    <div class="grey lighten-3 pl-5">
-                        <template v-if="item_orders(props.item).length >0">
-                            <tr>
-                                <th>Unidades</th>
-                                <th>Fecha Solicitud</th>
-                            </tr>
-                            <tr v-for="order in item_orders(props.item)" :key="order.id">
-                                <td class="text-xs-center">
-                                    {{order.units}}
-                                </td>
-                                <td class="text-xs-center">
-                                    {{order.request_date | moment('DD/M/YYYY')}}
-                                </td>
-                            </tr>
-                        </template>
-                        <template v-else>
-                            <h3 class="py-3">No hay pedidos pendientes para este insumo.</h3>
-                        </template>
+                <!--                <template v-slot:expand="props">-->
+                <!--                    <div class="grey lighten-3 pl-5">-->
+                <!--                        <template v-if="item_orders(props.item).length >0">-->
+                <!--                            <tr>-->
+                <!--                                <th>Unidades</th>-->
+                <!--                                <th>Fecha Solicitud</th>-->
+                <!--                            </tr>-->
+                <!--                            <tr v-for="order in item_orders(props.item)" :key="order.id">-->
+                <!--                                <td class="text-xs-center">-->
+                <!--                                    {{order.units}}-->
+                <!--                                </td>-->
+                <!--                                <td class="text-xs-center">-->
+                <!--                                    {{order.request_date | moment('DD/M/YYYY')}}-->
+                <!--                                </td>-->
+                <!--                            </tr>-->
+                <!--                        </template>-->
+                <!--                        <template v-else>-->
+                <!--                            <h3 class="py-3">No hay pedidos pendientes para este insumo.</h3>-->
+                <!--                        </template>-->
 
-                    </div>
+                <!--                    </div>-->
 
-                </template>
+                <!--                </template>-->
 
                 <template v-slot:no-data>
                     <h1 v-if="loading" class="text-md-center my-3">
@@ -168,7 +168,6 @@
     remove_material,
     update_material,
     index_suppliers,
-    index_orders,
   } from '../../api/materials_controller';
 
   export default {
@@ -188,12 +187,14 @@
             align: 'left',
             value: 'type'
           },
-          {text: 'Proveedor', value: 'provider'},
-          {text: 'Precio más reciente', value: 'price'},
-          {text: 'Stock Disponible', value: 'stock'},
-          {text: 'Stock Pendiente', value: 'pending_stock'},
+          {text: 'Proveedor', value: 'provider', sortable: 'false'},
+          {text: 'Precio más reciente', value: 'recent_price'},
+          {text: 'Stock Disponible', value: 'available_stock'},
           {text: 'Acciones', value: 'id', sortable: false},
         ],
+
+        total_items: 0,
+        pagination: {},
 
         items: [],
         providers: [],
@@ -249,13 +250,11 @@
 
 
     mounted() {
-      this.axios.all([index_materials(), index_suppliers(), index_orders()])
-          .then(this.axios.spread(function (materials, providers, orders) {
+      this.axios.all([index_materials(), index_suppliers(),])
+          .then(this.axios.spread(function (materials, providers) {
                 // Both requests are now complete
                 this.items = materials.data;
                 this.providers = providers.data;
-                this.orders = orders.data;
-
               }.bind(this)
           ))
           .catch(error => {
@@ -268,20 +267,16 @@
 
     methods: {
 
-      item_orders(item) {
-        return this.orders.filter((order) => order.material_id === item.id && order.status === "pending");
-      },
 
       calc_pending_stock(item) {
         return this.item_orders(item).reduce(function (a, b) {
           return a + b.units;
-        },0);
+        }, 0);
       },
 
       provider_name(id) {
         return this.providers.find((prov) => prov.id === id).name;
       },
-
 
 
       editItem(item) {

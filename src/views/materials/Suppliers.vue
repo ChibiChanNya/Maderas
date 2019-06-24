@@ -83,15 +83,12 @@
             >
                 <template v-slot:items="props">
                     <tr>
-                        <td class="">{{ props.item.name }}</td>
-                        <td class="">{{ props.item.business_name }}</td>
-                        <td class="">{{ props.item.rfc }}</td>
-                        <td class="">{{ props.item.clabe }}</td>
-                        <td class="">{{ props.item.bank }}</td>
-                        <td class="">{{ props.item.description }}</td>
-<!--                        <td v-bind:class="{ 'green&#45;&#45;text': props.item.money_debt >0, 'red&#45;&#45;text': props.item.money_debt <0}">-->
-<!--                            ${{ Number(props.item.money_debt).toFixed(2) }}-->
-<!--                        </td>-->
+                        <td class="">{{ props.item.name || "--"}}</td>
+                        <td class="">{{ props.item.business_name || "--"}}</td>
+                        <td class="">{{ props.item.rfc || "--"}}</td>
+                        <td class="">{{ props.item.clabe || "--"}}</td>
+                        <td class="">{{ props.item.bank || "--"}}</td>
+                        <td class="">{{ props.item.description || "--"}}</td>
                         <td >
                             <v-btn flat small color="red" @click="props.expanded = !props.expanded">${{ Number(calc_debt(props.item)).toFixed(2) }}</v-btn>
                         </td>
@@ -116,26 +113,38 @@
                 </template>
 
                 <template v-slot:expand="props">
-                    <div class="grey lighten-3 pl-5">
+                    <div class="grey lighten-3 pl-2">
                         <template v-if="unpaid_orders(props.item).length >0">
                             <tr>
+                                <th>Desc. Pedido</th>
                                 <th>Fecha Solicitud</th>
                                 <th>Fecha Entrega</th>
                                 <th>Status</th>
-                                <th>Precio</th>
+                                <th>Por Pagar</th>
+                                <th># Factura</th>
+                                <th>Fecha para Pago</th>
                             </tr>
                             <tr v-for="order in unpaid_orders(props.item)" :key="order.id">
-                                <td class="text-xs-center">
-                                    {{order.request_date | moment('DD/M/YYYY')}}
+                                <td class="text-xs-left">
+                                    {{ order.description || ""}}
                                 </td>
                                 <td class="text-xs-center">
-                                    {{order.delivery_date | moment('DD/M/YYYY')}}
+                                    {{order.request_date || "--" | moment('DD/M/YYYY') }}
                                 </td>
                                 <td class="text-xs-center">
-                                    {{ status_name(order.status) }}
+                                    {{order.delivery_date  || "--" | moment('DD/M/YYYY')}}
                                 </td>
                                 <td class="text-xs-center">
-                                    ${{order.total_cost}}
+                                    {{ status_name(order.status) || "--"}}
+                                </td>
+                                <td class="text-xs-center">
+                                    $ {{order.money_debt || 0}}
+                                </td>
+                                <td class="text-xs-center">
+                                    {{order.invoice || "--"}}
+                                </td>
+                                <td class="text-xs-center">
+                                    {{order.payment_date  || "--" | moment('DD/M/YYYY')}}
                                 </td>
                             </tr>
                         </template>
@@ -198,8 +207,8 @@
           {text: 'CLABE', value: 'clabe'},
           {text: 'Banco', value: 'bank'},
           {text: 'Descripción', value: 'description'},
-          {text: 'Por Pagar', value: 'money_debt'},
-          {text: 'Acciones', value: 'id'},
+          {text: 'Por Pagar', value: 'id', sortable: false},
+          {text: 'Acciones', value: 'id', sortable: false},
         ],
 
         items: [],
@@ -246,6 +255,7 @@
           description: '',
           logo: '/fd/',
           money_debt: 0,
+          order_details: [],
         },
         defaultItem: {
           name: '',
@@ -256,6 +266,7 @@
           description: '',
           logo: '/fd/',
           money_debt: 0,
+          order_details: [],
         },
 
       }
@@ -287,12 +298,12 @@
     methods: {
 
       unpaid_orders(item) {
-        return this.orders.filter((order) => order.material_id === item.id && order.status !== "paid");
+        return this.orders.filter((order) => order.provider_id === item.id && order.status !== "paid");
       },
 
       calc_debt(item) {
         return this.unpaid_orders(item).reduce(function (a, b) {
-          return parseInt(a) + parseInt(b.total_cost);
+          return parseInt(a) + (parseInt(b.money_debt) || 0);
         }, 0);
       },
 

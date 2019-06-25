@@ -138,7 +138,7 @@
                                     {{ status_name(order.status) || "--"}}
                                 </td>
                                 <td class="text-xs-center">
-                                    $ {{order.money_debt || 0}}
+                                    $ {{order.remaining_cost || 0}}
                                 </td>
                                 <td class="text-xs-center">
                                     {{order.invoice || "--"}}
@@ -284,7 +284,7 @@
           .then(this.axios.spread(function (providers, orders) {
                 // Both requests are now complete
                 this.items = providers.data;
-                this.orders = orders.data;
+                this.orders = orders.data.data;
               }.bind(this)
           ))
           .catch(error => {
@@ -303,7 +303,7 @@
 
       calc_debt(item) {
         return this.unpaid_orders(item).reduce(function (a, b) {
-          return parseInt(a) + (parseInt(b.money_debt) || 0);
+          return parseInt(a) + (parseInt(b.remaining_cost) || 0);
         }, 0);
       },
 

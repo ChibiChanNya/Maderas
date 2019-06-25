@@ -1,7 +1,7 @@
 <template>
     <section id="suppliers">
 
-        <h1 class="text-md-center my-4">Pedidos a Proveedores</h1>
+        <h1 class="text-md-center my-4">{{total_items}} Pedidos a Proveedores</h1>
         <v-card>
             <v-card-title>
                 <v-dialog v-model="dialog" max-width="500px" persistent scrollable>
@@ -158,7 +158,7 @@
                                                           label="Precio Total"></v-text-field>
                                         </v-flex>
                                         <v-flex xs6 md6 v-if="editedIndex > -1">
-                                            <v-text-field v-model.number="editedItem.money_debt"
+                                            <v-text-field v-model.number="editedItem.remaining_cost"
                                                           :rules="numberRules"
                                                           type="number"
 
@@ -209,7 +209,7 @@
                                                 </v-flex>
                                             </template>
                                             <template v-if="editedItem.order_details.length === 0">
-                                                <h3>No se han registrado insumos para este pedido</h3>
+                                                <h4>No se han registrado insumos para este pedido</h4>
                                             </template>
                                             <v-flex>
                                                 <v-btn flat color="info" @click="addMaterial">Agregar nuevo insumo
@@ -246,7 +246,6 @@
                     :items="items"
                     class="elevation-1"
                     :loading="loading"
-                    :search="search"
                     :pagination.sync="pagination"
                     :total-items="total_items"
             >
@@ -260,7 +259,7 @@
                         <td class="">
                             <v-btn flat small :color="props.item.status === 'paid'? 'blue' : 'red'"
                                    @click="props.expanded = !props.expanded">
-                                {{ isNumber(props.item.money_debt)? "$ "+ props.item.money_debt : "----"}}
+                                {{ isNumber(props.item.remaining_cost)? "$ "+ props.item.remaining_cost : "----"}}
                             </v-btn>
                         </td>
                         <td class="">{{ props.item.invoice || '--'}}</td>
@@ -366,7 +365,7 @@
           {text: 'Costo Total', value: 'total_cost', align: 'center'},
           {text: 'Fecha Entrega', value: 'delivery_date', align: 'center'},
           {text: 'Status', value: 'status', align: 'center'},
-          {text: 'Por Pagar', value: 'money_debt', align: 'center'},
+          {text: 'Por Pagar', value: 'remaining_cost', align: 'center'},
           {text: '# Factura', value: 'invoice', align: 'center'},
           {text: 'Fecha de Pago', value: 'payment_date', align: 'center'},
           {text: 'Acciones', value: 'id', align: 'center', sortable: false},
@@ -397,7 +396,7 @@
           id: '',
           provider_id: '',
           description: '',
-          order_details: [],
+          order_details: [""],
           total_cost: null,
           request_date: new Date().toISOString().slice(0, 10),
           delivery_date: new Date().toISOString().slice(0, 10),
@@ -410,7 +409,7 @@
           id: '',
           provider_id: '',
           description: '',
-          order_details: [],
+          order_details: [""],
           total_cost: 0,
           request_date: new Date().toISOString().slice(0, 10),
           delivery_date: new Date().toISOString().slice(0, 10),
@@ -430,7 +429,7 @@
           this.index_details()
               .then(data => {
                 this.items = data.items;
-                this.total_items = data.total_items;
+                this.total_items = data.total;
               })
         },
         deep: true
@@ -544,7 +543,7 @@
           // Editing an User
           if (this.editedIndex > -1) {
             update_order(this.editedItem).then(() => {
-              Object.assign(this.items[this.editedIndex], this.editedItem);
+              this.items[this.editedIndex] = JSON.parse(JSON.stringify(this.editedItem));
               this.$store.commit('setSnack', {text: "Pedido actualizado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {
@@ -555,7 +554,7 @@
             //  Creating a new User
           } else {
             create_order(this.editedItem).then(() => {
-              this.items.push(Object.assign({}, this.editedItem));
+              this.items.push(JSON.parse(JSON.stringify(this.editedItem)));
               this.$store.commit('setSnack', {text: "Pedido creado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {
@@ -597,15 +596,15 @@
           }
 
           index_orders({
-            sortBy: sortBy,
+            sort: sortBy,
             descending: descending,
             page: page,
             per_page: rowsPerPage,
             search: this.search
           }).then(res => {
             resolve({
-              items: res.data.items,
-              total_items: res.data.total_items
+              items: res.data.data,
+              total: res.data.total
             })
           }).catch(err => {
             reject(err);

@@ -384,7 +384,7 @@
         valid_form: true,
 
         numberRules: [
-          v => (!v || !isNaN(v) && v > 0) || "Debe ser un número positivo",
+          v => (!v || !isNaN(v) && v >= 0) || "Debe ser un número positivo",
         ],
 
         required: [
@@ -596,8 +596,7 @@
           }
 
           index_orders({
-            sort: sortBy,
-            descending: descending,
+            sort: `${sortBy}__${descending? "desc" : "asc"}`,
             page: page,
             per_page: rowsPerPage,
             search: this.search

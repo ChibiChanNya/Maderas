@@ -84,6 +84,7 @@
                     class="elevation-1"
                     :loading="loading"
                     :search="search"
+                    :custom-sort="customSort"
                     hide-actions
             >
                 <template v-slot:items="props">
@@ -187,7 +188,7 @@
             align: 'left',
             value: 'type'
           },
-          {text: 'Proveedor', value: 'provider', sortable: 'false'},
+          {text: 'Proveedor', value: 'provider_id', sortable: 'false'},
           {text: 'Precio más reciente', value: 'recent_price'},
           {text: 'Stock Disponible', value: 'available_stock'},
           {text: 'Acciones', value: 'id', sortable: false},
@@ -334,7 +335,30 @@
           }
 
         }
+      },
+
+      customSort(items, index, isDesc) {
+        console.log(index);
+
+        items.sort((a, b) => {
+          if (index === "provider_id") {
+            return this.compare(this.provider_name(a.provider_id), this.provider_name(b.provider_id), isDesc);
+          } else {
+            return this.compare(a[index], b[index], isDesc);
+          }
+        });
+        return items;
+      },
+
+      compare(a, b, isDesc) {
+        if (!isDesc) {
+          return a < b ? -1 : 1;
+        } else {
+          return b < a ? -1 : 1;
+        }
       }
+
+
     },
 
   }

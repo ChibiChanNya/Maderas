@@ -44,11 +44,11 @@
                                             <v-text-field v-model="editedItem.description"
                                                           label="Descripción"></v-text-field>
                                         </v-flex>
-<!--                                        <v-flex xs12 sm6>-->
-<!--                                            <v-text-field v-model.number="editedItem.money_debt"-->
-<!--                                                          :rules="moneyRules"-->
-<!--                                                          label="Saldo"></v-text-field>-->
-<!--                                        </v-flex>-->
+                                        <!--                                        <v-flex xs12 sm6>-->
+                                        <!--                                            <v-text-field v-model.number="editedItem.money_debt"-->
+                                        <!--                                                          :rules="moneyRules"-->
+                                        <!--                                                          label="Saldo"></v-text-field>-->
+                                        <!--                                        </v-flex>-->
 
                                     </v-layout>
                                 </v-container>
@@ -79,6 +79,7 @@
                     class="elevation-1"
                     :loading="loading"
                     :search="search"
+                    :custom-sort="customSort"
                     hide-actions
             >
                 <template v-slot:items="props">
@@ -89,8 +90,10 @@
                         <td class="">{{ props.item.clabe || "--"}}</td>
                         <td class="">{{ props.item.bank || "--"}}</td>
                         <td class="">{{ props.item.description || "--"}}</td>
-                        <td >
-                            <v-btn flat small color="red" @click="props.expanded = !props.expanded">${{ Number(calc_debt(props.item)).toFixed(2) }}</v-btn>
+                        <td>
+                            <v-btn flat small color="red" @click="props.expanded = !props.expanded">${{
+                                Number(calc_debt(props.item)).toFixed(2) }}
+                            </v-btn>
                         </td>
                         <td class="justify-start layout px-0">
                             <v-icon
@@ -132,7 +135,7 @@
                                     {{order.request_date || "--" | moment('DD/M/YYYY') }}
                                 </td>
                                 <td class="text-xs-center">
-                                    {{order.delivery_date  || "--" | moment('DD/M/YYYY')}}
+                                    {{order.delivery_date || "--" | moment('DD/M/YYYY')}}
                                 </td>
                                 <td class="text-xs-center">
                                     {{ status_name(order.status) || "--"}}
@@ -144,7 +147,7 @@
                                     {{order.invoice || "--"}}
                                 </td>
                                 <td class="text-xs-center">
-                                    {{order.payment_date  || "--" | moment('DD/M/YYYY')}}
+                                    {{order.payment_date || "--" | moment('DD/M/YYYY')}}
                                 </td>
                             </tr>
                         </template>
@@ -207,7 +210,7 @@
           {text: 'CLABE', value: 'clabe'},
           {text: 'Banco', value: 'bank'},
           {text: 'Descripción', value: 'description'},
-          {text: 'Por Pagar', value: 'id', sortable: false},
+          {text: 'Por Pagar', value: 'debt'},
           {text: 'Acciones', value: 'id', sortable: false},
         ],
 
@@ -365,6 +368,28 @@
             });
           }
 
+        }
+      },
+
+
+      customSort(items, index, isDesc) {
+        console.log(index);
+
+        items.sort((a, b) => {
+          if (index === "debt") {
+            return this.compare(this.calc_debt(a), this.calc_debt(b), isDesc);
+          } else {
+            return this.compare(a[index], b[index], isDesc);
+          }
+        });
+        return items;
+      },
+
+      compare(a, b, isDesc) {
+        if (!isDesc) {
+          return a < b ? -1 : 1;
+        } else {
+          return b < a ? -1 : 1;
         }
       }
     },

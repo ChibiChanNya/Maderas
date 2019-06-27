@@ -94,6 +94,8 @@ Route::prefix('orders/providers')->group(function () {
         Route::post('create', 'OrderToProviderController@create');
         // Get all Orders
         Route::get('list', 'OrderToProviderController@orders_list');
+        // Get all Orders LITE
+        Route::get('list_lite', 'OrderToProviderController@orders_list_lite');
         // Update an Order
         Route::post('update', 'OrderToProviderController@order_update');
         // Delete an Order

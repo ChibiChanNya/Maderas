@@ -107,7 +107,7 @@
             if(error.status === 401)
               error_text = "Nombre de usuario o contraseña incorrectos";
             else
-              error_text = `Sucedió un error durante la autenticación, código ${error.status}. Intenta de nuevo más tarde o conacta al administradoe de la plataforma.`;
+              error_text = `Sucedió un error durante la autenticación, código ${error.status}. Intenta de nuevo más tarde o conacta al administrador de la plataforma.`;
             this.$store.commit('setSnack', {text: error_text, color: 'red'});
             this.loading = false;
           })

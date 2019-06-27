@@ -186,7 +186,7 @@
     create_supplier,
     update_supplier,
     remove_supplier,
-    index_orders
+    index_orders_lite
   } from '../../api/materials_controller';
 
   export default {
@@ -283,11 +283,11 @@
     },
 
     mounted() {
-      this.axios.all([index_suppliers(), index_orders()])
+      this.axios.all([index_suppliers(), index_orders_lite()])
           .then(this.axios.spread(function (providers, orders) {
                 // Both requests are now complete
                 this.items = providers.data;
-                this.orders = orders.data.data;
+                this.orders = orders.data;
               }.bind(this)
           ))
           .catch(error => {

@@ -3,13 +3,17 @@
     flex-direction: column;
 }
 
+.application.theme--light{
+    background-color: #fbf6ec;
+}
+
 a {
     color: #1867c0;
 }
 
 .primary {
-    background-color: #1867c0 !important;
-    border-color: #1867c0 !important;
+    background-color: #8b4e37 !important;
+    border-color: #8b4e37 !important;
 }
 
 .primary--text {
@@ -311,6 +315,8 @@ a {
     background-color: #ff5252 !important;
     border-color: #ff5252 !important;
 }
+
+
 
 .error--text {
     color: #ff5252 !important;
@@ -809,4 +815,22 @@ a {
 
 .v-table tbody tr td{
     text-align: center;
+}
+
+.section-header{
+    color: rgb(139, 78, 55);
+}
+
+.v-card__title .headline{
+    font-weight: 500;
+    color: white;
+}
+
+.madera-color{
+    color: rgb(139, 78, 55);
+}
+
+.v-dialog .v-card__title{
+    background-color: rgb(139, 78, 55);
+    border-bottom: 1px solid;
 }

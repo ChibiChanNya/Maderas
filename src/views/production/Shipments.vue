@@ -1,7 +1,7 @@
 <template>
     <section id="suppliers">
 
-        <h1 class="text-md-center my-4">Entregas de Producto</h1>
+        <h1 class="text-md-center my-4 section-header">Entregas de Producto</h1>
         <v-card>
             <v-card-title>
                 <v-dialog v-model="dialog" max-width="500px" persistent>

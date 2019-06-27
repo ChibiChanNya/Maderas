@@ -1,7 +1,7 @@
 <template>
     <section id="materials_inventory">
 
-        <h1 class="text-md-center my-4">Inventario de Productos</h1>
+        <h1 class="text-md-center my-4 section-header">Inventario de Productos</h1>
         <v-card>
             <v-card-title>
                 <v-dialog v-model="dialog" max-width="500px" persistent>

@@ -59,8 +59,10 @@
             </v-list>
         </v-navigation-drawer>
 
-        <v-toolbar color="indigo" dark fixed app>
-            <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+        <v-toolbar color="white" light fixed app justify-flex-start>
+            <v-toolbar-side-icon class="brown--text" @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+            <v-img class="mx-3" aspect-ratio="1" max-width="80px" max-height="60px" contain
+                   :src="require('@/assets/img/Madereria Logo.png')"></v-img>
             <v-toolbar-title>Hola {{user_name}}</v-toolbar-title>
         </v-toolbar>
         <v-content>
@@ -68,7 +70,7 @@
                 <router-view></router-view>
             </v-container>
         </v-content>
-        <v-footer color="indigo" app>
+        <v-footer color="brown" app class="px-3">
             <span class="white--text">&copy; 2019 - Powered by <a href="https://phoenixdevelopment.mx">Phoenix Development</a></span>
         </v-footer>
     </v-app>
@@ -96,11 +98,13 @@
             {icon: 'notes', url: '/production/reports', text: 'Reportes'},
           ]
         },
-        {icon: 'storage', text: 'Materia Prima', permission: 4, options: [
+        {
+          icon: 'storage', text: 'Materia Prima', permission: 4, options: [
             {icon: 'list', url: '/materials/inventory', text: 'Inventario'},
             {icon: 'account_box', url: '/materials/suppliers', text: 'Proveedores'},
             {icon: 'assignment', url: '/materials/orders', text: 'Pedidos'},
-          ]},
+          ]
+        },
         {icon: 'attach_file', url: '/documentos', text: 'Documentos', permission: 8},
       ],
     }),

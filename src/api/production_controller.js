@@ -68,13 +68,14 @@ export const remove_client = (item) => new Promise((resolve, reject) => {
   })
 });
 
-export const index_orders = () => new Promise((resolve, reject) => {
-  apiCall({url: '/orders/clients/list', method: 'GET'}).then(resp => {
+export const index_orders = (args) => new Promise((resolve, reject) => {
+  apiCall({url: '/orders/providers/list', method: 'GET', params: args}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);
   });
 });
+
 export const update_order = (item) => new Promise((resolve, reject) => {
   apiCall({url: '/orders/clients/update', method: 'POST', data: item}).then(resp => {
     resolve(resp);

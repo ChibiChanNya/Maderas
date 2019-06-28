@@ -22,7 +22,7 @@
                                                           :rules="nameRules"
                                                           label="Nombre"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs12>
+                                        <v-flex xs12 sm6>
                                             <v-text-field v-model="editedItem.description"
                                                           label="Descripcion"></v-text-field>
                                         </v-flex>

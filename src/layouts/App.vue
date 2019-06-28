@@ -23,6 +23,7 @@
                                 v-for="subItem in item.options"
                                 :key="subItem.text"
                                 :to="subItem.url"
+                                @click="drawer = false"
                                 router
                         >
                             <v-list-tile-action>
@@ -36,7 +37,9 @@
                     </v-list-group>
 
                     <!--                    Not a Dropdown-->
-                    <v-list-tile router :to="item.url" :key="item.text" v-else>
+                    <v-list-tile router :to="item.url"
+                                 @click="drawer = false"
+                                 :key="item.text" v-else >
                         <v-list-tile-action>
                             <v-icon>{{item.icon}}</v-icon>
                         </v-list-tile-action>

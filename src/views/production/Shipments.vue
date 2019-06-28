@@ -31,10 +31,6 @@
                                             ></v-select>
                                         </v-flex>
                                         <v-flex xs4 sm4>
-                                            <v-text-field v-model="editedItem.units"
-                                                          label="Unidades Enviadas"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs4 sm4>
                                             <v-text-field v-model="editedItem.cost"
                                                           :rules="numberRules"
                                                           label="Costo"></v-text-field>
@@ -92,6 +88,53 @@
                                             <v-text-field v-model.number="editedItem.invoice"
                                                           label="# Factura"></v-text-field>
                                         </v-flex>
+                                        <v-flex xs12>
+                                            <h3>Productos Solicitados</h3>
+                                        </v-flex>
+                                        <template>
+                                            <template
+                                                    v-for="product in editedItem.order_details">
+
+                                                <v-flex xs9 :key="product.product_id">
+                                                    <v-select
+                                                            v-model="product.product_id"
+                                                            hint="Producto"
+                                                            item-value="id"
+                                                            label="Elije un producto"
+                                                            :items="products"
+                                                            persistent-hint
+                                                            single-line
+                                                            :rules="required">
+
+                                                        <template v-slot:item="props">
+                                                            {{ props.item.name }} - {{ props.item.type }}
+                                                        </template>
+                                                        <template v-slot:selection="props">
+                                                            {{ props.item.name }} - {{ props.item.type }}
+                                                        </template>
+                                                    </v-select>
+                                                </v-flex>
+                                                <v-flex xs2 :key="product.product_id">
+                                                    <v-text-field v-model="product.units"
+                                                                  :rules="numberRules"
+                                                                  type="number"
+                                                                  label="Cantidad"></v-text-field>
+                                                </v-flex>
+                                                <v-flex xs1 :key="product.product_id">
+                                                    <v-btn flat icon style="align-self:center"
+                                                           @click="removeProduct(product)">
+                                                        <v-icon class="red--text">close</v-icon>
+                                                    </v-btn>
+                                                </v-flex>
+                                            </template>
+                                            <template v-if="editedItem.order_details.length === 0">
+                                                <h4>No se han registrado productos para este pedido</h4>
+                                            </template>
+                                            <v-flex>
+                                                <v-btn flat color="info" @click="addProduct">Agregar nuevo producto
+                                                </v-btn>
+                                            </v-flex>
+                                        </template>
 
                                     </v-layout>
                                 </v-container>
@@ -290,7 +333,7 @@
 
 
       order_data(id) {
-        return "Pendiente " +id
+        return "Pendiente " + id
       },
 
       status_name(val) {

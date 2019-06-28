@@ -1,10 +1,10 @@
 <template>
     <section id="suppliers">
 
-        <h1 class="text-md-center my-4 section-header">Pedidos por Clientes</h1>
+        <h1 class="text-md-center my-4 section-header">{{total_items}} Pedidos por Clientes</h1>
         <v-card>
             <v-card-title>
-                <v-dialog v-model="dialog" max-width="500px" persistent>
+                <v-dialog v-model="dialog" max-width="500px" persistent scrollable>
                     <template v-slot:activator="{ on }">
                         <v-btn color="primary" dark class="mb-2" v-on="on">Registrar Pedido</v-btn>
                     </template>
@@ -13,7 +13,7 @@
                             <span class="headline">{{ formTitle }}</span>
                         </v-card-title>
 
-                        <v-card-text>
+                        <v-card-text class="pt-0" style="height: 500px">
                             <v-form ref="form" v-model="valid_form" lazy-validation>
                                 <v-container grid-list-md>
                                     <v-layout wrap justify-center>
@@ -30,36 +30,20 @@
                                                     :rules="required"
                                             ></v-select>
                                         </v-flex>
-                                        <v-flex xs12 sm6>
-                                            <v-select
-                                                    v-model="editedItem.product_id"
-                                                    hint="Producto"
-                                                    :items="products"
-                                                    item-text="name"
-                                                    item-value="id"
-                                                    label="Elije un Producto"
-                                                    persistent-hint
-                                                    single-line
-                                                    :rules="required"
-                                            ></v-select>
-                                        </v-flex>
-                                        <v-flex xs4 sm4>
+
+                                        <v-flex xs4 sm6>
                                             <v-text-field v-model="editedItem.contract"
                                                           label="No. Contrato"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs4 sm4>
-                                            <v-text-field v-model.number="editedItem.units"
-                                                          :rules="numberRules"
-                                                          type="number"
-                                                          label="Cantidad"></v-text-field>
+
+                                        <v-flex xs12 class="mt-3">
+                                            <v-textarea outline auto-grow rows="2"
+                                                        v-model="editedItem.description"
+                                                        :rules="required"
+                                                        label="Descripción del pedido"></v-textarea>
                                         </v-flex>
-                                        <v-flex xs4 sm4>
-                                            <v-text-field v-model.number="editedItem.total_cost"
-                                                          :rules="numberRules"
-                                                          type="number"
-                                                          label="Precio Total"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs4 sm4>
+
+                                        <v-flex xs6 sm6>
                                             <v-select
                                                     v-model="editedItem.status"
                                                     :items="status_list"
@@ -70,6 +54,14 @@
                                                     :rules="required"
                                             ></v-select>
                                         </v-flex>
+
+                                        <v-flex xs4 sm6>
+                                            <v-text-field v-model.number="editedItem.total_cost"
+                                                          :rules="numberRules"
+                                                          type="number"
+                                                          label="Precio Total"></v-text-field>
+                                        </v-flex>
+
                                         <v-flex xs12 sm6>
                                             <v-dialog
                                                     ref="dialog1"
@@ -104,10 +96,11 @@
                                             </v-dialog>
                                         </v-flex>
                                         <v-flex xs12 sm6>
-                                            <v-dialog v-if="editedIndex > -1"
+                                            <v-dialog
                                                       ref="dialog2"
                                                       :return-value.sync="editedItem.finish_date"
                                                       persistent
+                                                      v-model="modal_date_2"
                                                       lazy
                                                       full-width
                                                       width="290px"
@@ -134,6 +127,54 @@
                                                 </v-date-picker>
                                             </v-dialog>
                                         </v-flex>
+
+                                        <v-flex xs12>
+                                            <h3>Productos Solicitados</h3>
+                                        </v-flex>
+                                        <template >
+                                            <template
+                                                    v-for="product in editedItem.order_details">
+
+                                                <v-flex xs9 :key="product.product_id">
+                                                    <v-select
+                                                            v-model="product.product_id"
+                                                            hint="Producto"
+                                                            item-value="id"
+                                                            label="Elije un producto"
+                                                            :items="products"
+                                                            persistent-hint
+                                                            single-line
+                                                            :rules="required">
+
+                                                        <template v-slot:item="props">
+                                                            {{ props.item.name }} - {{ props.item.type }}
+                                                        </template>
+                                                        <template v-slot:selection="props">
+                                                            {{ props.item.name }} - {{ props.item.type }}
+                                                        </template>
+                                                    </v-select>
+                                                </v-flex>
+                                                <v-flex xs2 :key="product.product_id">
+                                                    <v-text-field v-model="product.units"
+                                                                  :rules="numberRules"
+                                                                  type="number"
+                                                                  label="Cantidad"></v-text-field>
+                                                </v-flex>
+                                                <v-flex xs1 :key="product.product_id">
+                                                    <v-btn flat icon style="align-self:center"
+                                                           @click="removeProduct(product)">
+                                                        <v-icon class="red--text">close</v-icon>
+                                                    </v-btn>
+                                                </v-flex>
+                                            </template>
+                                            <template v-if="editedItem.order_details.length === 0">
+                                                <h4>No se han registrado productos para este pedido</h4>
+                                            </template>
+                                            <v-flex>
+                                                <v-btn flat color="info" @click="addProduct">Agregar nuevo producto
+                                                </v-btn>
+                                            </v-flex>
+                                        </template>
                                     </v-layout>
                                 </v-container>
                             </v-form>
@@ -244,23 +285,17 @@
         },
         headers: [
           {text: 'Cliente', value: 'client_id', align: 'center'},
-
-          {
-            text: 'Producto',
-            align: 'center',
-            value: 'product_id'
-          },
           {text: 'No. Contrato', value: 'contract', align: 'center'},
-
-          {text: 'Unidades', value: 'units', align: 'center'},
+          {text: 'Descripción', value: 'description', align: 'center'},
           {text: 'Costo Total', value: 'total_cost', align: 'center'},
           {text: 'Fecha Solicitud', value: 'order_dat', align: 'center'},
-          {text: 'Fecha Terminación', value: 'finish_date', align: 'center'},
           {text: 'Status', value: 'status', align: 'center'},
-          {text: 'Por Entregar', value: 'remaining_cost', align: 'center'},
+          {text: 'Fecha Terminación', value: 'finish_date', align: 'center'},
+          {text: 'Por Entregar', value: 'remaining_items', align: 'center'},
           {text: 'Acciones', value: 'id', align: 'center'},
         ],
         items: [],
+        total_items: 0,
         clients: [],
         products: [],
 
@@ -286,10 +321,9 @@
         editedItem: {
           id: '',
           client_id: '',
-          product_id: '',
           contract: '',
-          units: 0,
           total_cost: 0,
+          order_details: [""],
           request_date: new Date().toISOString().slice(0, 10),
           finish_date: new Date().toISOString().slice(0, 10),
           status: null,
@@ -297,15 +331,38 @@
         defaultItem: {
           id: '',
           client_id: '',
-          product_id: '',
           contract: '',
-          units: 0,
           total_cost: 0,
+          order_details: [""],
           request_date: new Date().toISOString().slice(0, 10),
           finish_date: new Date().toISOString().slice(0, 10),
           status: null,
         },
 
+      }
+    },
+
+    watch: {
+      pagination: {
+        handler() {
+          this.index_details()
+              .then(data => {
+                this.items = data.items;
+                this.total_items = data.total;
+              })
+        },
+        deep: true
+      },
+
+      search: {
+        handler() {
+          this.index_details()
+              .then(data => {
+                this.items = data.items;
+                this.total_items = data.total_items;
+              })
+        },
+        deep: true
       }
     },
 
@@ -314,19 +371,15 @@
         return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
       },
 
-      material_choices(){
-        return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id) ) || [];
-      }
-
     },
 
     mounted() {
-      this.axios.all([index_orders(), index_products(), index_clients()])
-          .then(this.axios.spread(function (orders, products, clients) {
+      this.axios.all([index_products(), index_clients()])
+          .then(this.axios.spread(function (products, clients) {
                 // Both requests are now complete
                 this.products = products.data;
                 this.clients = clients.data;
-                this.items = orders.data;
+
               }.bind(this)
           ))
           .catch(error => {
@@ -355,11 +408,17 @@
         return this.status_list.find((stat) => stat.value === val).name;
       },
 
-      editItem(item) {
-        this.editedIndex = this.items.indexOf(item);
-        this.editedItem = Object.assign({}, item);
-        this.$refs.form.resetValidation();
-        this.dialog = true;
+      isNumber(val) {
+        return val > 0;
+      },
+
+      addProduct() {
+        this.editedItem.order_details.push({product_id: null, units: 0});
+      },
+
+      removeProduct(item) {
+        const index = this.editedItem.order_details.indexOf(item);
+        this.editedItem.order_details.splice(index, 1);
       },
 
       deleteItem(item) {
@@ -373,6 +432,13 @@
         });
       },
 
+      editItem(item) {
+        this.editedIndex = this.items.indexOf(item);
+        this.editedItem = JSON.parse(JSON.stringify(item));
+        this.$refs.form.resetValidation();
+        this.dialog = true;
+      },
+
       close() {
         this.dialog = false;
         setTimeout(() => {
@@ -381,6 +447,7 @@
           this.$refs.form.reset();
         }, 300);
       },
+
 
       save() {
         if (this.$refs.form.validate()) {
@@ -412,6 +479,53 @@
         }
       }
     },
+
+    index_details() {
+      this.loading = true;
+      return new Promise((resolve, reject) => {
+        const {sortBy, descending, page, rowsPerPage} = this.pagination;
+
+        let items = this.items;
+
+        if (this.pagination.sortBy) {
+          items = items.sort((a, b) => {
+            const sortA = a[sortBy];
+            const sortB = b[sortBy];
+
+            if (descending) {
+              if (sortA < sortB) return 1;
+              if (sortA > sortB) return -1;
+              return 0
+            } else {
+              if (sortA < sortB) return -1;
+              if (sortA > sortB) return 1;
+              return 0
+            }
+          })
+        }
+
+        if (rowsPerPage > 0) {
+          this.items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+        }
+
+        index_orders({
+          sort: `${sortBy}__${descending? "desc" : "asc"}`,
+          page: page,
+          per_page: rowsPerPage,
+          search: this.search
+        }).then(res => {
+          resolve({
+            items: res.data.data,
+            total: res.data.total
+          })
+        }).catch(err => {
+          reject(err);
+        }).finally(() => {
+          this.loading = false;
+        });
+      });
+
+    }
 
   }
 </script>

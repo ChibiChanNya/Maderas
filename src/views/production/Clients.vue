@@ -74,11 +74,11 @@
                         <td class="">{{ props.item.rfc }}</td>
                         <td class="">{{ props.item.description }}</td>
 
-                        <!--                        <td>-->
-                        <!--                            <v-btn flat small color="red" @click="props.expanded = !props.expanded">${{-->
-                        <!--                                Number(calc_debt(props.item)).toFixed(2) }}-->
-                        <!--                            </v-btn>-->
-                        <!--                        </td>-->
+                        <td>
+                            <v-btn flat small color="green" @click="props.expanded = !props.expanded">
+                                X pedidos
+                            </v-btn>
+                        </td>
                         <td class="justify-start layout px-0">
                             <v-icon
                                     small
@@ -128,13 +128,14 @@
     remove_client,
     index_orders
   } from '../../api/production_controller';
+  import utils from "../../mixins/utils"
 
   export default {
     name: "ProductsClientes",
+    mixins: [utils],
 
     data() {
       return {
-
         loading: true,
         dialog: false,
         search: '',
@@ -146,9 +147,10 @@
             align: 'center',
             value: 'business_name'
           },
-          {text: 'RFC', value: 'rfc'},
+          {text: 'RFC', value: 'rfc', align: 'center'},
           {text: 'Descripción', value: 'description'},
-          {text: 'Acciones', value: 'id'},
+          {text: "Pedidos", value: "id", sortable: false},
+          {text: 'Acciones', value: 'id', sortable: false},
         ],
 
         items: [],
@@ -157,9 +159,9 @@
         valid_form: true,
 
         status_list: [
-          {name: "Pendiente", value: "pending"},
-          {name: "Entregado", value: "delivered"},
-          {name: "Pagado", value: "paid"},
+          {name: "Pendiente", value: "pendiente"},
+          {name: "Entregado", value: "entregado"},
+          {name: "Pagado", value: "pagado"},
         ],
 
         nameRules: [
@@ -182,11 +184,13 @@
           name: '',
           business_name: '',
           description: '',
+          rfc: '',
         },
         defaultItem: {
           name: '',
           business_name: '',
           description: '',
+          rfc: '',
         },
 
       }
@@ -218,17 +222,13 @@
     methods: {
 
       unpaid_orders(item) {
-        return this.orders.filter((order) => order.material_id === item.id && order.status !== "paid");
+        return this.orders.filter((order) => order.material_id === item.id && order.status !== "pagado");
       },
 
       calc_debt(item) {
         return this.unpaid_orders(item).reduce(function (a, b) {
           return parseInt(a) + parseInt(b.total_cost);
         }, 0);
-      },
-
-      status_name(val) {
-        return this.status_list.find((stat) => stat.value === val).name;
       },
 
       editItem(item) {

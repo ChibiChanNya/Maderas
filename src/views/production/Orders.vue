@@ -97,13 +97,13 @@
                                         </v-flex>
                                         <v-flex xs12 sm6>
                                             <v-dialog
-                                                      ref="dialog2"
-                                                      :return-value.sync="editedItem.finish_date"
-                                                      persistent
-                                                      v-model="modal_date_2"
-                                                      lazy
-                                                      full-width
-                                                      width="290px"
+                                                    ref="dialog2"
+                                                    :return-value.sync="editedItem.finish_date"
+                                                    persistent
+                                                    v-model="modal_date_2"
+                                                    lazy
+                                                    full-width
+                                                    width="290px"
                                             >
                                                 <template v-slot:activator="{ on }">
                                                     <v-text-field
@@ -131,7 +131,7 @@
                                         <v-flex xs12>
                                             <h3>Productos Solicitados</h3>
                                         </v-flex>
-                                        <template >
+                                        <template>
                                             <template
                                                     v-for="product in editedItem.order_details">
 
@@ -205,20 +205,22 @@
                     :loading="loading"
                     :search="search"
                     :pagination.sync="pagination"
-                    hide-actions
             >
                 <template v-slot:items="props">
                     <tr>
                         <td class="">{{ client_name(props.item.client_id) }}</td>
-                        <td class="">{{ product_name(props.item.product_id) }}</td>
                         <td class="">{{ props.item.contract }}</td>
-                        <td class="">{{ props.item.units }}</td>
-                        <td class="">$ {{ props.item.total_cost }}</td>
-                        <td class="">{{ props.item.request_date | moment('DD/M/YYYY')}}</td>
-                        <td class="">{{ props.item.finish_date | moment('DD/M/YYYY')}}</td>
+                        <td class="">
+                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">$ {{
+                                props.item.total_cost }}
+                            </v-btn>
+                        </td>
+                        <td class="">{{ (props.item.request_date || "--") | moment('DD/M/YYYY')}}</td>
                         <td class="">{{ status_name(props.item.status) }}</td>
-                        <v-btn flat small color="warning" @click="props.expanded = !props.expanded">${{ Number(calc_remaining(props.item)) }}</v-btn>
+                        <td class="">{{ (props.item.finish_date || "--") | moment('DD/M/YYYY') }}</td>
                         <td class="justify-start layout px-0">
+                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">VER ENVIOS
+                            </v-btn>
                             <v-icon
                                     small
                                     class="mr-5 "
@@ -236,6 +238,35 @@
                             </v-icon>
                         </td>
                     </tr>
+                </template>
+
+                <template v-slot:expand="props">
+                    <div class="grey lighten-3 pl-2">
+                        <template v-if="props.item.order_details.length >0">
+                            <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
+                            <tr>
+                                <th>Producto Solicitado</th>
+                                <th>Unidades</th>
+
+                            </tr>
+                            <tr v-for="product in props.item.order_details" :key="product.product_id">
+                                <td class="text-xs-left">
+                                    {{ product_name(product.product_id)}}
+                                </td>
+                                <td class="text-xs-left">
+                                    {{ product.units || 0}}
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
+                            <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
+                                Pedido pendiente de recibir
+                            </div>
+                        </template>
+
+                    </div>
+
                 </template>
 
                 <template v-slot:no-data>
@@ -268,9 +299,11 @@
     create_order,
     remove_order
   } from '../../api/production_controller';
+  import utils from "../../mixins/utils"
 
   export default {
     name: "ClientOrders",
+    mixins: [utils],
 
     data() {
       return {
@@ -286,13 +319,11 @@
         headers: [
           {text: 'Cliente', value: 'client_id', align: 'center'},
           {text: 'No. Contrato', value: 'contract', align: 'center'},
-          {text: 'Descripción', value: 'description', align: 'center'},
           {text: 'Costo Total', value: 'total_cost', align: 'center'},
-          {text: 'Fecha Solicitud', value: 'order_dat', align: 'center'},
+          {text: 'Fecha Solicitud', value: 'reuest_date', align: 'center'},
           {text: 'Status', value: 'status', align: 'center'},
           {text: 'Fecha Terminación', value: 'finish_date', align: 'center'},
-          {text: 'Por Entregar', value: 'remaining_items', align: 'center'},
-          {text: 'Acciones', value: 'id', align: 'center'},
+          {text: 'Acciones', value: 'id', align: 'center', sortable: false},
         ],
         items: [],
         total_items: 0,
@@ -300,10 +331,10 @@
         products: [],
 
         status_list: [
-          {name: "Pendiente", value: "pending"},
+          {name: "Pendiente", value: "pendiente"},
           {name: "Parcial", value: "parcial"},
-          {name: "Entregado", value: "delivered"},
-          {name: "Pagado", value: "paid"},
+          {name: "Entregado", value: "entregado"},
+          {name: "Pagado", value: "pagado"},
         ],
 
         valid_form: true,
@@ -392,26 +423,6 @@
 
     methods: {
 
-      formatted_date(date) {
-        return date ? this.$moment(date).format("DD/M/YYYY") : "";
-      },
-
-      client_name(id) {
-        return (this.providers.length > 0 && this.providers.find((prov) => prov.id === id).name) || "Cliente no encontrado";
-      },
-
-      product_name(id) {
-        return (this.materials.length > 0 && this.materials.find((mat) => mat.id === id).name) || "Producto no encontrado";
-      },
-
-      status_name(val) {
-        return this.status_list.find((stat) => stat.value === val).name;
-      },
-
-      isNumber(val) {
-        return val > 0;
-      },
-
       addProduct() {
         this.editedItem.order_details.push({product_id: null, units: 0});
       },
@@ -477,55 +488,56 @@
           }
 
         }
+      },
+
+      index_details() {
+        this.loading = true;
+        return new Promise((resolve, reject) => {
+          const {sortBy, descending, page, rowsPerPage} = this.pagination;
+
+          let items = this.items;
+
+          if (this.pagination.sortBy) {
+            items = items.sort((a, b) => {
+              const sortA = a[sortBy];
+              const sortB = b[sortBy];
+
+              if (descending) {
+                if (sortA < sortB) return 1;
+                if (sortA > sortB) return -1;
+                return 0
+              } else {
+                if (sortA < sortB) return -1;
+                if (sortA > sortB) return 1;
+                return 0
+              }
+            })
+          }
+
+          if (rowsPerPage > 0) {
+            this.items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+          }
+
+          index_orders({
+            sort: `${sortBy}__${descending ? "desc" : "asc"}`,
+            page: page,
+            per_page: rowsPerPage,
+            search: this.search
+          }).then(res => {
+            resolve({
+              items: res.data.data,
+              total: res.data.total
+            })
+          }).catch(err => {
+            reject(err);
+          }).finally(() => {
+            this.loading = false;
+          });
+        });
+
       }
     },
 
-    index_details() {
-      this.loading = true;
-      return new Promise((resolve, reject) => {
-        const {sortBy, descending, page, rowsPerPage} = this.pagination;
-
-        let items = this.items;
-
-        if (this.pagination.sortBy) {
-          items = items.sort((a, b) => {
-            const sortA = a[sortBy];
-            const sortB = b[sortBy];
-
-            if (descending) {
-              if (sortA < sortB) return 1;
-              if (sortA > sortB) return -1;
-              return 0
-            } else {
-              if (sortA < sortB) return -1;
-              if (sortA > sortB) return 1;
-              return 0
-            }
-          })
-        }
-
-        if (rowsPerPage > 0) {
-          this.items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-        }
-
-        index_orders({
-          sort: `${sortBy}__${descending? "desc" : "asc"}`,
-          page: page,
-          per_page: rowsPerPage,
-          search: this.search
-        }).then(res => {
-          resolve({
-            items: res.data.data,
-            total: res.data.total
-          })
-        }).catch(err => {
-          reject(err);
-        }).finally(() => {
-          this.loading = false;
-        });
-      });
-
-    }
 
   }
 </script>

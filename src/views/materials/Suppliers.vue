@@ -188,9 +188,11 @@
     remove_supplier,
     index_orders_lite
   } from '../../api/materials_controller';
+  import utils from "../../mixins/utils"
 
   export default {
     name: "MaterialsSuppliers",
+    mixins: [utils],
 
     data() {
       return {
@@ -220,9 +222,9 @@
         valid_form: true,
 
         status_list: [
-          {name: "Pendiente", value: "pending"},
-          {name: "Entregado", value: "delivered"},
-          {name: "Pagado", value: "paid"},
+          {name: "Pendiente", value: "pendiente"},
+          {name: "Entregado", value: "entregado"},
+          {name: "Pagado", value: "pagado"},
         ],
 
         nameRules: [
@@ -301,7 +303,7 @@
     methods: {
 
       unpaid_orders(item) {
-        return this.orders.filter((order) => order.provider_id === item.id && order.status !== "paid");
+        return this.orders.filter((order) => order.provider_id === item.id && order.status !== "pagado");
       },
 
       calc_debt(item) {
@@ -310,9 +312,6 @@
         }, 0);
       },
 
-      status_name(val) {
-        return this.status_list.find((stat) => stat.value === val).name;
-      },
 
       editItem(item) {
         this.editedIndex = this.items.indexOf(item);
@@ -373,8 +372,6 @@
 
 
       customSort(items, index, isDesc) {
-        console.log(index);
-
         items.sort((a, b) => {
           if (index === "debt") {
             return this.compare(this.calc_debt(a), this.calc_debt(b), isDesc);
@@ -385,13 +382,7 @@
         return items;
       },
 
-      compare(a, b, isDesc) {
-        if (!isDesc) {
-          return a < b ? -1 : 1;
-        } else {
-          return b < a ? -1 : 1;
-        }
-      }
+
     },
 
   }

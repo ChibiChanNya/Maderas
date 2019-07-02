@@ -127,7 +127,8 @@
                                                     </v-btn>
                                                 </v-flex>
                                             </template>
-                                            <template v-if="editedItem.order_details.length === 0">
+                                            <template
+                                                    v-if="!editedItem.order_details || editedItem.order_details.length === 0">
                                                 <h4>No se han registrado productos para este pedido</h4>
                                             </template>
                                             <v-flex>
@@ -171,14 +172,14 @@
                 <template v-slot:items="props">
                     <tr>
                         <td class="">{{ order_data(props.item.order_id) }}</td>
-                        <td class="">{{ props.item.units }}</td>
                         <td class="">$ {{ props.item.cost }}</td>
                         <td class="">{{ status_name(props.item.status) }}</td>
-                        <td class="">{{ props.item.delivery_date | moment('DD/M/YYYY')}}</td>
+                        <td class="">{{ (props.item.delivery_date || "--") | moment('DD/M/YYYY')}}</td>
                         <td class="">{{ props.item.certificate }}</td>
-                        <td class="">{{ props.item.invoice }}</td>
-                        <v-btn flat small color="warning" @click="props.expanded = !props.expanded">EXPANDIR</v-btn>
+                        <td class="">{{ props.item.invoice || "--"}}</td>
                         <td class="justify-start layout px-0">
+                            <v-btn flat small color="warning" @click="props.expanded = !props.expanded">EXPANDIR</v-btn>
+
                             <v-icon
                                     small
                                     class="mr-5 "
@@ -223,14 +224,16 @@
   import {
     index_shipments,
     index_clients,
-    index_orders,
+    index_orders_lite,
     update_shipment,
     create_shipment,
     remove_shipment
   } from '../../api/production_controller';
+  import utils from "../../mixins/utils"
 
   export default {
-    name: "ClientOrders",
+    name: "Shipments",
+    mixins: [utils],
 
     data() {
       return {
@@ -244,9 +247,8 @@
         },
         headers: [
           {text: 'Pedido', value: 'order_id', align: 'center'},
-
-          {text: 'Unidades', value: 'units', align: 'center'},
           {text: 'Costo', value: 'cost', align: 'center'},
+          {text: 'Status', value: 'status', align: 'center'},
           {text: 'Fecha Envío', value: 'delivery_date', align: 'center'},
           {text: 'Certificado de Tratamiento', value: 'certificate', align: 'center'},
           {text: '# Factura', value: 'invoice', align: 'center'},
@@ -257,11 +259,11 @@
         clients: [],
 
         status_list: [
-          {name: "Espera", value: "pending"},
-          {name: "Pendiente Tratamiento", value: "pending_treatment"},
-          {name: "Listo", value: "ready"},
-          {name: "Enviado", value: "sent"},
-          {name: "Pagado", value: "paid"},
+          {name: "Pendiente", value: "pendiente"},
+          {name: "Pendiente Tratamiento", value: "pendiente tratamiento"},
+          {name: "Listo", value: "listo"},
+          {name: "Enviado", value: "enviado"},
+          {name: "Pagado", value: "pagado"},
         ],
 
         valid_form: true,
@@ -279,7 +281,6 @@
         editedItem: {
           id: '',
           order_id: '',
-          units: 0,
           cost: 0,
           certificate: '',
           delivery_date: new Date().toISOString().slice(0, 10),
@@ -289,7 +290,6 @@
         defaultItem: {
           id: '',
           order_id: '',
-          units: 0,
           cost: 0,
           certificate: '',
           delivery_date: new Date().toISOString().slice(0, 10),
@@ -304,17 +304,38 @@
       formTitle() {
         return this.editedIndex === -1 ? 'Nueva Entrega' : 'Editar Entrega'
       },
+    },
 
+    watch: {
+      pagination: {
+        handler() {
+          this.index_details()
+              .then(data => {
+                this.items = data.items;
+                this.total_items = data.total;
+              })
+        },
+        deep: true
+      },
 
+      search: {
+        handler() {
+          this.index_details()
+              .then(data => {
+                this.items = data.items;
+                this.total_items = data.total_items;
+              })
+        },
+        deep: true
+      }
     },
 
     mounted() {
-      this.axios.all([index_shipments(), index_orders(), index_clients()])
-          .then(this.axios.spread(function (shipments, orders, clients) {
+      this.axios.all([index_orders_lite(), index_clients()])
+          .then(this.axios.spread(function (orders, clients) {
                 // Both requests are now complete
-                this.items = shipments.data;
-                this.clients = clients.data;
                 this.orders = orders.data;
+                this.clients = clients.data;
               }.bind(this)
           ))
           .catch(error => {
@@ -327,18 +348,22 @@
 
     methods: {
 
-      formatted_date(date) {
-        return date ? this.$moment(date).format("DD/M/YYYY") : "";
-      },
-
-
       order_data(id) {
-        return "Pendiente " + id
+        const order = this.orders && this.orders.find((order) => order.id === id);
+        if (order)
+          return `${order.contract} - ${this.client_name(order.client_id)}`;
+        else return "Insumo no encontrado";
       },
 
-      status_name(val) {
-        return this.status_list.find((stat) => stat.value === val).name;
+      addProduct() {
+        this.editedItem.order_details.push({product_id: null, units: 0});
       },
+
+      removeProduct(item) {
+        const index = this.editedItem.order_details.indexOf(item);
+        this.editedItem.order_details.splice(index, 1);
+      },
+
 
       editItem(item) {
         this.editedIndex = this.items.indexOf(item);
@@ -395,6 +420,53 @@
           }
 
         }
+      },
+
+      index_details() {
+        this.loading = true;
+        return new Promise((resolve, reject) => {
+          const {sortBy, descending, page, rowsPerPage} = this.pagination;
+
+          let items = this.items;
+
+          if (this.pagination.sortBy) {
+            items = items.sort((a, b) => {
+              const sortA = a[sortBy];
+              const sortB = b[sortBy];
+
+              if (descending) {
+                if (sortA < sortB) return 1;
+                if (sortA > sortB) return -1;
+                return 0
+              } else {
+                if (sortA < sortB) return -1;
+                if (sortA > sortB) return 1;
+                return 0
+              }
+            })
+          }
+
+          if (rowsPerPage > 0) {
+            this.items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+          }
+
+          index_shipments({
+            sort: `${sortBy}__${descending ? "desc" : "asc"}`,
+            page: page,
+            per_page: rowsPerPage,
+            search: this.search
+          }).then(res => {
+            resolve({
+              items: res.data.data,
+              total: res.data.total
+            })
+          }).catch(err => {
+            reject(err);
+          }).finally(() => {
+            this.loading = false;
+          });
+        });
+
       }
     },
 

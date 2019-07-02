@@ -257,7 +257,7 @@
                         <td class="">{{ (props.item.delivery_date || '--' ) | moment('DD/M/YYYY') }}</td>
                         <td class="">{{ status_name(props.item.status) || '--'}}</td>
                         <td class="">
-                            <v-btn flat small :color="props.item.status === 'paid'? 'blue' : 'red'"
+                            <v-btn flat small :color="props.item.status === 'pagado'? 'blue' : 'red'"
                                    @click="props.expanded = !props.expanded">
                                 {{ isNumber(props.item.remaining_cost)? "$ "+ props.item.remaining_cost : "----"}}
                             </v-btn>
@@ -304,7 +304,7 @@
                         </template>
                         <template v-else>
                             <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
-                            <div class="text-md-left pa-2" v-if="props.item.status === 'pending'">
+                            <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
                                 Pedido pendiente de recibir
                             </div>
                         </template>
@@ -343,13 +343,15 @@
     create_order,
     remove_order
   } from '../../api/materials_controller';
+  import utils from "../../mixins/utils"
 
   export default {
     name: "MaterialOrders",
 
+    mixins: [utils],
+
     data() {
       return {
-
         loading: true,
         dialog: false,
         modal_date_1: false,
@@ -376,9 +378,9 @@
         materials: [],
 
         status_list: [
-          {name: "Pendiente", value: "pending"},
-          {name: "Entregado", value: "delivered"},
-          {name: "Pagado", value: "paid"},
+          {name: "Pendiente", value: "pendiente"},
+          {name: "Entregado", value: "entregado"},
+          {name: "Pagado", value: "pagado"},
         ],
 
         valid_form: true,
@@ -476,29 +478,6 @@
     },
 
     methods: {
-
-      formatted_date(date) {
-        return date ? this.$moment(date).format("DD/M/YYYY") : "";
-      },
-
-      provider_name(id) {
-        return (this.providers.length > 0 && this.providers.find((prov) => prov.id === id).name) || "Proveedor no encontrado";
-      },
-
-      material_name(id) {
-        const item = this.materials.find((mat) => mat.id === id);
-        if (item && item.name)
-          return `${item.name} - ${item.type}`;
-        else return "Insumo no encontrado";
-      },
-
-      status_name(val) {
-        return this.status_list.find((stat) => stat.value === val).name;
-      },
-
-      isNumber(val) {
-        return val > 0;
-      },
 
       addMaterial() {
         this.editedItem.order_details.push({material_id: null, units: 0});

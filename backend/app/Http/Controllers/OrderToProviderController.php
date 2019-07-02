@@ -94,7 +94,7 @@ class OrderToProviderController extends Controller
 
     public function orders_list_lite(Request $request){
 
-        $orders = OrderToProvider::where('status','!=','paid')->get();
+        $orders = OrderToProvider::where('status','!=','pagado')->get();
 
         return $orders;
     }

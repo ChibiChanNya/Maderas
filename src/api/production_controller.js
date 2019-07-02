@@ -5,7 +5,7 @@ import f_apiCall from "./api_fake"
 
 
 export const index_products = () => new Promise((resolve, reject) => {
-  apiCall({url: '/products/list', method: 'GET'}).then(resp => {
+  f_apiCall({url: '/products/list', method: 'GET'}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);
@@ -37,7 +37,7 @@ export const remove_product = (item) => new Promise((resolve, reject) => {
 });
 
 export const index_clients= () => new Promise((resolve, reject) => {
-  apiCall({url: '/clients/list', method: 'GET'}).then(resp => {
+  f_apiCall({url: '/clients/list', method: 'GET'}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);
@@ -69,7 +69,15 @@ export const remove_client = (item) => new Promise((resolve, reject) => {
 });
 
 export const index_orders = (args) => new Promise((resolve, reject) => {
-  apiCall({url: '/orders/providers/list', method: 'GET', params: args}).then(resp => {
+  f_apiCall({url: '/orders/clients/list', method: 'GET', params: args}).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  });
+});
+
+export const index_orders_lite = () => new Promise((resolve, reject) => {
+  apiCall({url: '/orders/clients/list_lite', method: 'GET'}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);
@@ -101,7 +109,7 @@ export const remove_order = (item) => new Promise((resolve, reject) => {
 });
 
 export const index_shipments = () => new Promise((resolve, reject) => {
-  apiCall({url: '/orders/shipments/list', method: 'GET'}).then(resp => {
+  f_apiCall({url: '/orders/shipments/list', method: 'GET'}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);

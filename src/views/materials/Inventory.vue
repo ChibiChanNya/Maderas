@@ -170,9 +170,12 @@
     update_material,
     index_suppliers,
   } from '../../api/materials_controller';
+  import utils from "../../mixins/utils"
+
 
   export default {
     name: "MaterialsInventory",
+    mixins: [utils],
 
     data() {
       return {
@@ -249,7 +252,6 @@
 
     },
 
-
     mounted() {
       this.axios.all([index_materials(), index_suppliers(),])
           .then(this.axios.spread(function (materials, providers) {
@@ -274,11 +276,6 @@
           return a + b.units;
         }, 0);
       },
-
-      provider_name(id) {
-        return this.providers.find((prov) => prov.id === id).name;
-      },
-
 
       editItem(item) {
         this.editedIndex = this.items.indexOf(item);
@@ -338,8 +335,6 @@
       },
 
       customSort(items, index, isDesc) {
-        console.log(index);
-
         items.sort((a, b) => {
           if (index === "provider_id") {
             return this.compare(this.provider_name(a.provider_id), this.provider_name(b.provider_id), isDesc);
@@ -349,14 +344,6 @@
         });
         return items;
       },
-
-      compare(a, b, isDesc) {
-        if (!isDesc) {
-          return a < b ? -1 : 1;
-        } else {
-          return b < a ? -1 : 1;
-        }
-      }
 
 
     },

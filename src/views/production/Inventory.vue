@@ -28,12 +28,12 @@
                                         </v-flex>
 
                                         <v-flex xs6 sm6>
-                                            <v-text-field v-model="editedItem.price" type="number"
+                                            <v-text-field v-model.number="editedItem.recent_price" type="number"
                                                           :rules="priceRules"
                                                           label="Precio Actual"></v-text-field>
                                         </v-flex>
                                         <v-flex xs6 sm6>
-                                            <v-text-field v-model.number="editedItem.stock" type="number"
+                                            <v-text-field v-model.number="editedItem.available_stock" type="number"
                                                           :rules="numberRules"
                                                           label="Stock Disponible"></v-text-field>
                                         </v-flex>
@@ -99,9 +99,13 @@
                         <td class="">{{ props.item.sku }}</td>
                         <td class="">{{ props.item.name }}</td>
                         <td class="">{{ props.item.description }}</td>
-                        <td class="">{{ Number(props.item.price).toFixed(2) }}</td>
-                        <td class="">{{ props.item.stock }}</td>
-                        <td class="">Stock Pendiente??</td>
+                        <td class="">$ {{ Number(props.item.recent_price).toFixed(2) }}</td>
+                        <td class="">{{ props.item.available_stock }}</td>
+                        <td class="">
+                            <v-btn flat small color="blue" @click="props.expanded2 = !props.expanded2">
+                                Pendiente
+                            </v-btn>
+                        </td>
                         <td class="">
                             <v-btn flat small color="blue" @click="props.expanded = !props.expanded">
                                 Ver Medidas
@@ -124,7 +128,6 @@
                                 delete
                             </v-icon>
                         </td>
-                        t
                     </tr>
                 </template>
 
@@ -139,19 +142,19 @@
                         </tr>
                         <tr>
                             <td class="text-xs-center">
-                                {{props.item.box_volume}}
+                                {{props.item.box_volume}} cm<sup>3</sup>
                             </td>
                             <td class="text-xs-center">
-                                {{props.item.materials_volume}}
+                                {{props.item.materials_volume}} cm<sup>3</sup>
                             </td>
                             <td class="text-xs-center">
-                                {{props.item.width}}
+                                {{props.item.width}} cm
                             </td>
                             <td class="text-xs-center">
-                                {{props.item.height}}
+                                {{props.item.height}} cm
                             </td>
                             <td class="text-xs-center">
-                                {{props.item.length}}
+                                {{props.item.length}} cm
                             </td>
                         </tr>
 
@@ -188,9 +191,11 @@
     update_product,
     index_orders,
   } from '../../api/production_controller';
+  import utils from "../../mixins/utils"
 
   export default {
     name: "ProductsInventory",
+    mixins: [utils],
 
     data() {
       return {
@@ -202,9 +207,9 @@
           {text: 'SKU', value: 'sku'},
           {text: 'Nombre', value: 'name'},
           {text: 'Descripción', value: 'description'},
-          {text: 'Precio actual', value: 'price'},
-          {text: 'Stock Disponible', value: 'stock'},
-          {text: 'Stock Pendiente', value: 'pending_stock'},
+          {text: 'Precio actual', value: 'recent_price'},
+          {text: 'Stock Disponible', value: 'available_stock'},
+          {text: 'Stock Pendiente', value: 'id', sortable: false},
           {text: 'Acciones', value: 'id', sortable: false},
         ],
 
@@ -235,8 +240,7 @@
           sku: '',
           name: '',
           description: '',
-          price: '',
-          recent_price: '',
+          recent_price: 0,
           box_volume: 0,
           materials_volume: 0,
           height: 0,
@@ -249,8 +253,7 @@
           sku: '',
           name: '',
           description: '',
-          price: '',
-          recent_price: '',
+          recent_price: 0,
           box_volume: 0,
           materials_volume: 0,
           height: 0,
@@ -290,7 +293,7 @@
     methods: {
 
       item_orders(item) {
-        return this.orders.filter((order) => order.material_id === item.id && order.status === "pending");
+        return this.orders.filter((order) => order.material_id === item.id && order.status === "pendiente");
       },
 
       calc_pending_stock(item) {

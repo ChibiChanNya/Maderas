@@ -17,12 +17,12 @@
                             <v-form ref="form" v-model="valid_form" lazy-validation>
                                 <v-container grid-list-md>
                                     <v-layout wrap justify-center>
-                                        <v-flex xs12 sm6>
+                                        <v-flex xs12 sm8>
                                             <v-select
                                                     v-model="editedItem.order_id"
                                                     hint="Pedidos"
                                                     :items="orders"
-                                                    item-text="order_date"
+                                                    item-text="contract"
                                                     item-value="id"
                                                     label="Elije el pedido"
                                                     persistent-hint
@@ -36,7 +36,7 @@
                                                           label="Costo"></v-text-field>
                                         </v-flex>
 
-                                        <v-flex xs4 sm4>
+                                        <v-flex xs12 sm6>
                                             <v-select
                                                     v-model="editedItem.status"
                                                     :items="status_list"
@@ -80,11 +80,11 @@
                                                 </v-date-picker>
                                             </v-dialog>
                                         </v-flex>
-                                        <v-flex xs4 sm4>
+                                        <v-flex xs6>
                                             <v-text-field v-model="editedItem.certificate"
                                                           label="Certificado de Tratamiento"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs4 sm4>
+                                        <v-flex xs6>
                                             <v-text-field v-model.number="editedItem.invoice"
                                                           label="# Factura"></v-text-field>
                                         </v-flex>
@@ -93,9 +93,9 @@
                                         </v-flex>
                                         <template>
                                             <template
-                                                    v-for="product in editedItem.order_details">
+                                                    v-for="product in editedItem.shipment_details">
 
-                                                <v-flex xs9 :key="product.product_id">
+                                                <v-flex xs8 :key="product.product_id">
                                                     <v-select
                                                             v-model="product.product_id"
                                                             hint="Producto"
@@ -107,10 +107,10 @@
                                                             :rules="required">
 
                                                         <template v-slot:item="props">
-                                                            {{ props.item.name }} - {{ props.item.type }}
+                                                            {{ props.item.name }}
                                                         </template>
                                                         <template v-slot:selection="props">
-                                                            {{ props.item.name }} - {{ props.item.type }}
+                                                            {{ props.item.name }}
                                                         </template>
                                                     </v-select>
                                                 </v-flex>
@@ -128,7 +128,7 @@
                                                 </v-flex>
                                             </template>
                                             <template
-                                                    v-if="!editedItem.order_details || editedItem.order_details.length === 0">
+                                                    v-if="!editedItem.shipment_details || editedItem.shipment_details.length === 0">
                                                 <h4>No se han registrado productos para este pedido</h4>
                                             </template>
                                             <v-flex>
@@ -199,6 +199,27 @@
                     </tr>
                 </template>
 
+                <template v-slot:expand="props">
+                    <div class="grey lighten-3 pl-2">
+                        <template v-if="props.item.shipment_details && props.item.shipment_details.length >0">
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                            </tr>
+                            <tr v-for="product in props.item.shipment_details" :key="product.product_id">
+                                <td class="text-xs-left">
+                                    {{ product_name(product.product_id) || "--"}}
+                                </td>
+                                <td class="text-xs-left">
+                                    {{ product.units || "--"}}
+                                </td>
+                            </tr>
+                        </template>
+
+                    </div>
+
+                </template>
+
                 <template v-slot:no-data>
                     <h1 v-if="loading" class="text-md-center my-3">
                         <v-icon>timelapse</v-icon>
@@ -223,6 +244,7 @@
 <script>
   import {
     index_shipments,
+    index_products,
     index_clients,
     index_orders_lite,
     update_shipment,
@@ -268,14 +290,6 @@
 
         valid_form: true,
 
-        numberRules: [
-          v => !!v || 'Campo requerido',
-          v => (!isNaN(v) && v > 0) || "Debe ser un número positivo",
-        ],
-
-        required: [
-          v => !!v || 'Campo requerido',
-        ],
 
         editedIndex: -1,
         editedItem: {
@@ -286,6 +300,7 @@
           delivery_date: new Date().toISOString().slice(0, 10),
           status: null,
           invoice: null,
+          shipment_details: [""],
         },
         defaultItem: {
           id: '',
@@ -295,6 +310,7 @@
           delivery_date: new Date().toISOString().slice(0, 10),
           status: null,
           invoice: null,
+          shipment_details: [""],
         },
 
       }
@@ -331,11 +347,12 @@
     },
 
     mounted() {
-      this.axios.all([index_orders_lite(), index_clients()])
-          .then(this.axios.spread(function (orders, clients) {
+      this.axios.all([index_orders_lite(), index_clients(), index_products()])
+          .then(this.axios.spread(function (orders, clients, products) {
                 // Both requests are now complete
                 this.orders = orders.data;
                 this.clients = clients.data;
+                this.products = products.data;
               }.bind(this)
           ))
           .catch(error => {
@@ -356,18 +373,18 @@
       },
 
       addProduct() {
-        this.editedItem.order_details.push({product_id: null, units: 0});
+        this.editedItem.shipment_details.push({product_id: null, units: 0});
       },
 
       removeProduct(item) {
-        const index = this.editedItem.order_details.indexOf(item);
-        this.editedItem.order_details.splice(index, 1);
+        const index = this.editedItem.shipment_details.indexOf(item);
+        this.editedItem.shipment_details.splice(index, 1);
       },
 
 
       editItem(item) {
         this.editedIndex = this.items.indexOf(item);
-        this.editedItem = Object.assign({}, item);
+        this.editedItem = JSON.parse(JSON.stringify(item));
         this.$refs.form.resetValidation();
         this.dialog = true;
       },
@@ -398,7 +415,7 @@
           // Editing an User
           if (this.editedIndex > -1) {
             update_shipment(this.editedItem).then(() => {
-              Object.assign(this.items[this.editedIndex], this.editedItem);
+              this.items[this.editedIndex] = JSON.parse(JSON.stringify(this.editedItem));
               this.$store.commit('setSnack', {text: "Entrega actualizada exitosamente", color: 'success'});
               this.close();
             }).catch(err => {
@@ -409,7 +426,7 @@
             //  Creating a new User
           } else {
             create_shipment(this.editedItem).then(() => {
-              this.items.push(Object.assign({}, this.editedItem));
+              this.items.push(JSON.parse(JSON.stringify(this.editedItem)));
               this.$store.commit('setSnack', {text: "Pedido creado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {

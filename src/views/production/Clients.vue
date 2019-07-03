@@ -75,8 +75,8 @@
                         <td class="">{{ props.item.description }}</td>
 
                         <td>
-                            <v-btn flat small color="green" @click="props.expanded = !props.expanded">
-                                X pedidos
+                            <v-btn flat small :color="incomplete_orders(props.item).length > 0? 'red' : 'green'" @click="props.expanded = !props.expanded">
+                                {{incomplete_orders(props.item).length}} pedido(s)
                             </v-btn>
                         </td>
                         <td class="justify-start layout px-0">
@@ -97,6 +97,38 @@
                             </v-icon>
                         </td>
                     </tr>
+                </template>
+
+                <template v-slot:expand="props">
+                    <div class="grey lighten-3 pl-2">
+                        <template v-if="incomplete_orders(props.item).length >0">
+                            <tr>
+                                <th># Contrato</th>
+                                <th>Desc. Pedido</th>
+                                <th>Fecha Solicitud</th>
+                                <th>Status</th>
+                            </tr>
+                            <tr v-for="order in incomplete_orders(props.item)" :key="order.id">
+                                <td class="text-xs-left">
+                                    {{ order.contract || "--"}}
+                                </td>
+                                <td class="text-xs-left">
+                                    {{ order.description || "--"}}
+                                </td>
+                                <td class="text-xs-center">
+                                    {{order.request_date || "--" | moment('DD/M/YYYY') }}
+                                </td>
+                                <td class="text-xs-center">
+                                    {{ status_name(order.status) || "--"}}
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+                            <h3 class="py-3">No hay pedidos pendientes para este cliente</h3>
+                        </template>
+
+                    </div>
+
                 </template>
 
                 <template v-slot:no-data>
@@ -126,7 +158,7 @@
     create_client,
     update_client,
     remove_client,
-    index_orders
+    index_orders_lite
   } from '../../api/production_controller';
   import utils from "../../mixins/utils"
 
@@ -149,7 +181,7 @@
           },
           {text: 'RFC', value: 'rfc', align: 'center'},
           {text: 'Descripción', value: 'description'},
-          {text: "Pedidos", value: "id", sortable: false},
+          {text: "Pedidos incompletos", value: "id", sortable: false},
           {text: 'Acciones', value: 'id', sortable: false},
         ],
 
@@ -163,21 +195,6 @@
           {name: "Entregado", value: "entregado"},
           {name: "Pagado", value: "pagado"},
         ],
-
-        nameRules: [
-          v => !!v || 'Campo requerido',
-          v => (v && v.length <= 70) || 'Máximo 70 caracteres'
-        ],
-
-        descRules: [
-          v => !!v || 'Campo requerido',
-          v => (v && v.length >= 3) || 'Mínimo 3 caracteres'
-        ],
-
-        moneyRules: [
-          v => (!v || (!isNaN(v))) || 'Debe ser una cantidad'
-        ],
-
 
         editedIndex: -1,
         editedItem: {
@@ -204,7 +221,7 @@
     },
 
     mounted() {
-      this.axios.all([index_clients(), index_orders()])
+      this.axios.all([index_clients(), index_orders_lite()])
           .then(this.axios.spread(function (providers, orders) {
                 // Both requests are now complete
                 this.items = providers.data;
@@ -221,8 +238,9 @@
 
     methods: {
 
-      unpaid_orders(item) {
-        return this.orders.filter((order) => order.material_id === item.id && order.status !== "pagado");
+      incomplete_orders(item) {
+        const orders = this.orders.filter((order) => order.client_id === (item && item.id) && order.status !== "completo") || [];
+        return orders || [];
       },
 
       calc_debt(item) {

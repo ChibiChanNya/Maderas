@@ -1,5 +1,48 @@
 export default  {
 
+  data(){
+    return{
+      nameRules: [
+        v => !!v || 'Campo requerido',
+        v => (v && v.length <= 70) || 'Máximo 70 caracteres'
+      ],
+
+      rfcRules: [
+        v => (!v || (v.length === 13 || v.length === 14)) || 'RFC debe estar compuesto por 13 or 14 símbolos'
+      ],
+
+      clabeRules: [
+        v => (!v || (!isNaN(v) && v.length === 18)) || 'La Clabe debe star compuesta por 18 números'
+      ],
+
+      descRules: [
+        v => !!v || 'Campo requerido',
+        v => (v && v.length >= 3) || 'Mínimo 3 caracteres'
+      ],
+
+      moneyRules: [
+        v => (!v || (!isNaN(v))) || 'Debe ser una cantidad'
+      ],
+      numberRules: [
+        v => !!v || 'Campo requerido',
+        v => (!isNaN(v) && v > 0) || "Debe ser un número positivo",
+      ],
+      required: [
+        v => !!v || 'Campo requerido',
+      ],
+      typeRules: [
+        v => !!v || 'Tipo requerido',
+      ],
+      priceRules: [
+        v => !!v || 'Campo requerido',
+        v => (!isNaN(v) && v > 0) || "Debe ser un número positivo",
+      ],
+      stockRules: [
+        v => (!v || (!isNaN(v) && v >= 0)) || "Debe ser un número positivo",
+      ],
+    }
+  },
+
   methods: {
 
     formatted_date(date) {
@@ -12,7 +55,7 @@ export default  {
     },
 
     product_name(id) {
-      const product = (this.products.length > 0 && this.products.find((mat) => mat.id === id));
+      const product = (this.products && this.products.length > 0 && this.products.find((mat) => mat.id === id));
       return (product && product.name) || "Producto no encontrado";
     },
 
@@ -44,8 +87,6 @@ export default  {
         return b < a ? -1 : 1;
       }
     }
-
-
   },
 
 };

@@ -147,10 +147,10 @@
                                                             :rules="required">
 
                                                         <template v-slot:item="props">
-                                                            {{ props.item.name }} - {{ props.item.type }}
+                                                            {{ props.item.name }}
                                                         </template>
                                                         <template v-slot:selection="props">
-                                                            {{ props.item.name }} - {{ props.item.type }}
+                                                            {{ props.item.name }}
                                                         </template>
                                                     </v-select>
                                                 </v-flex>
@@ -210,16 +210,12 @@
                     <tr>
                         <td class="">{{ client_name(props.item.client_id) }}</td>
                         <td class="">{{ props.item.contract }}</td>
-                        <td class="">
-                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">$ {{
-                                props.item.total_cost }}
-                            </v-btn>
-                        </td>
+                        <td class="">{{ props.item.total_cost }}</td>
                         <td class="">{{ (props.item.request_date || "--") | moment('DD/M/YYYY')}}</td>
                         <td class="">{{ status_name(props.item.status) }}</td>
                         <td class="">{{ (props.item.finish_date || "--") | moment('DD/M/YYYY') }}</td>
                         <td class="justify-start layout px-0">
-                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">VER ENVIOS
+                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">DETALLES
                             </v-btn>
                             <v-icon
                                     small
@@ -242,28 +238,57 @@
 
                 <template v-slot:expand="props">
                     <div class="grey lighten-3 pl-2">
-                        <template v-if="props.item.order_details.length >0">
-                            <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
-                            <tr>
-                                <th>Producto Solicitado</th>
-                                <th>Unidades</th>
+                        <v-layout row>
+                            <v-flex xs3>
+                                <template v-if="props.item.order_details.length >0">
+                                    <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
+                                    <tr>
+                                        <th>Producto Solicitado</th>
+                                        <th>Unidades</th>
 
-                            </tr>
-                            <tr v-for="product in props.item.order_details" :key="product.product_id">
-                                <td class="text-xs-left">
-                                    {{ product_name(product.product_id)}}
-                                </td>
-                                <td class="text-xs-left">
-                                    {{ product.units || 0}}
-                                </td>
-                            </tr>
-                        </template>
-                        <template v-else>
-                            <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
-                            <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
-                                Pedido pendiente de recibir
-                            </div>
-                        </template>
+                                    </tr>
+                                    <tr v-for="product in props.item.order_details" :key="product.product_id">
+                                        <td class="text-xs-left">
+                                            {{ product_name(product.product_id)}}
+                                        </td>
+                                        <td class="text-xs-left">
+                                            {{ product.units || 0}}
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
+                                    <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
+                                        Aún no se agregan los detalles del pedido
+                                    </div>
+                                </template>
+                            </v-flex>
+                            <v-divider vertical></v-divider>
+                            <v-flex xs6>
+                                <h3 class="pa-2">Entregas</h3>
+                                <template v-if="getShipments(props.item).length >0">
+                                    <tr>
+                                        <th>Costo</th>
+                                        <th>Status</th>
+                                        <th>Fecha de Entrega</th>
+                                        <th v-for="product in props.item.order_details" :key="product.product_id">
+                                            {{product_name(product.product_id)}}
+                                        </th>
+                                    </tr>
+                                    <tr v-for="item in getShipments(props.item)" :key="item.id">
+                                        <td>${{item.cost || "--"}}</td>
+                                        <td>{{status_name_shipment(item.status)}}</td>
+                                        <td>{{ (item.delivery_date || "--") | moment('DD/M/YYYY') }}</td>
+                                        <td v-for="(product, index) in item.shipment_details" :key="index">
+                                            {{ product.units }}
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template v-else>
+                                    <h3 class="py-3">No se ha preparado ningun envío</h3>
+                                </template>
+                            </v-flex>
+                        </v-layout>
 
                     </div>
 
@@ -297,7 +322,8 @@
     index_orders,
     update_order,
     create_order,
-    remove_order
+    remove_order,
+    index_shipments_lite
   } from '../../api/production_controller';
   import utils from "../../mixins/utils"
 
@@ -329,24 +355,15 @@
         total_items: 0,
         clients: [],
         products: [],
+        shipments: [],
 
         status_list: [
           {name: "Pendiente", value: "pendiente"},
           {name: "Parcial", value: "parcial"},
-          {name: "Entregado", value: "entregado"},
-          {name: "Pagado", value: "pagado"},
+          {name: "Completo", value: "completo"},
         ],
 
         valid_form: true,
-
-        numberRules: [
-          v => !!v || 'Campo requerido',
-          v => (!isNaN(v) && v > 0) || "Debe ser un número positivo",
-        ],
-
-        required: [
-          v => !!v || 'Campo requerido',
-        ],
 
         editedIndex: -1,
         editedItem: {
@@ -405,12 +422,12 @@
     },
 
     mounted() {
-      this.axios.all([index_products(), index_clients()])
-          .then(this.axios.spread(function (products, clients) {
+      this.axios.all([index_products(), index_clients(), index_shipments_lite()])
+          .then(this.axios.spread(function (products, clients, shipments) {
                 // Both requests are now complete
                 this.products = products.data;
                 this.clients = clients.data;
-
+                this.shipments = shipments.data;
               }.bind(this)
           ))
           .catch(error => {
@@ -422,6 +439,24 @@
     },
 
     methods: {
+
+      status_name_shipment(val) {
+        const status_list = [
+          {name: "Pendiente", value: "pendiente"},
+          {name: "Pendiente Tratamiento", value: "pendiente tratamiento"},
+          {name: "Listo", value: "listo"},
+          {name: "Enviado", value: "enviado"},
+          {name: "Pagado", value: "pagado"},
+        ];
+
+        const status = status_list.find(stat => stat.value === val);
+        return (status && status.name) || "Null";
+      },
+
+      getShipments(item) {
+        const ships = this.shipments.filter((ship) => ship.order_id === item.id);
+        return ships || [];
+      },
 
       addProduct() {
         this.editedItem.order_details.push({product_id: null, units: 0});

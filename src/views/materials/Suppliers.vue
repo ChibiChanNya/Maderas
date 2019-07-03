@@ -227,28 +227,6 @@
           {name: "Pagado", value: "pagado"},
         ],
 
-        nameRules: [
-          v => !!v || 'Campo requerido',
-          v => (v && v.length <= 70) || 'Máximo 70 caracteres'
-        ],
-
-        rfcRules: [
-          v => (!v || (v.length === 13 || v.length === 14)) || 'RFC debe estar compuesto por 13 or 14 símbolos'
-        ],
-
-        clabeRules: [
-          v => (!v || (!isNaN(v) && v.length === 18)) || 'La Clabe debe star compuesta por 18 números'
-        ],
-
-        descRules: [
-          v => !!v || 'Campo requerido',
-          v => (v && v.length >= 3) || 'Mínimo 3 caracteres'
-        ],
-
-        moneyRules: [
-          v => (!v || (!isNaN(v))) || 'Debe ser una cantidad'
-        ],
-
 
         editedIndex: -1,
         editedItem: {

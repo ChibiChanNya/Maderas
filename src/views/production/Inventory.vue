@@ -218,22 +218,6 @@
 
         valid_form: true,
 
-        nameRules: [
-          v => !!v || 'Nombre requerido',
-          v => (v && v.length <= 30) || 'Máximo 30 caracteres'
-        ],
-        required: [
-          v => !!v || 'Campo requerido',
-        ],
-        priceRules: [
-          v => !!v || 'Campo requerido',
-          v => (!isNaN(v) && v > 0) || "Debe ser un número positivo",
-        ],
-        numberRules: [
-          v => (!v || (!isNaN(v) && v >= 0)) || "Debe ser un número positivo",
-        ],
-
-
         editedIndex: -1,
         editedItem: {
           id: '',

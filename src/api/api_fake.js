@@ -22,6 +22,7 @@ const mocks = {
   '/orders/clients/list': {'GET': {total: mock_client_orders.length, data: mock_client_orders}},
   '/orders/shipments/list': {'GET': {total: mock_shipments.length, data: mock_shipments}},
   '/orders/clients/list_lite': {'GET': mock_client_orders},
+  '/orders/shipments/list_lite': {'GET': mock_shipments},
 
 
 };

@@ -385,14 +385,6 @@
 
         valid_form: true,
 
-        numberRules: [
-          v => (!v || !isNaN(v) && v >= 0) || "Debe ser un número positivo",
-        ],
-
-        required: [
-          v => !!v || 'Campo requerido',
-        ],
-
         editedIndex: -1,
         editedItem: {
           id: '',
@@ -420,7 +412,6 @@
           remaining_cost: 0,
           invoice: '',
         },
-        editedOrder: [],
 
       }
     },

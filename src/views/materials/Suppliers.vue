@@ -196,6 +196,8 @@
 
     data() {
       return {
+        index_fn: index_suppliers,
+        delete_fn: remove_supplier,
 
         loading: true,
         dialog: false,
@@ -296,26 +298,6 @@
         this.editedItem = Object.assign({}, item);
         this.$refs.form.resetValidation();
         this.dialog = true;
-      },
-
-      deleteItem(item) {
-        const index = this.items.indexOf(item);
-        confirm('¿Estás seguro de que quieres borrar a este proveedor? Se eliminara su historial de pedidos e insumos.') && remove_supplier({id: item.id}).then(() => {
-          this.items.splice(index, 1);
-          this.$store.commit('setSnack', {text: "Proveedor borrado exitosamente", color: 'success'});
-
-        }).catch(err => {
-          this.$store.commit('setSnack', {text: err, color: 'red'});
-        });
-      },
-
-      close() {
-        this.dialog = false;
-        setTimeout(() => {
-          this.$refs.form.reset();
-          this.editedItem = Object.assign({}, this.defaultItem);
-          this.editedIndex = -1;
-        }, 300);
       },
 
       save() {

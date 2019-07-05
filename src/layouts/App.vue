@@ -39,7 +39,7 @@
                     <!--                    Not a Dropdown-->
                     <v-list-tile router :to="item.url"
                                  @click="drawer = false"
-                                 :key="item.text" v-else >
+                                 :key="item.text" v-else>
                         <v-list-tile-action>
                             <v-icon>{{item.icon}}</v-icon>
                         </v-list-tile-action>
@@ -108,7 +108,11 @@
             {icon: 'assignment', url: '/materials/orders', text: 'Pedidos'},
           ]
         },
-        {icon: 'attach_file', url: '/documentos', text: 'Documentos', permission: 8},
+        {
+          icon: 'attach_file', text: 'Documentos', permission: 8, options: [
+            {icon: 'fas fa-money-check-alt', url: '/documents/income', text: "Ingresos/Egresos"}
+          ]
+        },
       ],
     }),
 
@@ -155,6 +159,7 @@
 
     mounted() {
       this.refresh_token();
+
     }
   }
 </script>

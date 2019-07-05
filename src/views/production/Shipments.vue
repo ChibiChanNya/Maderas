@@ -252,13 +252,16 @@
     remove_shipment
   } from '../../api/production_controller';
   import utils from "../../mixins/utils"
+  import server_pagination from "../../mixins/server_pagination";
 
   export default {
     name: "Shipments",
-    mixins: [utils],
+    mixins: [utils, server_pagination],
 
     data() {
       return {
+        index_fn: index_shipments,
+        delete_fn: remove_shipment,
 
         loading: true,
         dialog: false,
@@ -318,32 +321,9 @@
 
     computed: {
       formTitle() {
-        return this.editedIndex === -1 ? 'Nueva Entrega' : 'Editar Entrega'
-      },
-    },
-
-    watch: {
-      pagination: {
-        handler() {
-          this.index_details()
-              .then(data => {
-                this.items = data.items;
-                this.total_items = data.total;
-              })
-        },
-        deep: true
+        return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
       },
 
-      search: {
-        handler() {
-          this.index_details()
-              .then(data => {
-                this.items = data.items;
-                this.total_items = data.total_items;
-              })
-        },
-        deep: true
-      }
     },
 
     mounted() {
@@ -389,25 +369,6 @@
         this.dialog = true;
       },
 
-      deleteItem(item) {
-        const index = this.items.indexOf(item);
-        confirm('¿Estás seguro de que quieres borrar esta entrega?') && remove_shipment({id: item.id}).then(() => {
-          this.items.splice(index, 1);
-          this.$store.commit('setSnack', {text: "Entrega borrada exitosamente", color: 'success'});
-
-        }).catch(err => {
-          this.$store.commit('setSnack', {text: err, color: 'red'});
-        });
-      },
-
-      close() {
-        this.dialog = false;
-        setTimeout(() => {
-          this.editedItem = Object.assign({}, this.defaultItem);
-          this.editedIndex = -1;
-          this.$refs.form.reset();
-        }, 300);
-      },
 
       save() {
         if (this.$refs.form.validate()) {
@@ -439,52 +400,6 @@
         }
       },
 
-      index_details() {
-        this.loading = true;
-        return new Promise((resolve, reject) => {
-          const {sortBy, descending, page, rowsPerPage} = this.pagination;
-
-          let items = this.items;
-
-          if (this.pagination.sortBy) {
-            items = items.sort((a, b) => {
-              const sortA = a[sortBy];
-              const sortB = b[sortBy];
-
-              if (descending) {
-                if (sortA < sortB) return 1;
-                if (sortA > sortB) return -1;
-                return 0
-              } else {
-                if (sortA < sortB) return -1;
-                if (sortA > sortB) return 1;
-                return 0
-              }
-            })
-          }
-
-          if (rowsPerPage > 0) {
-            this.items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-          }
-
-          index_shipments({
-            sort: `${sortBy}__${descending ? "desc" : "asc"}`,
-            page: page,
-            per_page: rowsPerPage,
-            search: this.search
-          }).then(res => {
-            resolve({
-              items: res.data.data,
-              total: res.data.total
-            })
-          }).catch(err => {
-            reject(err);
-          }).finally(() => {
-            this.loading = false;
-          });
-        });
-
-      }
     },
 
   }

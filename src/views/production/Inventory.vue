@@ -199,6 +199,8 @@
 
     data() {
       return {
+        index_fn: index_products,
+        delete_fn: remove_product,
 
         loading: true,
         dialog: false,
@@ -210,7 +212,7 @@
           {text: 'Precio actual', value: 'recent_price'},
           {text: 'Stock Disponible', value: 'available_stock'},
           {text: 'Stock Pendiente', value: 'id', sortable: false},
-          {text: 'Acciones', value: 'id', sortable: false},
+          {text: 'Acciones', value: 'id', sortable: false, align:'center'},
         ],
 
         items: [],
@@ -292,26 +294,6 @@
         this.editedItem = Object.assign({}, item);
         this.$refs.form.resetValidation();
         this.dialog = true;
-      },
-
-      deleteItem(item) {
-        const index = this.items.indexOf(item);
-        confirm('¿Estás seguro de que quieres borrar este Producto?. Se borrarán todos los pedidos también.') && remove_product({id: item.id}).then(() => {
-          this.items.splice(index, 1);
-          this.$store.commit('setSnack', {text: "Producto borrado exitosamente", color: 'success'});
-
-        }).catch(err => {
-          this.$store.commit('setSnack', {text: err, color: 'red'});
-        });
-      },
-
-      close() {
-        this.dialog = false;
-        setTimeout(() => {
-          this.editedItem = Object.assign({}, this.defaultItem);
-          this.editedIndex = -1;
-          this.$refs.form.reset();
-        }, 300);
       },
 
       save() {

@@ -325,14 +325,19 @@
     remove_order,
     index_shipments_lite
   } from '../../api/production_controller';
-  import utils from "../../mixins/utils"
+  import utils from "../../mixins/utils";
+  import server_pagination from "../../mixins/server_pagination";
+
 
   export default {
     name: "ClientOrders",
-    mixins: [utils],
+    mixins: [utils, server_pagination],
 
     data() {
       return {
+
+        index_fn: index_orders,
+        delete_fn: remove_order,
 
         loading: true,
         dialog: false,
@@ -390,29 +395,6 @@
       }
     },
 
-    watch: {
-      pagination: {
-        handler() {
-          this.index_details()
-              .then(data => {
-                this.items = data.items;
-                this.total_items = data.total;
-              })
-        },
-        deep: true
-      },
-
-      search: {
-        handler() {
-          this.index_details()
-              .then(data => {
-                this.items = data.items;
-                this.total_items = data.total_items;
-              })
-        },
-        deep: true
-      }
-    },
 
     computed: {
       formTitle() {
@@ -467,31 +449,12 @@
         this.editedItem.order_details.splice(index, 1);
       },
 
-      deleteItem(item) {
-        const index = this.items.indexOf(item);
-        confirm('¿Estás seguro de que quieres borrar este pedido? Se borrarán todas las entregas.') && remove_order({id: item.id}).then(() => {
-          this.items.splice(index, 1);
-          this.$store.commit('setSnack', {text: "Pedido borrado exitosamente", color: 'success'});
-
-        }).catch(err => {
-          this.$store.commit('setSnack', {text: err, color: 'red'});
-        });
-      },
 
       editItem(item) {
         this.editedIndex = this.items.indexOf(item);
         this.editedItem = JSON.parse(JSON.stringify(item));
         this.$refs.form.resetValidation();
         this.dialog = true;
-      },
-
-      close() {
-        this.dialog = false;
-        setTimeout(() => {
-          this.editedItem = Object.assign({}, this.defaultItem);
-          this.editedIndex = -1;
-          this.$refs.form.reset();
-        }, 300);
       },
 
 
@@ -525,52 +488,7 @@
         }
       },
 
-      index_details() {
-        this.loading = true;
-        return new Promise((resolve, reject) => {
-          const {sortBy, descending, page, rowsPerPage} = this.pagination;
 
-          let items = this.items;
-
-          if (this.pagination.sortBy) {
-            items = items.sort((a, b) => {
-              const sortA = a[sortBy];
-              const sortB = b[sortBy];
-
-              if (descending) {
-                if (sortA < sortB) return 1;
-                if (sortA > sortB) return -1;
-                return 0
-              } else {
-                if (sortA < sortB) return -1;
-                if (sortA > sortB) return 1;
-                return 0
-              }
-            })
-          }
-
-          if (rowsPerPage > 0) {
-            this.items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-          }
-
-          index_orders({
-            sort: `${sortBy}__${descending ? "desc" : "asc"}`,
-            page: page,
-            per_page: rowsPerPage,
-            search: this.search
-          }).then(res => {
-            resolve({
-              items: res.data.data,
-              total: res.data.total
-            })
-          }).catch(err => {
-            reject(err);
-          }).finally(() => {
-            this.loading = false;
-          });
-        });
-
-      }
     },
 
 

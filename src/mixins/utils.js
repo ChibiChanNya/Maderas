@@ -1,7 +1,7 @@
-export default  {
+export default {
 
-  data(){
-    return{
+  data() {
+    return {
       nameRules: [
         v => !!v || 'Campo requerido',
         v => (v && v.length <= 70) || 'Máximo 70 caracteres'
@@ -86,7 +86,32 @@ export default  {
       } else {
         return b < a ? -1 : 1;
       }
-    }
+    },
+
+    async deleteItem(item) {
+      const index = this.items.indexOf(item);
+      const confirm = await this.$confirm("¿Estás seguro de que quieres borrar este elemento? No podrá recuperarse");
+      if (confirm) {
+        this.delete_fn({id: item.id}).then(() => {
+          this.items.splice(index, 1);
+          this.$store.commit('setSnack', {text: "Elemento borrado exitosamente", color: 'success'});
+
+        }).catch(err => {
+          this.$store.commit('setSnack', {text: err, color: 'red'});
+        });
+      }
+    },
+
+    close() {
+      this.dialog = false;
+      setTimeout(() => {
+        this.$refs.form.reset();
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      }, 300);
+    },
+
   },
+
 
 };

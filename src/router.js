@@ -161,6 +161,17 @@ export default new Router({
     },
 
     {
+      path: '/documents/income',
+      name: 'documents-income',
+      component: () => import('./views/production/Shipments.vue'),
+      beforeEnter: hasPermissions,
+      meta: {
+        layout: 'App',
+        permission: 8,
+      }
+    },
+
+    {
       path: '*',
       name: 'Error',
       component: () => import('./views/404.vue'),

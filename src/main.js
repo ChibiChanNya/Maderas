@@ -6,16 +6,27 @@ import store from './store/index.js'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 const moment = require('moment');
-
 require('moment/locale/es');
+import VuetifyConfirm from 'vuetify-confirm'
+
+Vue.use(VuetifyConfirm, {
+  buttonTrueText: 'Confirmar',
+  buttonFalseText: 'Cancelar',
+  color: 'error',
+  icon: 'warning',
+  title: 'Advertencia',
+  property: '$confirm'
+});
 
 Vue.use(require('vue-moment'), {
   moment
 });
 
+
 Vue.use(VueAxios, axios);
 
 Vue.config.productionTip = false;
+
 
 const token = localStorage.getItem('user-token');
 if (token) {

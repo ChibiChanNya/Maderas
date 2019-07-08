@@ -163,7 +163,7 @@ export default new Router({
     {
       path: '/documents/income',
       name: 'documents-income',
-      component: () => import('./views/production/Shipments.vue'),
+      component: () => import('./views/documents/Ledger.vue'),
       beforeEnter: hasPermissions,
       meta: {
         layout: 'App',

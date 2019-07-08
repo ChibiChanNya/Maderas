@@ -6,6 +6,7 @@ import mock_users from "./mock-users";
 import mock_products from "./mock-products";
 import mock_client_orders from "./mock-client-orders";
 import mock_shipments from "./mock-shipments";
+import mock_ledger from "./mock-ledger"
 import {AUTH_LOGOUT} from '../store/actions/auth'
 import store from "../store"
 
@@ -23,6 +24,7 @@ const mocks = {
   '/orders/shipments/list': {'GET': {total: mock_shipments.length, data: mock_shipments}},
   '/orders/clients/list_lite': {'GET': mock_client_orders},
   '/orders/shipments/list_lite': {'GET': mock_shipments},
+  '/ledger/list': {'GET': {total: mock_ledger.length, data: mock_ledger}},
 
 
 };

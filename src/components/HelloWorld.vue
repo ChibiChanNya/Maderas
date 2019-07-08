@@ -3,20 +3,21 @@
     <v-layout
       text-xs-center
       wrap
+      justify-center
     >
       <v-flex xs12>
         <v-img
-          :src="require('../assets/logo.svg')"
+          :src="require('@/assets/img/Madereria Logo.png')"
           class="my-3"
           contain
-          height="200"
+          height="250"
         ></v-img>
       </v-flex>
 
-      <v-flex mb-4>
-        <h1 class="display-2 font-weight-bold mb-3">
-          Welcome to Vuetify
-        </h1>
+      <v-flex mb-4 md8>
+        <h2 class="display-2 font-weight-bold mb-3">
+          Bienvenidos al sistema de administración de Empaques y Tarimas Cuautla
+        </h2>
         <p class="subheading font-weight-regular">
           For help and collaboration with other Vuetify developers,
           <br>please join our online

@@ -106,27 +106,29 @@
                                 Pendiente
                             </v-btn>
                         </td>
-                        <td class="">
-                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">
-                                Ver Medidas
-                            </v-btn>
-                        </td>
-                        <td class="justify-start layout px-0">
-                            <v-icon
-                                    small
-                                    class="mr-5 "
-                                    @click="editItem(props.item)"
-                            >
-                                edit
-                            </v-icon>
-                            <v-icon
-                                    small
-                                    class="mr-4"
 
-                                    @click="deleteItem(props.item)"
-                            >
-                                delete
-                            </v-icon>
+                        <td class="justify-start layout px-0">
+                            <v-layout row justify-center>
+                                <v-btn flat small color="blue" @click="props.expanded = !props.expanded">
+                                    Ver Medidas
+                                </v-btn>
+                                <v-icon
+                                        small
+                                        class="mx-4 "
+                                        @click="editItem(props.item)"
+                                >
+                                    edit
+                                </v-icon>
+                                <v-icon
+                                        small
+                                        class="mr-4"
+
+                                        @click="deleteItem(props.item)"
+                                >
+                                    delete
+                                </v-icon>
+                            </v-layout>
+
                         </td>
                     </tr>
                 </template>

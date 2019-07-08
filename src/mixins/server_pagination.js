@@ -26,6 +26,7 @@ export default  {
 
   methods:{
     index_details() {
+      console.log("Index!");
       this.loading = true;
       return new Promise((resolve, reject) => {
         const {sortBy, descending, page, rowsPerPage} = this.pagination;

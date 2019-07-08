@@ -17,7 +17,7 @@
                             <v-form ref="form" v-model="valid_form" lazy-validation>
                                 <v-container grid-list-md>
                                     <v-layout wrap justify-center>
-                                        <v-flex xs12 sm6>
+                                        <v-flex xs6>
                                             <v-select
                                                     v-model="editedItem.type"
                                                     hint="Tipo de Acción"
@@ -30,29 +30,23 @@
                                                     :rules="required"
                                             ></v-select>
                                         </v-flex>
-                                        <v-flex xs12 sm6>
-                                            <v-select
-                                                    v-model="editedItem.provider_id"
-                                                    hint="Proveedor"
-                                                    :items="providers"
-                                                    item-text="name"
-                                                    item-value="id"
-                                                    label="Elije al proveedor"
-                                                    persistent-hint
-                                                    single-line
-                                            ></v-select>
+                                        <v-flex xs6>
+                                            <v-text-field v-model.lazy="editedItem.recipient"
+                                                          label="Beneficiario"
+                                                          hint="Entidad que recibio o realizó el pago"
+                                            ></v-text-field>
                                         </v-flex>
                                         <v-flex xs12 sm8>
                                             <v-text-field v-model.lazy="editedItem.concept"
                                                           :rules="required"
                                                           label="Concepto"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs12 sm4>
+                                        <v-flex xs6>
                                             <v-text-field v-model.number="editedItem.amount" type="number"
-                                                          :rules="[moneyRules, required]"
+                                                          :rules="moneyRules && required"
                                                           label="Monto"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs12 sm4>
+                                        <v-flex xs6>
                                             <v-text-field v-model="editedItem.invoice"
                                                           label="Factura"></v-text-field>
                                         </v-flex>
@@ -90,11 +84,12 @@
             >
                 <template v-slot:items="props">
                     <tr>
-                        <td class="">{{ props.item.type }}</td>
-                        <td class="">{{ props.item.target }}</td>
+                        <td class="">{{ action_name(props.item.type) }}</td>
+                        <td class="">{{ props.item.recipient }}</td>
                         <td class="">{{ props.item.concept }}</td>
-                        <td class="">{{ props.item.amount }}</td>
+                        <td :class="props.item.type === 'ingreso'? 'green--text' : 'red--text'">${{ props.item.amount }}</td>
                         <td class="">{{ props.item.date || "--" | moment('DD/M/YYYY')}}</td>
+                        <td class="">{{ user_name(props.item.user) }}</td>
 
                         <td class="justify-start layout px-0">
                             <v-icon
@@ -138,8 +133,7 @@
 </template>
 
 <script>
-  import {index_clients} from '../../api/production_controller';
-  import {index_suppliers} from '../../api/materials_controller';
+  import {index} from '../../api/users_controller';
   import {
     create_ledger,
     update_ledger,
@@ -158,6 +152,9 @@
         index_fn: index_ledger,
         delete_fn: remove_ledger,
 
+        pagination: {
+          sortBy: 'date'
+        },
         loading: true,
         dialog: false,
         search: '',
@@ -165,19 +162,19 @@
           {text: 'Tipo de Acción', value: 'type', align: 'center'},
 
           {
-            text: 'Proveedor',
+            text: 'Beneficiario',
             align: 'center',
-            value: 'provider'
+            value: 'recipient'
           },
           {text: 'Concepto', value: 'concept'},
-          {text: 'Usuario', value: 'user', align: 'center'},
           {text: "Monto", value: "amount", align: 'center'},
           {text: 'Fecha', value: 'date', align: 'center'},
+          {text: 'Usuario', value: 'user', align: 'center'},
+          {text: 'Acciones', value: 'id', align: 'center'},
         ],
 
         items: [],
-        clients: [],
-        providers: [],
+        users: [],
 
         valid_form: true,
 
@@ -214,11 +211,10 @@
     },
 
     mounted() {
-      this.axios.all([index_clients(), index_suppliers()])
-          .then(this.axios.spread(function (clients, providers) {
+      this.axios.all([index()])
+          .then(this.axios.spread(function (users) {
                 // Both requests are now complete
-                this.clients = clients.data;
-                this.providers = providers.data;
+                this.users = users.data;
               }.bind(this)
           ))
           .catch(error => {
@@ -226,10 +222,29 @@
           })
           .finally(() => {
             this.loading = false;
-          })
-    },
+          });
+
+      this.index_details()
+          .then(data => {
+            this.items = data.items;
+            this.total_items = data.total;
+          })    },
 
     methods: {
+
+      user_name(item){
+        const user = this.users.find((usr) => usr.id === item);
+        if(user && user.full_name)
+          return user.full_name;
+        else return "Usuario no encontrado";
+      },
+
+      action_name(item){
+        const action = this.actions.find((act) => act.value === item);
+        if(action && action.name)
+          return action.name;
+        else return "Tipo de Acción no encontrado";
+      },
 
       editItem(item) {
         this.editedIndex = this.items.indexOf(item);

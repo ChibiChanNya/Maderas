@@ -110,7 +110,7 @@
         },
         {
           icon: 'attach_file', text: 'Documentos', permission: 8, options: [
-            {icon: 'fas fa-money-check-alt', url: '/documents/income', text: "Ingresos/Egresos"}
+            {icon: 'attach_money', url: '/documents/income', text: "Ingresos/Egresos"}
           ]
         },
       ],

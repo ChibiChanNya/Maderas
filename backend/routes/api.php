@@ -86,6 +86,36 @@ Route::prefix('materials')->group(function () {
     });
 });
 
+Route::prefix('products')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New User
+        Route::post('create', 'ProductController@create');
+        // Get all Supplies
+        Route::get('list', 'ProductController@products_list');
+        // Update a Supply
+        Route::post('update', 'ProductController@product_update');
+        // Delete a Supply
+        Route::post('delete', 'ProductController@product_delete');
+    });
+});
+
+Route::prefix('clients')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New User
+        Route::post('create', 'ClientController@create');
+        // Get all Supplies
+        Route::get('list', 'ClientController@clients_list');
+        // Update a Supply
+        Route::post('update', 'ClientController@client_update');
+        // Delete a Supply
+        Route::post('delete', 'ClientController@client_delete');
+    });
+});
+
 Route::prefix('orders/providers')->group(function () {
     // Route::post('register', 'UserController@register');
     // Below mention routes are available only for the authenticated users.

@@ -150,6 +150,23 @@ Route::prefix('orders/clients')->group(function () {
     });
 });
 
+Route::prefix('shipments')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New Order
+        Route::post('create', 'ShipmentController@create');
+        // Get all Orders
+        Route::get('list', 'ShipmentController@shipments_list');
+        // Get all Orders LITE
+        Route::get('list_lite', 'ShipmentController@orders_list_lite');
+        // Update an Order
+        Route::post('update', 'ShipmentController@shipment_update');
+        // Delete an Order
+        Route::post('delete', 'ShipmentController@shipment_delete');
+    });
+});
+
 // Route::group([
 //     'prefix' => 'auth'
 // ], function ($router) {

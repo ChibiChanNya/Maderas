@@ -86,6 +86,36 @@ Route::prefix('materials')->group(function () {
     });
 });
 
+Route::prefix('products')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New User
+        Route::post('create', 'ProductController@create');
+        // Get all Supplies
+        Route::get('list', 'ProductController@products_list');
+        // Update a Supply
+        Route::post('update', 'ProductController@product_update');
+        // Delete a Supply
+        Route::post('delete', 'ProductController@product_delete');
+    });
+});
+
+Route::prefix('clients')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New User
+        Route::post('create', 'ClientController@create');
+        // Get all Supplies
+        Route::get('list', 'ClientController@clients_list');
+        // Update a Supply
+        Route::post('update', 'ClientController@client_update');
+        // Delete a Supply
+        Route::post('delete', 'ClientController@client_delete');
+    });
+});
+
 Route::prefix('orders/providers')->group(function () {
     // Route::post('register', 'UserController@register');
     // Below mention routes are available only for the authenticated users.
@@ -100,6 +130,40 @@ Route::prefix('orders/providers')->group(function () {
         Route::post('update', 'OrderToProviderController@order_update');
         // Delete an Order
         Route::post('delete', 'OrderToProviderController@order_delete');
+    });
+});
+
+Route::prefix('orders/clients')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New Order
+        Route::post('create', 'ClientOrderController@create');
+        // Get all Orders
+        Route::get('list', 'ClientOrderController@orders_list');
+        // Get all Orders LITE
+        Route::get('list_lite', 'ClientOrderController@orders_list_lite');
+        // Update an Order
+        Route::post('update', 'ClientOrderController@order_update');
+        // Delete an Order
+        Route::post('delete', 'ClientOrderController@order_delete');
+    });
+});
+
+Route::prefix('shipments')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New Order
+        Route::post('create', 'ShipmentController@create');
+        // Get all Orders
+        Route::get('list', 'ShipmentController@shipments_list');
+        // Get all Orders LITE
+        Route::get('list_lite', 'ShipmentController@orders_list_lite');
+        // Update an Order
+        Route::post('update', 'ShipmentController@shipment_update');
+        // Delete an Order
+        Route::post('delete', 'ShipmentController@shipment_delete');
     });
 });
 

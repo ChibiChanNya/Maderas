@@ -17,7 +17,7 @@ class CreateProductsTable extends Migration
             $table->bigIncrements('id');
             $table->string('sku');
             $table->string('name');
-            $table->string('description');
+            $table->string('description')->nullable();
             $table->decimal('price',9,2);
             $table->decimal('box_volume',9,2);
             $table->decimal('materials_volume',9,2);

@@ -285,10 +285,13 @@
 
         status_list: [
           {name: "Pendiente", value: "pendiente"},
-          {name: "Pendiente Tratamiento", value: "pendiente tratamiento"},
-          {name: "Listo", value: "listo"},
-          {name: "Enviado", value: "enviado"},
-          {name: "Pagado", value: "pagado"},
+          {name: "En Producción", value: "produccion"},
+          {name: "En Stock", value: "stock"},
+          {name: "Standby", value: "standby"},
+          {name: "Enviado", value: "facturado"},
+          {name: "Facturado", value: "parcial"},
+          {name: "Pendiente Pago", value: "pendiente pago"},
+          {name: "Completo", value: "completo"},
         ],
 
         valid_form: true,

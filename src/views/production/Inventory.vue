@@ -23,26 +23,31 @@
                                                           label="Nombre"></v-text-field>
                                         </v-flex>
                                         <v-flex xs12 sm6>
+                                            <v-text-field v-model="editedItem.sku"
+                                                          :rules="required"
+                                                          label="SKU"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs12 sm12>
                                             <v-text-field v-model="editedItem.description"
                                                           label="Descripcion"></v-text-field>
                                         </v-flex>
 
-                                        <v-flex xs6 sm6>
-                                            <v-text-field v-model.number="editedItem.recent_price" type="number"
+                                        <v-flex xs6 sm3>
+                                            <v-text-field v-model.number="editedItem.price" type="number"
                                                           :rules="priceRules"
                                                           label="Precio Actual"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs6 sm6>
-                                            <v-text-field v-model.number="editedItem.available_stock" type="number"
+                                        <v-flex xs6 sm3>
+                                            <v-text-field v-model.number="editedItem.stock" type="number"
                                                           :rules="numberRules"
                                                           label="Stock Disponible"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs6 sm4>
+                                        <v-flex xs6 sm3>
                                             <v-text-field v-model.number="editedItem.box_volume" type="number"
                                                           :rules="numberRules"
                                                           label="Volumen Caja"></v-text-field>
                                         </v-flex>
-                                        <v-flex xs6 sm4>
+                                        <v-flex xs6 sm3>
                                             <v-text-field v-model.number="editedItem.materials_volume" type="number"
                                                           :rules="numberRules"
                                                           label="Volumen Materiales"></v-text-field>
@@ -99,8 +104,8 @@
                         <td class="">{{ props.item.sku }}</td>
                         <td class="">{{ props.item.name }}</td>
                         <td class="">{{ props.item.description }}</td>
-                        <td class="">$ {{ Number(props.item.recent_price).toFixed(2) }}</td>
-                        <td class="">{{ props.item.available_stock }}</td>
+                        <td class="">$ {{ Number(props.item.price).toFixed(2) }}</td>
+                        <td class="">{{ props.item.stock }}</td>
                         <td class="">
                             <v-btn flat small color="blue" @click="props.expanded2 = !props.expanded2">
                                 Pendiente
@@ -211,8 +216,8 @@
           {text: 'SKU', value: 'sku'},
           {text: 'Nombre', value: 'name'},
           {text: 'Descripción', value: 'description'},
-          {text: 'Precio actual', value: 'recent_price'},
-          {text: 'Stock Disponible', value: 'available_stock'},
+          {text: 'Precio actual', value: 'price'},
+          {text: 'Stock Disponible', value: 'stock'},
           {text: 'Stock Pendiente', value: 'id', sortable: false},
           {text: 'Acciones', value: 'id', sortable: false, align:'center'},
         ],
@@ -228,26 +233,26 @@
           sku: '',
           name: '',
           description: '',
-          recent_price: 0,
+          price: 0,
           box_volume: 0,
           materials_volume: 0,
           height: 0,
           width: 0,
           length: 0,
-          available_stock: 0,
+          stock: 0,
         },
         defaultItem: {
           id: '',
           sku: '',
           name: '',
           description: '',
-          recent_price: 0,
+          price: 0,
           box_volume: 0,
           materials_volume: 0,
           height: 0,
           width: 0,
           length: 0,
-          available_stock: 0,
+          stock: 0,
         },
 
       }

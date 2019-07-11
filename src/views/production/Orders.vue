@@ -364,6 +364,9 @@
 
         status_list: [
           {name: "Pendiente", value: "pendiente"},
+          {name: "En Producción", value: "produccion"},
+          {name: "En Stock", value: "stock"},
+          {name: "Standby", value: "standby"},
           {name: "Parcial", value: "parcial"},
           {name: "Completo", value: "completo"},
         ],

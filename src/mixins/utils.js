@@ -24,8 +24,7 @@ export default {
         v => (!v || (!isNaN(v))) || 'Debe ser una cantidad'
       ],
       numberRules: [
-        v => !!v || 'Campo requerido',
-        v => (!isNaN(v) && v > 0) || "Debe ser un número positivo",
+        v => (!isNaN(v) && v >= 0) || "Debe ser un número positivo",
       ],
       required: [
         v => !!v || 'Campo requerido',
@@ -34,8 +33,7 @@ export default {
         v => !!v || 'Tipo requerido',
       ],
       priceRules: [
-        v => !!v || 'Campo requerido',
-        v => (!isNaN(v) && v > 0) || "Debe ser un número positivo",
+        v => (!isNaN(v) && v >= 0) || "Debe ser un número positivo",
       ],
       stockRules: [
         v => (!v || (!isNaN(v) && v >= 0)) || "Debe ser un número positivo",
@@ -97,7 +95,7 @@ export default {
           this.$store.commit('setSnack', {text: "Elemento borrado exitosamente", color: 'success'});
 
         }).catch(err => {
-          this.$store.commit('setSnack', {text: err, color: 'red'});
+          this.$store.commit('setSnack', {text: err.status || err, color: 'red'});
         });
       }
     },

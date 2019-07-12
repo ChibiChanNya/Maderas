@@ -159,6 +159,16 @@ export default new Router({
         permission: 2,
       }
     },
+    {
+      path: '/production/calcs',
+      name: 'production-reports',
+      component: () => import('./views/production/Calcs.vue'),
+      beforeEnter: hasPermissions,
+      meta: {
+        layout: 'App',
+        permission: 2,
+      }
+    },
 
     {
       path: '/documents/income',

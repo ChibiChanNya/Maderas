@@ -398,7 +398,6 @@
       }
     },
 
-
     computed: {
       formTitle() {
         return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'

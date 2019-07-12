@@ -98,7 +98,7 @@
             {icon: 'account_box', url: '/production/clients', text: 'Clientes'},
             {icon: 'assignment', url: '/production/orders', text: 'Pedidos'},
             {icon: 'local_shipping', url: '/production/shipments', text: 'Envíos'},
-            {icon: 'notes', url: '/production/reports', text: 'Reportes'},
+            {icon: 'notes', url: '/production/calcs', text: 'Reportes'},
           ]
         },
         {

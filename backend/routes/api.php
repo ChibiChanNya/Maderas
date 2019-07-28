@@ -159,11 +159,27 @@ Route::prefix('shipments')->group(function () {
         // Get all Orders
         Route::get('list', 'ShipmentController@shipments_list');
         // Get all Orders LITE
-        Route::get('list_lite', 'ShipmentController@orders_list_lite');
+        Route::get('list_lite', 'ShipmentController@shipments_list_lite');
         // Update an Order
         Route::post('update', 'ShipmentController@shipment_update');
         // Delete an Order
         Route::post('delete', 'ShipmentController@shipment_delete');
+    });
+});
+
+
+Route::prefix('ledger')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New Order
+        Route::post('create', 'LedgerController@create');
+        // Get all Orders
+        Route::get('list', 'LedgerController@ledgers_list');
+        // Update an Order
+        Route::post('update', 'LedgerController@ledger_update');
+        // Delete an Order
+        Route::post('delete', 'LedgerController@ledger_delete');
     });
 });
 

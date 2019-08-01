@@ -253,13 +253,18 @@
                     <tr>
                         <td class="">{{ provider_name(props.item.provider_id) }}</td>
                         <td class="">{{ (props.item.request_date || '--' ) | moment('DD/M/YYYY') }}</td>
-                        <td class="">$ {{ props.item.total_cost || 'Indefinido'}}</td>
+                        <td class="">{{ props.item.total_cost | currency('$') || '----'}}</td>
                         <td class="">{{ (props.item.delivery_date || '--' ) | moment('DD/M/YYYY') }}</td>
                         <td class="">{{ status_name(props.item.status) || '--'}}</td>
                         <td class="">
                             <v-btn flat small :color="props.item.status === 'pagado'? 'blue' : 'red'"
                                    @click="props.expanded = !props.expanded">
-                                {{ isNumber(props.item.remaining_cost)? "$ "+ props.item.remaining_cost : "----"}}
+                                <template v-if="isNumber(props.item.remaining_cost)">
+                                    {{props.item.remaining_cost | currency ('$')}}
+                                </template>
+                                <template v-else>
+                                    ----
+                                </template>
                             </v-btn>
                         </td>
                         <td class="">{{ props.item.invoice || '--'}}</td>
@@ -286,8 +291,9 @@
 
                 <template v-slot:expand="props">
                     <div class="grey lighten-3 pl-2">
+                        <p class="text-md-left pa-2"><strong>Descripción: </strong> {{ props.item.description }}</p>
+
                         <template v-if="props.item.order_details.length >0">
-                            <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
                             <tr>
                                 <th>Insumo Recibido</th>
                                 <th>Unidades</th>
@@ -303,7 +309,6 @@
                             </tr>
                         </template>
                         <template v-else>
-                            <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
                             <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
                                 Pedido pendiente de recibir
                             </div>
@@ -345,11 +350,12 @@
   } from '../../api/materials_controller';
   import utils from "../../mixins/utils"
   import server_pagination from "../../mixins/server_pagination"
+  import Vue2Filters from 'vue2-filters'
 
   export default {
     name: "MaterialOrders",
 
-    mixins: [utils, server_pagination],
+    mixins: [utils, server_pagination, Vue2Filters.mixin],
 
     data() {
       return {

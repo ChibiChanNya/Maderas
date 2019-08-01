@@ -8,6 +8,9 @@ import VueAxios from 'vue-axios'
 const moment = require('moment');
 require('moment/locale/es');
 import VuetifyConfirm from 'vuetify-confirm'
+import Vue2Filters from 'vue2-filters'
+
+Vue.use(Vue2Filters);
 
 Vue.use(VuetifyConfirm, {
   buttonTrueText: 'Confirmar',

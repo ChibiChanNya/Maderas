@@ -104,7 +104,7 @@
                         <td class="">{{ props.item.sku }}</td>
                         <td class="">{{ props.item.name }}</td>
                         <td class="">{{ props.item.description }}</td>
-                        <td class="">$ {{ Number(props.item.price).toFixed(2) }}</td>
+                        <td class="">{{ props.item.price | currency('$') || "----" }}</td>
                         <td class="">{{ props.item.stock }}</td>
                         <td class="">
                             <v-btn flat small color="blue" @click="props.expanded2 = !props.expanded2">
@@ -199,10 +199,11 @@
     index_orders,
   } from '../../api/production_controller';
   import utils from "../../mixins/utils"
+  import Vue2Filters from 'vue2-filters'
 
   export default {
     name: "ProductsInventory",
-    mixins: [utils],
+    mixins: [utils, Vue2Filters.mixin],
 
     data() {
       return {

@@ -97,7 +97,6 @@
 
     watch: {
       selected_product: function (prod) {
-        console.log(prod);
         this.size_a = prod.width;
         this.size_b = prod.length;
         this.size_c = prod.height;

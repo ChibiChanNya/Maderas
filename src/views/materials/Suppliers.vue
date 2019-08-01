@@ -141,7 +141,7 @@
                                     {{ status_name(order.status) || "--"}}
                                 </td>
                                 <td class="text-xs-center">
-                                    $ {{order.remaining_cost || 0}}
+                                    {{order.remaining_cost | currency('$') || "----"}}
                                 </td>
                                 <td class="text-xs-center">
                                     {{order.invoice || "--"}}
@@ -189,10 +189,11 @@
     index_orders_lite
   } from '../../api/materials_controller';
   import utils from "../../mixins/utils"
+  import Vue2Filters from 'vue2-filters'
 
   export default {
     name: "MaterialsSuppliers",
-    mixins: [utils],
+    mixins: [utils, Vue2Filters.mixin],
 
     data() {
       return {

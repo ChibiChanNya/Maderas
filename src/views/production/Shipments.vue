@@ -172,7 +172,7 @@
                 <template v-slot:items="props">
                     <tr>
                         <td class="">{{ order_data(props.item.order_id) }}</td>
-                        <td class="">$ {{ props.item.cost }}</td>
+                        <td class="">{{ props.item.cost | currency('$') || "----" }}</td>
                         <td class="">{{ status_name(props.item.status) }}</td>
                         <td class="">{{ (props.item.delivery_date || "--") | moment('DD/M/YYYY')}}</td>
                         <td class="">{{ props.item.certificate }}</td>
@@ -253,10 +253,11 @@
   } from '../../api/production_controller';
   import utils from "../../mixins/utils"
   import server_pagination from "../../mixins/server_pagination";
+  import Vue2Filters from 'vue2-filters'
 
   export default {
     name: "Shipments",
-    mixins: [utils, server_pagination],
+    mixins: [utils, server_pagination, Vue2Filters.mixin],
 
     data() {
       return {

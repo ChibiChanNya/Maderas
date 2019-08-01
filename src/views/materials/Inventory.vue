@@ -92,7 +92,7 @@
                         <td class="">{{ props.item.name }}</td>
                         <td class="">{{ props.item.type }}</td>
                         <td class="">{{ provider_name(props.item.provider_id) }}</td>
-                        <td class="">${{ Number(props.item.recent_price).toFixed(2) }}</td>
+                        <td class="">{{ Number(props.item.recent_price) | currency('$') || "----" }}</td>
                         <td class="">{{ props.item.available_stock }}</td>
                         <!--                        <td class="">-->
                         <!--                            <v-btn flat small color="blue" @click="props.expanded = !props.expanded">{{ calc_pending_stock(props.item) }}</v-btn>-->
@@ -171,11 +171,11 @@
     index_suppliers,
   } from '../../api/materials_controller';
   import utils from "../../mixins/utils"
-
+  import Vue2Filters from 'vue2-filters'
 
   export default {
     name: "MaterialsInventory",
-    mixins: [utils],
+    mixins: [utils, Vue2Filters.mixin],
 
     data() {
       return {

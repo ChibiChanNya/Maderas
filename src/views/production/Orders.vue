@@ -276,7 +276,7 @@
                                         </th>
                                     </tr>
                                     <tr v-for="item in getShipments(props.item)" :key="item.id">
-                                        <td>${{item.cost || "--"}}</td>
+                                        <td>{{item.cost | currency('$') || "--"}}</td>
                                         <td>{{status_name_shipment(item.status)}}</td>
                                         <td>{{ (item.delivery_date || "--") | moment('DD/M/YYYY') }}</td>
                                         <td v-for="(product, index) in item.shipment_details" :key="index">
@@ -327,11 +327,12 @@
   } from '../../api/production_controller';
   import utils from "../../mixins/utils";
   import server_pagination from "../../mixins/server_pagination";
+  import Vue2Filters from 'vue2-filters'
 
 
   export default {
     name: "ClientOrders",
-    mixins: [utils, server_pagination],
+    mixins: [utils, server_pagination, Vue2Filters.mixin],
 
     data() {
       return {

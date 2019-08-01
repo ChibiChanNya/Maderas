@@ -87,7 +87,7 @@
                         <td class="">{{ action_name(props.item.type) }}</td>
                         <td class="">{{ props.item.recipient }}</td>
                         <td class="">{{ props.item.concept }}</td>
-                        <td :class="props.item.type === 'ingreso'? 'green--text' : 'red--text'">${{ props.item.amount }}</td>
+                        <td :class="props.item.type === 'ingreso'? 'green--text' : 'red--text'">{{ props.item.amount | currency('$') || "----" }}</td>
                         <td class="">{{ props.item.date || "--" | moment('DD/M/YYYY')}}</td>
                         <td class="">{{ user_name(props.item.user) }}</td>
 
@@ -142,10 +142,11 @@
   } from '../../api/documents_controller';
   import utils from "../../mixins/utils"
   import server_pagination from "../../mixins/server_pagination"
+  import Vue2Filters from 'vue2-filters'
 
   export default {
     name: "IngresosEgresos",
-    mixins: [utils, server_pagination],
+    mixins: [utils, server_pagination, Vue2Filters.mixin],
 
     data() {
       return {

@@ -75,6 +75,13 @@ class ShipmentController extends Controller
         return $shipments;
     }
 
+    public function shipments_list_lite(Request $request){
+
+        $shipments = Shipment::all();
+
+        return $shipments;
+    }
+
     /**
      * Update a Shipment
      *

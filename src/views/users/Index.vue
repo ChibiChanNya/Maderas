@@ -206,7 +206,7 @@
                         <template v-if="current_history.length === 0">
                             <v-list-tile>
                                 <v-list-tile-content>
-                                    <v-list-tile-title>No hay actividades registradas para este usua</v-list-tile-title>
+                                    <v-list-tile-title>No hay actividades registradas para este usuario</v-list-tile-title>
                                 </v-list-tile-content>
                             </v-list-tile>
                         </template>

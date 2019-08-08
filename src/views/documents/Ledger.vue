@@ -86,8 +86,8 @@
         :items="items"
         class="elevation-1"
         :loading="loading"
-        :search="search"
-        hide-actions
+        :pagination.sync="pagination"
+        :total-items="total_items"
       >
         <template v-slot:items="props">
           <tr>
@@ -142,7 +142,6 @@
 </template>
 
 <script>
-import {index} from '../../api/users_controller';
 import {
   create_ledger,
   update_ledger,
@@ -184,8 +183,7 @@ export default {
       ],
 
       items: [],
-      users: [],
-
+      total_items: 0,
       valid_form: true,
 
       actions: [
@@ -198,7 +196,7 @@ export default {
       editedItem: {
         type: null,
         provider: null,
-        user: null,
+        user: 1,
         concept: '',
         amount: 0,
         date: new Date().toISOString().slice(0, 10),
@@ -206,7 +204,7 @@ export default {
       defaultItem: {
         type: null,
         provider: null,
-        user: null,
+        user: 1,
         concept: '',
         amount: 0,
         date: new Date().toISOString().slice(0, 10),
@@ -214,35 +212,11 @@ export default {
 
     }
   },
-
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? 'Nuevo Registro' : 'Editar Registro'
     },
-
   },
-
-  mounted() {
-    this.axios.all([index()])
-        .then(this.axios.spread(function (users) {
-              // Both requests are now complete
-              this.users = users.data;
-            }.bind(this)
-        ))
-        .catch(error => {
-          this.$store.commit('setSnack', {text: error, color: 'red'});
-        })
-        .finally(() => {
-          this.loading = false;
-        });
-
-    this.index_details()
-        .then(data => {
-          this.items = data.items;
-          this.total_items = data.total;
-        })
-  },
-
   methods: {
 
     user_name(item) {

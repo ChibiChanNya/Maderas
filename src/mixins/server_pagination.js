@@ -60,6 +60,7 @@ export default  {
           per_page: rowsPerPage,
           search: this.search
         }).then(res => {
+          console.log("RESPONSE FROM SERVER INDEX", res);
           resolve({
             items: res.data.data,
             total: res.data.total

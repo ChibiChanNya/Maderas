@@ -437,13 +437,10 @@ export default {
     formTitle() {
       return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
     },
-
     material_choices() {
       return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.length > 0 && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id)) || [];
     }
-
   },
-
   mounted() {
     this.axios.all([index_materials(), index_suppliers()])
         .then(this.axios.spread(function (materials, providers) {

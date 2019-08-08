@@ -13,7 +13,7 @@ class Ledger extends Model
      * @var array
      */
     protected $fillable = [
-        'type','recipient', 'cost', 'date', 'user',
+        'type','recipient', 'amount', 'date', 'user',
     ];
 
     /**

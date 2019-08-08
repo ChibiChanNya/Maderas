@@ -1,295 +1,307 @@
 <template>
-    <section id="suppliers">
+  <section id="suppliers">
 
-        <h1 class="text-md-center my-4 section-header">Historial de Ingresos y Egresos</h1>
-        <v-card>
+    <h1 class="text-md-center my-4 section-header">Historial de Ingresos y Egresos</h1>
+    <v-card>
+      <v-card-title>
+        <v-dialog v-model="dialog" max-width="500px" persistent>
+          <template v-slot:activator="{ on }">
+            <v-btn color="primary" dark class="mb-2" v-on="on">Nuevo Registro</v-btn>
+          </template>
+          <v-card>
             <v-card-title>
-                <v-dialog v-model="dialog" max-width="500px" persistent>
-                    <template v-slot:activator="{ on }">
-                        <v-btn color="primary" dark class="mb-2" v-on="on">Nuevo Registro</v-btn>
-                    </template>
-                    <v-card>
-                        <v-card-title>
-                            <span class="headline">{{ formTitle }}</span>
-                        </v-card-title>
-
-                        <v-card-text>
-                            <v-form ref="form" v-model="valid_form" lazy-validation>
-                                <v-container grid-list-md>
-                                    <v-layout wrap justify-center>
-                                        <v-flex xs6>
-                                            <v-select
-                                                    v-model="editedItem.type"
-                                                    hint="Tipo de Acción"
-                                                    :items="actions"
-                                                    item-text="name"
-                                                    item-value="value"
-                                                    label="Tipo de acción realizada"
-                                                    persistent-hint
-                                                    single-line
-                                                    :rules="required"
-                                            ></v-select>
-                                        </v-flex>
-                                        <v-flex xs6>
-                                            <v-text-field v-model.lazy="editedItem.recipient"
-                                                          label="Beneficiario"
-                                                          hint="Entidad que recibio o realizó el pago"
-                                            ></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs12 sm8>
-                                            <v-text-field v-model.lazy="editedItem.concept"
-                                                          :rules="required"
-                                                          label="Concepto"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs6>
-                                            <v-text-field v-model.number="editedItem.amount" type="number"
-                                                          :rules="moneyRules && required"
-                                                          label="Monto"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs6>
-                                            <v-text-field v-model="editedItem.invoice"
-                                                          label="Factura"></v-text-field>
-                                        </v-flex>
-
-                                    </v-layout>
-                                </v-container>
-                            </v-form>
-
-                        </v-card-text>
-
-                        <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
-                            <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
-                        </v-card-actions>
-                    </v-card>
-                </v-dialog>
-                <v-spacer></v-spacer>
-                <v-text-field
-                        v-model="search"
-                        append-icon="search"
-                        label="Buscar..."
-                        single-line
-                        hide-details
-                ></v-text-field>
+              <span class="headline">{{ formTitle }}</span>
             </v-card-title>
 
-            <v-data-table
-                    :headers="headers"
-                    :items="items"
-                    class="elevation-1"
-                    :loading="loading"
-                    :search="search"
-                    hide-actions
-            >
-                <template v-slot:items="props">
-                    <tr>
-                        <td class="">{{ action_name(props.item.type) }}</td>
-                        <td class="">{{ props.item.recipient }}</td>
-                        <td class="">{{ props.item.concept }}</td>
-                        <td :class="props.item.type === 'ingreso'? 'green--text' : 'red--text'">{{ props.item.amount | currency('$') || "----" }}</td>
-                        <td class="">{{ props.item.date || "--" | moment('DD/M/YYYY')}}</td>
-                        <td class="">{{ user_name(props.item.user) }}</td>
+            <v-card-text>
+              <v-form ref="form" v-model="valid_form" lazy-validation>
+                <v-container grid-list-md>
+                  <v-layout wrap justify-center>
+                    <v-flex xs6>
+                      <v-select
+                        v-model="editedItem.type"
+                        hint="Tipo de Acción"
+                        :items="actions"
+                        item-text="name"
+                        item-value="value"
+                        label="Tipo de acción realizada"
+                        persistent-hint
+                        single-line
+                        :rules="required"
+                      ></v-select>
+                    </v-flex>
+                    <v-flex xs6>
+                      <v-text-field v-model.lazy="editedItem.recipient"
+                                    label="Beneficiario"
+                                    hint="Entidad que recibio o realizó el pago"
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs12 sm6>
+                      <v-text-field v-model.lazy="editedItem.concept"
+                                    :rules="required"
+                                    label="Concepto"></v-text-field>
+                    </v-flex>
+                    <v-flex xs12 sm6>
+                      <v-text-field v-model.lazy="editedItem.user"
+                                    :rules="required"
+                                    label="Responsable"
+                                    hint="Persona que realizo o es responsable de la acción"
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs6 sm4>
+                      <v-text-field v-model.number="editedItem.amount" type="number"
+                                    :rules="moneyRules && required"
+                                    label="Monto"></v-text-field>
+                    </v-flex>
+                    <v-flex xs6 sm4>
+                      <v-text-field v-model="editedItem.invoice"
+                                    label="Factura"></v-text-field>
+                    </v-flex>
 
-                        <td class="justify-start layout px-0">
-                            <v-icon
-                                    small
-                                    class="mr-5 "
-                                    @click="editItem(props.item)"
-                            >
-                                edit
-                            </v-icon>
-                            <v-icon
-                                    small
-                                    class="mr-4"
+                  </v-layout>
+                </v-container>
+              </v-form>
 
-                                    @click="deleteItem(props.item)"
-                            >
-                                delete
-                            </v-icon>
-                        </td>
-                    </tr>
-                </template>
+            </v-card-text>
 
-                <template v-slot:no-data>
-                    <h1 v-if="loading" class="text-md-center my-3">
-                        <v-icon>timelapse</v-icon>
-                        Cargando datos ...
-                    </h1>
-                    <h1 v-else class="text-md-center my-3">
-                        <v-icon>warning</v-icon>
-                        No se encontraron datos
-                    </h1>
-                </template>
-                <template v-slot:pageText="props">
-                    Elementos {{ props.pageStart }} - {{ props.pageStop }} de {{ props.itemsLength }}
-                </template>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
+              <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+        <v-spacer></v-spacer>
+        <v-text-field
+          v-model="search"
+          append-icon="search"
+          label="Buscar..."
+          single-line
+          hide-details
+        ></v-text-field>
+      </v-card-title>
 
-            </v-data-table>
-        </v-card>
+      <v-data-table
+        :headers="headers"
+        :items="items"
+        class="elevation-1"
+        :loading="loading"
+        :search="search"
+        hide-actions
+      >
+        <template v-slot:items="props">
+          <tr>
+            <td class="">{{ action_name(props.item.type) }}</td>
+            <td class="">{{ props.item.recipient }}</td>
+            <td class="">{{ props.item.concept }}</td>
+            <td :class="props.item.type === 'ingreso'? 'green--text' : 'red--text'">{{ props.item.amount | currency('$')
+              || "----" }}
+            </td>
+            <td class="">{{ props.item.date || "--" | moment('DD/M/YYYY')}}</td>
+            <td class="">{{ user_name(props.item.user) }}</td>
+
+            <td class="justify-start layout px-0">
+              <v-icon
+                small
+                class="mr-5 "
+                @click="editItem(props.item)"
+              >
+                edit
+              </v-icon>
+              <v-icon
+                small
+                class="mr-4"
+
+                @click="deleteItem(props.item)"
+              >
+                delete
+              </v-icon>
+            </td>
+          </tr>
+        </template>
+
+        <template v-slot:no-data>
+          <h1 v-if="loading" class="text-md-center my-3">
+            <v-icon>timelapse</v-icon>
+            Cargando datos ...
+          </h1>
+          <h1 v-else class="text-md-center my-3">
+            <v-icon>warning</v-icon>
+            No se encontraron datos
+          </h1>
+        </template>
+        <template v-slot:pageText="props">
+          Elementos {{ props.pageStart }} - {{ props.pageStop }} de {{ props.itemsLength }}
+        </template>
+
+      </v-data-table>
+    </v-card>
 
 
-    </section>
+  </section>
 </template>
 
 <script>
-  import {index} from '../../api/users_controller';
-  import {
-    create_ledger,
-    update_ledger,
-    remove_ledger,
-    index_ledger,
-  } from '../../api/documents_controller';
-  import utils from "../../mixins/utils"
-  import server_pagination from "../../mixins/server_pagination"
-  import Vue2Filters from 'vue2-filters'
+import {index} from '../../api/users_controller';
+import {
+  create_ledger,
+  update_ledger,
+  remove_ledger,
+  index_ledger,
+} from '../../api/documents_controller';
+import utils from "../../mixins/utils"
+import server_pagination from "../../mixins/server_pagination"
+import Vue2Filters from 'vue2-filters'
 
-  export default {
-    name: "IngresosEgresos",
-    mixins: [utils, server_pagination, Vue2Filters.mixin],
+export default {
+  name: "IngresosEgresos",
+  mixins: [utils, server_pagination, Vue2Filters.mixin],
 
-    data() {
-      return {
-        index_fn: index_ledger,
-        delete_fn: remove_ledger,
+  data() {
+    return {
+      index_fn: index_ledger,
+      delete_fn: remove_ledger,
 
-        pagination: {
-          sortBy: 'date'
+      pagination: {
+        sortBy: 'date'
+      },
+      loading: true,
+      dialog: false,
+      search: '',
+      headers: [
+        {text: 'Tipo de Acción', value: 'type', align: 'center'},
+
+        {
+          text: 'Beneficiario',
+          align: 'center',
+          value: 'recipient'
         },
-        loading: true,
-        dialog: false,
-        search: '',
-        headers: [
-          {text: 'Tipo de Acción', value: 'type', align: 'center'},
+        {text: 'Concepto', value: 'concept'},
+        {text: "Monto", value: "amount", align: 'center'},
+        {text: 'Fecha', value: 'date', align: 'center'},
+        {text: 'Usuario', value: 'user', align: 'center'},
+        {text: 'Acciones', value: 'id', align: 'center'},
+      ],
 
-          {
-            text: 'Beneficiario',
-            align: 'center',
-            value: 'recipient'
-          },
-          {text: 'Concepto', value: 'concept'},
-          {text: "Monto", value: "amount", align: 'center'},
-          {text: 'Fecha', value: 'date', align: 'center'},
-          {text: 'Usuario', value: 'user', align: 'center'},
-          {text: 'Acciones', value: 'id', align: 'center'},
-        ],
+      items: [],
+      users: [],
 
-        items: [],
-        users: [],
+      valid_form: true,
 
-        valid_form: true,
+      actions: [
+        {name: "Ingreso", value: "ingreso"},
+        {name: "Salida de Producto", value: "salida"},
+        {name: "Pago", value: "pago"},
+      ],
 
-        actions: [
-          {name: "Ingreso", value: "ingreso"},
-          {name: "Salida de Producto", value: "salida"},
-          {name: "Pago", value: "pago"},
-        ],
-
-        editedIndex: -1,
-        editedItem: {
-          type: null,
-          provider: null,
-          concept: '',
-          amount: 0,
-          date: new Date().toISOString().slice(0, 10),
-        },
-        defaultItem: {
-          type: null,
-          provider: null,
-          concept: '',
-          amount: 0,
-          date: new Date().toISOString().slice(0, 10),
-        },
-
-      }
-    },
-
-    computed: {
-      formTitle() {
-        return this.editedIndex === -1 ? 'Nuevo Registro' : 'Editar Registro'
+      editedIndex: -1,
+      editedItem: {
+        type: null,
+        provider: null,
+        user: null,
+        concept: '',
+        amount: 0,
+        date: new Date().toISOString().slice(0, 10),
+      },
+      defaultItem: {
+        type: null,
+        provider: null,
+        user: null,
+        concept: '',
+        amount: 0,
+        date: new Date().toISOString().slice(0, 10),
       },
 
+    }
+  },
+
+  computed: {
+    formTitle() {
+      return this.editedIndex === -1 ? 'Nuevo Registro' : 'Editar Registro'
     },
 
-    mounted() {
-      this.axios.all([index()])
-          .then(this.axios.spread(function (users) {
-                // Both requests are now complete
-                this.users = users.data;
-              }.bind(this)
-          ))
-          .catch(error => {
-            this.$store.commit('setSnack', {text: error, color: 'red'});
-          })
-          .finally(() => {
-            this.loading = false;
+  },
+
+  mounted() {
+    this.axios.all([index()])
+        .then(this.axios.spread(function (users) {
+              // Both requests are now complete
+              this.users = users.data;
+            }.bind(this)
+        ))
+        .catch(error => {
+          this.$store.commit('setSnack', {text: error, color: 'red'});
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+
+    this.index_details()
+        .then(data => {
+          this.items = data.items;
+          this.total_items = data.total;
+        })
+  },
+
+  methods: {
+
+    user_name(item) {
+      const user = this.users.find((usr) => usr.id === item);
+      if (user && user.full_name)
+        return user.full_name;
+      else return "Usuario no encontrado";
+    },
+
+    action_name(item) {
+      const action = this.actions.find((act) => act.value === item);
+      if (action && action.name)
+        return action.name;
+      else return "Tipo de Acción no encontrado";
+    },
+
+    editItem(item) {
+      this.editedIndex = this.items.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.$refs.form.resetValidation();
+      this.dialog = true;
+    },
+
+    save() {
+      if (this.$refs.form.validate()) {
+        this.loading = true;
+        // Editing an User
+        if (this.editedIndex > -1) {
+          update_ledger(this.editedItem).then(() => {
+            Object.assign(this.items[this.editedIndex], this.editedItem);
+            this.$store.commit('setSnack', {text: "Registro actualizado exitosamente", color: 'success'});
+            this.close();
+          }).catch(err => {
+            this.$store.commit('setSnack', {text: err, color: 'red'});
+          }).finally(() => {
+            this.loading = false
           });
-
-      this.index_details()
-          .then(data => {
-            this.items = data.items;
-            this.total_items = data.total;
-          })    },
-
-    methods: {
-
-      user_name(item){
-        const user = this.users.find((usr) => usr.id === item);
-        if(user && user.full_name)
-          return user.full_name;
-        else return "Usuario no encontrado";
-      },
-
-      action_name(item){
-        const action = this.actions.find((act) => act.value === item);
-        if(action && action.name)
-          return action.name;
-        else return "Tipo de Acción no encontrado";
-      },
-
-      editItem(item) {
-        this.editedIndex = this.items.indexOf(item);
-        this.editedItem = Object.assign({}, item);
-        this.$refs.form.resetValidation();
-        this.dialog = true;
-      },
-
-      save() {
-        if (this.$refs.form.validate()) {
-          this.loading = true;
-          // Editing an User
-          if (this.editedIndex > -1) {
-            update_ledger(this.editedItem).then(() => {
-              Object.assign(this.items[this.editedIndex], this.editedItem);
-              this.$store.commit('setSnack', {text: "Registro actualizado exitosamente", color: 'success'});
-              this.close();
-            }).catch(err => {
-              this.$store.commit('setSnack', {text: err, color: 'red'});
-            }).finally(() => {
-              this.loading = false
-            });
-            //  Creating a new User
-          } else {
-            create_ledger(this.editedItem).then(() => {
-              this.items.push(Object.assign({}, this.editedItem));
-              this.$store.commit('setSnack', {text: "Registro creado exitosamente", color: 'success'});
-              this.close();
-            }).catch(err => {
-              this.$store.commit('setSnack', {text: err, color: 'red'});
-            }).finally(() => {
-              this.loading = false
-            });
-          }
-
+          //  Creating a new User
+        } else {
+          create_ledger(this.editedItem).then(() => {
+            this.items.push(Object.assign({}, this.editedItem));
+            this.$store.commit('setSnack', {text: "Registro creado exitosamente", color: 'success'});
+            this.close();
+          }).catch(err => {
+            this.$store.commit('setSnack', {text: err, color: 'red'});
+          }).finally(() => {
+            this.loading = false
+          });
         }
-      }
-    },
 
-  }
+      }
+    }
+  },
+
+}
 </script>
 
 <style>
-    table.v-table thead td:not(:nth-child(1)), table.v-table tbody td:not(:nth-child(1)), table.v-table thead th:not(:nth-child(1)), table.v-table tbody th:not(:nth-child(1)), table.v-table thead td:first-child, table.v-table tbody td:first-child, table.v-table thead th:first-child, table.v-table tbody th:first-child {
-        padding: 0 18px;
-    }
+table.v-table thead td:not(:nth-child(1)), table.v-table tbody td:not(:nth-child(1)), table.v-table thead th:not(:nth-child(1)), table.v-table tbody th:not(:nth-child(1)), table.v-table thead td:first-child, table.v-table tbody td:first-child, table.v-table thead th:first-child, table.v-table tbody th:first-child {
+  padding: 0 18px;
+}
 </style>

@@ -88,16 +88,19 @@ export default {
 
     async deleteItem(item) {
       const index = this.items.indexOf(item);
-      const confirm = await this.$confirm("¿Estás seguro de que quieres borrar este elemento? No podrá recuperarse");
-      if (confirm) {
-        this.delete_fn({id: item.id}).then(() => {
-          this.items.splice(index, 1);
-          this.$store.commit('setSnack', {text: "Elemento borrado exitosamente", color: 'success'});
+      this.$dialog
+          .confirm('¿Estás seguro de que quieres borrar este elemento? No podrá recuperarse')
+          .then((dialog) => {
+            this.delete_fn({id: item.id}).then(() => {
+              this.items.splice(index, 1);
+              this.$store.commit('setSnack', {text: "Elemento borrado exitosamente", color: 'success'});
 
-        }).catch(err => {
-          this.$store.commit('setSnack', {text: err.status || err, color: 'red'});
-        });
-      }
+            }).catch(err => {
+              this.$store.commit('setSnack', {text: err.status || err, color: 'red'});
+            }).finally( ()=> {
+              dialog.close();
+          })
+      })
     },
 
     close() {

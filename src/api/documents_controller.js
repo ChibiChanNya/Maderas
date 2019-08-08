@@ -5,7 +5,7 @@ import f_apiCall from "./api_fake"
 
 
 export const index_ledger = () => new Promise((resolve, reject) => {
-  f_apiCall({url: '/ledger/list', method: 'GET'}).then(resp => {
+  apiCall({url: '/ledger/list', method: 'GET'}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);

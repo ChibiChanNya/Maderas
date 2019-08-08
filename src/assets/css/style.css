@@ -1,6 +1,7 @@
 
 .application{
     flex-direction: column;
+    font-family: Helvetica, sans-serif;
 }
 
 .application.theme--light{
@@ -833,4 +834,29 @@ a {
 .v-dialog .v-card__title{
     background-color: rgb(139, 78, 55);
     border-bottom: 1px solid;
+}
+
+/* CONFIRM MODAL */
+.dg-content, .dg-btn{
+    font-family: Helvetica, sans-serif;
+}
+.dg-btn{
+    transition: border 0.2s linear;
+    font-weight: normal;
+    text-transform: capitalize;
+}
+.dg-btn.dg-btn--ok {
+    border: 1px solid transparent;
+    color: red;
+}
+.dg-btn.dg-btn--ok:hover {
+    border: 1px solid red;
+}
+.dg-btn.dg-btn--cancel {
+    border: 1px solid transparent;
+    background: transparent;
+    color: #1e88e5 !important;
+}
+.dg-btn.dg-btn--cancel:hover {
+    border: 1px solid #1e88e5 !important;
 }

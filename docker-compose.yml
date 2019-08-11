@@ -1,0 +1,46 @@
+version: '3.7'
+
+networks:
+  maderas:
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx_maderas
+    ports:
+      - "80:80"
+    volumes:
+      - ./backend:/var/www
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - maderas
+  mysql:
+    image: mysql:5.7.22
+    container_name: mysql_maderas
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_DATABASE: maderas_dev
+      MYSQL_USER: maderas_user
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - maderas
+  php:
+    build:
+      context: .
+      dockerfile: ./php/Dockerfile
+    container_name: php_maderas
+    volumes: 
+      - ./backend:/var/www
+    ports: 
+      - "9000:9000"
+    networks:
+      - maderas

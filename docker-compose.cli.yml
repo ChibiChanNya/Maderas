@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  composer:
+    image: composer:latest
+    init: true
+    volumes:
+      - ./backend:/app
+      - composer-cache:/root/.composer/cache
+    entrypoint: composer
+
+volumes:
+  composer-cache:
+    name: composer-cache

@@ -19,8 +19,8 @@ class CreateLedgersTable extends Migration
             $table->string('recipient');
             $table->decimal('amount', 9, 2)->nullable();
             $table->timestamp('date')->nullable();
-            $table->unsignedBigInteger('user')->index();
-            $table->foreign('user')->references('id')->on('users')->onDelete('cascade');
+            $table->string('person');
+            $table->string('concept');
             $table->timestamps();
         });
     }

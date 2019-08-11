@@ -15,7 +15,7 @@ class LedgerController extends Controller
             'type' => 'required',
             'recipient' => 'required',
             'amount' => 'required',
-            'user' => 'required',
+            'person' => 'required',
         ]);
         if ($v->fails())
         {

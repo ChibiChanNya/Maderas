@@ -7,6 +7,13 @@ services:
       - ./backend:/app
       - composer-cache:/root/.composer/cache
     entrypoint: composer
+  php:
+    image: maderas_php
+    init: true
+    volumes:
+      - ./backend:/usr/src/app
+    working_dir: /usr/src/app
+    entrypoint: php
 
 volumes:
   composer-cache:

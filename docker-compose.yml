@@ -31,6 +31,8 @@ services:
       MYSQL_ROOT_PASSWORD: secret
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
+    volumes:
+      - maderas-volume:/var/lib/mysql
     networks:
       - maderas
   php:
@@ -38,9 +40,12 @@ services:
       context: .
       dockerfile: ./php/Dockerfile
     container_name: php_maderas
+    working_dir: /var/www
     volumes: 
       - ./backend:/var/www
     ports: 
       - "9000:9000"
     networks:
       - maderas
+volumes:
+  maderas-volume:

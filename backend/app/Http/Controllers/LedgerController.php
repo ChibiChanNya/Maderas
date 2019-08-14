@@ -16,6 +16,7 @@ class LedgerController extends Controller
             'recipient' => 'required',
             'amount' => 'required',
             'person' => 'required',
+            'concept' => 'required',
         ]);
         if ($v->fails())
         {
@@ -32,7 +33,8 @@ class LedgerController extends Controller
         $ledger->recipient = $request->recipient;
         $ledger->amount = $request->amount;
         $ledger->date = $request->date ?? null;
-        $ledger->user = $request->user;
+        $ledger->person = $request->person;
+        $ledger->concept = $request->concept;
         $ledger->save();
 
         // dd($order_details[0]['units']);
@@ -46,7 +48,16 @@ class LedgerController extends Controller
 
     public function ledgers_list(Request $request)
     {
-        $ledgers = Ledger::all();
+        $orderColumn = 'id';
+        $orderType = 'asc';
+
+        if(!empty($request->sort)){
+            $arrSort = explode('__',$request->sort);
+            $orderColumn = $arrSort[0];
+            $orderType = $arrSort[1];
+        }
+
+        $ledgers = Ledger::orderBy($orderColumn, $orderType)->get();
 
         return $ledgers;
     }

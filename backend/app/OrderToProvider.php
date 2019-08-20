@@ -3,9 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\OperationsOrder;
 
 class OrderToProvider extends Model
 {
+    use OperationsOrder;
     protected $table = 'orders_to_providers';
     /**
      * The attributes that are mass assignable.

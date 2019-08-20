@@ -48,6 +48,8 @@ class LedgerController extends Controller
 
     public function ledgers_list(Request $request)
     {
+        $per_page = $request->per_page ?? 10;
+        
         $orderColumn = 'id';
         $orderType = 'asc';
 
@@ -57,7 +59,7 @@ class LedgerController extends Controller
             $orderType = $arrSort[1];
         }
 
-        $ledgers = Ledger::orderBy($orderColumn, $orderType)->get();
+        $ledgers = Ledger::orderBy($orderColumn, $orderType)->paginate($per_page);
 
         return $ledgers;
     }

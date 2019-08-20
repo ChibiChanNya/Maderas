@@ -42,7 +42,7 @@
                                     label="Concepto"></v-text-field>
                     </v-flex>
                     <v-flex xs12 sm6>
-                      <v-text-field v-model.lazy="editedItem.user"
+                      <v-text-field v-model.lazy="editedItem.person"
                                     :rules="required"
                                     label="Responsable"
                                     hint="Persona que realizo o es responsable de la acción"
@@ -74,6 +74,7 @@
         <v-spacer></v-spacer>
         <v-text-field
           v-model="search"
+          @input="isTyping = true"
           append-icon="search"
           label="Buscar..."
           single-line
@@ -97,8 +98,15 @@
             <td :class="props.item.type === 'ingreso'? 'green--text' : 'red--text'">{{ props.item.amount | currency('$')
               || "----" }}
             </td>
-            <td class="">{{ props.item.date || "--" | moment('DD/M/YYYY')}}</td>
-            <td class="">{{ user_name(props.item.user) }}</td>
+            <td class="">
+              <template v-if="props.item.date">
+                {{ props.item.date | moment('DD/M/YYYY')}}
+              </template>
+              <template v-else>
+                --
+              </template>
+            </td>
+            <td class="">{{ props.item.person }}</td>
 
             <td class="justify-start layout px-0">
               <v-icon
@@ -178,7 +186,7 @@ export default {
         {text: 'Concepto', value: 'concept'},
         {text: "Monto", value: "amount", align: 'center'},
         {text: 'Fecha', value: 'date', align: 'center'},
-        {text: 'Usuario', value: 'user', align: 'center'},
+        {text: 'Responsable', value: 'person', align: 'center'},
         {text: 'Acciones', value: 'id', align: 'center'},
       ],
 
@@ -196,7 +204,7 @@ export default {
       editedItem: {
         type: null,
         provider: null,
-        user: 1,
+        person: '',
         concept: '',
         amount: 0,
         date: new Date().toISOString().slice(0, 10),
@@ -204,7 +212,7 @@ export default {
       defaultItem: {
         type: null,
         provider: null,
-        user: 1,
+        person: '',
         concept: '',
         amount: 0,
         date: new Date().toISOString().slice(0, 10),
@@ -219,12 +227,6 @@ export default {
   },
   methods: {
 
-    user_name(item) {
-      const user = this.users.find((usr) => usr.id === item);
-      if (user && user.full_name)
-        return user.full_name;
-      else return "Usuario no encontrado";
-    },
 
     action_name(item) {
       const action = this.actions.find((act) => act.value === item);
@@ -243,7 +245,7 @@ export default {
     save() {
       if (this.$refs.form.validate()) {
         this.loading = true;
-        // Editing an User
+        // Editing a Record
         if (this.editedIndex > -1) {
           update_ledger(this.editedItem).then(() => {
             Object.assign(this.items[this.editedIndex], this.editedItem);
@@ -254,7 +256,7 @@ export default {
           }).finally(() => {
             this.loading = false
           });
-          //  Creating a new User
+          //  Creating a new Record
         } else {
           create_ledger(this.editedItem).then(() => {
             this.items.push(Object.assign({}, this.editedItem));

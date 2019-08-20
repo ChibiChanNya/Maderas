@@ -66,7 +66,7 @@
                             prepend-icon="event"
                             readonly
                             clearable
-                            :value="editedItem.request_date | moment('DD/M/YYYY')"
+                            :value="formatted_date(editedItem.request_date)"
                             v-on="on"
                           ></v-text-field>
                         </template>
@@ -98,7 +98,7 @@
                             label="Fecha de entrega"
                             prepend-icon="event"
                             clearable
-                            :value="editedItem.delivery_date | moment('DD/M/YYYY')"
+                            :value="formatted_date(editedItem.delivery_date)"
                             :rules="after_order_date_rule"
                             readonly
                             v-on="on"
@@ -132,7 +132,7 @@
                             label="Fecha de pago"
                             prepend-icon="event"
                             clearable
-                            :value="editedItem.payment_date | moment('DD/M/YYYY')"
+                            :value="formatted_date(editedItem.payment_date)"
                             :rules="after_order_date_rule"
                             readonly
                             v-on="on"
@@ -176,7 +176,7 @@
                       <template
                         v-for="(mat, index) in editedItem.order_details">
 
-                        <v-flex xs9 :key="index">
+                        <v-flex xs9 :key="mat.id">
                           <v-select
                             v-model="mat.material_id"
                             hint="Insumo"
@@ -195,13 +195,13 @@
                             </template>
                           </v-select>
                         </v-flex>
-                        <v-flex xs2 :key="mat.material_id">
+                        <v-flex xs2 :key="mat.id">
                           <v-text-field v-model="mat.units"
                                         :rules="numberRules"
                                         type="number"
                                         label="Cantidad"></v-text-field>
                         </v-flex>
-                        <v-flex xs1 :key="mat.material_id">
+                        <v-flex xs1 :key="mat.id">
                           <v-btn flat icon style="align-self:center"
                                  @click="removeMaterial(mat)">
                             <v-icon class="red--text">close</v-icon>
@@ -234,6 +234,7 @@
         <v-spacer></v-spacer>
         <v-text-field
           v-model="search"
+          @input="isTyping = true"
           append-icon="search"
           label="Buscar..."
           single-line
@@ -252,9 +253,23 @@
         <template v-slot:items="props">
           <tr>
             <td class="">{{ provider_name(props.item.provider_id) }}</td>
-            <td class="">{{ (props.item.request_date || '--' ) | moment('DD/M/YYYY') }}</td>
+            <td class="">
+              <template v-if="props.item.request_date">
+                {{ props.item.request_date | moment('DD/M/YYYY')}}
+              </template>
+              <template v-else>
+                --
+              </template>
+            </td>
             <td class="">{{ props.item.total_cost | currency('$') || '----'}}</td>
-            <td class="">{{ (props.item.delivery_date || '--' ) | moment('DD/M/YYYY') }}</td>
+            <td class="">
+              <template v-if="props.item.delivery_date">
+                {{ props.item.delivery_date | moment('DD/M/YYYY')}}
+              </template>
+              <template v-else>
+                --
+              </template>
+            </td>
             <td class="">{{ status_name(props.item.status) || '--'}}</td>
             <td class="">
               <v-btn flat small :color="props.item.status === 'pagado'? 'blue' : 'red'"
@@ -268,7 +283,14 @@
               </v-btn>
             </td>
             <td class="">{{ props.item.invoice || '--'}}</td>
-            <td class="">{{ (props.item.payment_date || '--' ) | moment('DD/M/YYYY') }}</td>
+            <td class="">
+              <template v-if="props.item.payment_date">
+                {{ props.item.payment_date | moment('DD/M/YYYY')}}
+              </template>
+              <template v-else>
+                --
+              </template>
+            </td>
             <td class="justify-start layout px-0">
               <v-icon
                 small
@@ -397,8 +419,8 @@ export default {
 
       after_order_date_rule: [
         v => {
-          const request_date = this.$moment(this.editedItem.request_date.slice(0,10), 'YYYY-M-DD');
-          const current = this.$moment(v, 'DD/M/YYYY');
+          const request_date = this.editedItem.request_date && this.$moment(this.editedItem.request_date.slice(0,10), 'YYYY-M-DD');
+          const current = v && this.$moment(v, 'DD/M/YYYY');
           return (!v || request_date.isBefore(current)) || "Debe ser posterior a fecha de pedido";
         }
       ],
@@ -410,9 +432,9 @@ export default {
         description: '',
         order_details: [""],
         total_cost: null,
-        request_date: this.$moment('DD/M/YYYY'),
-        delivery_date: this.$moment('DD/M/YYYY'),
-        payment_date: this.$moment('DD/M/YYYY'),
+        request_date: this.$moment(),
+        delivery_date: this.$moment(),
+        payment_date: this.$moment(),
         status: null,
         remaining_cost: 0,
         invoice: '',
@@ -439,7 +461,7 @@ export default {
     },
     material_choices() {
       return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.length > 0 && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id)) || [];
-    }
+    },
   },
   mounted() {
     this.axios.all([index_materials(), index_suppliers()])

@@ -1,5 +1,11 @@
-export default  {
+import debounce from "lodash.debounce";
 
+export default {
+  data() {
+    return {
+      isTyping: false
+    }
+  },
   watch: {
     pagination: {
       handler() {
@@ -12,20 +18,24 @@ export default  {
       deep: true
     },
 
-    search: {
-      handler() {
+    search: debounce(function () {
+      this.isTyping = false;
+    }, 500),
+
+    isTyping: function (value) {
+      if (!value) {
         this.index_details()
             .then(data => {
+              console.log("GOT SEARCH RESULTS", data);
               this.items = data.items;
               this.total_items = data.total_items;
             })
-      },
-      deep: true
+      }
     }
   },
 
-  methods:{
-    index_details() {
+  methods: {
+    index_details: function () {
       console.log("Index!");
       this.loading = true;
       return new Promise((resolve, reject) => {
@@ -53,14 +63,14 @@ export default  {
         if (rowsPerPage > 0) {
           this.items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
         }
+        const search_params = {};
+        if (sortBy) search_params.sort = `${sortBy}__${descending ? "desc" : "asc"}`;
+        search_params.page = page || 1;
+        search_params.per_page = rowsPerPage || 10;
+        if (this.search) search_params.search = this.search;
 
-        this.index_fn({
-          sort: `${sortBy}__${descending? "desc" : "asc"}`,
-          page: page,
-          per_page: rowsPerPage,
-          search: this.search
-        }).then(res => {
-          console.log("RESPONSE FROM SERVER INDEX", res);
+        this.index_fn(search_params).then(res => {
+          console.log("Index finishes", res.data.data);
           resolve({
             items: res.data.data,
             total: res.data.total
@@ -72,7 +82,7 @@ export default  {
         });
       });
 
-    },
+    }
   },
 
 };

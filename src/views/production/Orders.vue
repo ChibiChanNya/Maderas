@@ -78,7 +78,7 @@
                             prepend-icon="event"
                             readonly
                             clearable
-                            :value="editedItem.request_date | moment('DD/M/YYYY')"
+                            :value="formatted_date(editedItem.request_date)"
                             v-on="on"
                           ></v-text-field>
                         </template>
@@ -109,7 +109,7 @@
                             label="Fecha de terminación"
                             prepend-icon="event"
                             clearable
-                            :value="editedItem.finish_date | moment('DD/M/YYYY')"
+                            :value="formatted_date(editedItem.finish_date)"
                             :rules="after_order_date_rule"
                             readonly
                             v-on="on"
@@ -135,7 +135,7 @@
                       <template
                         v-for="product in editedItem.order_details">
 
-                        <v-flex xs9 :key="product.product_id">
+                        <v-flex xs9 :key="product.id">
                           <v-select
                             v-model="product.product_id"
                             hint="Producto"
@@ -154,13 +154,13 @@
                             </template>
                           </v-select>
                         </v-flex>
-                        <v-flex xs2 :key="product.product_id">
+                        <v-flex xs2 :key="product.id">
                           <v-text-field v-model="product.units"
                                         :rules="numberRules"
                                         type="number"
                                         label="Cantidad"></v-text-field>
                         </v-flex>
-                        <v-flex xs1 :key="product.product_id">
+                        <v-flex xs1 :key="product.id">
                           <v-btn flat icon style="align-self:center"
                                  @click="removeProduct(product)">
                             <v-icon class="red--text">close</v-icon>
@@ -192,6 +192,7 @@
         <v-text-field
           v-model="search"
           append-icon="search"
+          @input="isTyping = true"
           label="Buscar..."
           single-line
           hide-details
@@ -279,7 +280,7 @@
                     <td>{{item.cost | currency('$') || "--"}}</td>
                     <td>{{status_name_shipment(item.status)}}</td>
                     <td>{{ (item.delivery_date || "--") | moment('DD/M/YYYY') }}</td>
-                    <td v-for="(product, index) in item.shipment_details" :key="index">
+                    <td v-for="(product, index) in item.order_details" :key="index">
                       {{ product.units }}
                     </td>
                   </tr>
@@ -376,7 +377,7 @@ export default {
 
       after_order_date_rule: [
         v => {
-          const request_date = this.$moment(this.editedItem.request_date.slice(0, 10), 'YYYY-M-DD');
+          const request_date = this.editedItem.request_date && this.$moment(this.editedItem.request_date.slice(0, 10), 'YYYY-M-DD');
           const current = this.$moment(v, 'DD/M/YYYY');
           return (!v || request_date.isBefore(current)) || "Debe ser posterior a fecha de pedido";
         }
@@ -389,8 +390,8 @@ export default {
         contract: '',
         total_cost: 0,
         order_details: [""],
-        request_date: new Date().toISOString().slice(0, 10),
-        finish_date: new Date().toISOString().slice(0, 10),
+        request_date: this.$moment(),
+        finish_date: this.$moment(),
         status: null,
       },
       defaultItem: {

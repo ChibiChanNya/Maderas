@@ -17,6 +17,7 @@ class ClientOrderController extends Controller
             'client_id' => 'required',
             'request_date' => 'required',
             'status' => 'required',
+            'contract' => 'required',
             'order_details' => 'required',
         ]);
         if ($v->fails())
@@ -170,6 +171,48 @@ class ClientOrderController extends Controller
             'status' => 'done'
         ], 200);
         
+    }
+
+    public function make_operation(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'id' => 'required',
+        ]);
+        if ($v->fails())
+        {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $v->errors()
+            ], 422);
+        }
+
+        $order_id = $request->input('id');
+        $order = ClientOrder::find($order_id);
+
+        if (!$order) {
+            return $this->respondWithError('no order found');
+        }
+
+        $operation = $request->operation;
+
+        switch ($operation) {
+            case 'rest':
+                $order->reverseOperation();
+                return response()->json([
+                    'status' => 'done'
+                ], 200);
+                break;
+            
+            case 'revert':
+                $order->makeOperation();
+                return response()->json([
+                    'status' => 'done'
+                ], 200);
+                break;
+
+            default:
+                return $this->respondWithError('no operation found');
+        }
     }
 
     protected function respondWithError($error)

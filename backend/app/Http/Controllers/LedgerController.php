@@ -49,7 +49,7 @@ class LedgerController extends Controller
     public function ledgers_list(Request $request)
     {
         $per_page = $request->per_page ?? 10;
-        
+
         $orderColumn = 'id';
         $orderType = 'asc';
 
@@ -59,7 +59,11 @@ class LedgerController extends Controller
             $orderType = $arrSort[1];
         }
 
-        $ledgers = Ledger::orderBy($orderColumn, $orderType)->paginate($per_page);
+        $ledgers = Ledger::when($request->search, function($q,$req){
+            $q->where('person','LIKE','%'.$req.'%')
+                ->orWhere('concept','LIKE','%'.$req.'%')
+                ->orWhere('type','LIKE','%'.$req.'%');
+        })->orderBy($orderColumn, $orderType)->paginate($per_page);
 
         return $ledgers;
     }

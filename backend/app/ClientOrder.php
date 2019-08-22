@@ -3,9 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\OperationsOrder;
 
 class ClientOrder extends Model
 {
+    use OperationsOrder;
     /**
      * The attributes that are mass assignable.
      *

@@ -130,6 +130,8 @@ Route::prefix('orders/providers')->group(function () {
         Route::post('update', 'OrderToProviderController@order_update');
         // Delete an Order
         Route::post('delete', 'OrderToProviderController@order_delete');
+        //Make an operation to the Storage
+        Route::post('make_operation', 'OrderToProviderController@make_operation');
     });
 });
 
@@ -147,6 +149,8 @@ Route::prefix('orders/clients')->group(function () {
         Route::post('update', 'ClientOrderController@order_update');
         // Delete an Order
         Route::post('delete', 'ClientOrderController@order_delete');
+        //Make an operation to the Storage
+        Route::post('make_operation', 'ClientOrderController@make_operation');
     });
 });
 

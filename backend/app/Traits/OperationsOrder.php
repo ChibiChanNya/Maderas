@@ -4,7 +4,9 @@ namespace App\Traits;
 
 use App\LogAction;
 use App\OrderToProvider;
+use App\ClientOrder;
 use App\Supply;
+use App\Product;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -12,35 +14,56 @@ use Illuminate\Database\Eloquent\Model;
 
 trait OperationsOrder
 {
-    public function makeOperation($id)
+    public function makeOperation()
     {
         $class_table = get_class($this);
-        // $class_table === OrderToProvider::class
-        $details = $this::find($id)->details()->get();
+        if ($class_table === OrderToProvider::class) {
+            $item_name = 'material_id';
+            $supply_class = Supply::class;
+            $stock_name = 'available_stock';
+        }
+        if ($class_table === ClientOrder::class) {
+            $item_name = 'product_id';
+            $supply_class = Product::class;
+            $stock_name = 'stock';
+        }
+        // $details = $this::find($id)->details()->get();
+        $details = $this::details()->get();
 
-        $details->map(function ($i) {
-            $supply_id = $i->pivot['material_id'];
+        $details->map(function ($i) use ($item_name,$supply_class,$stock_name){
+            $supply_id = $i->pivot[$item_name];
             $add_units = $i->pivot['units'];
-            $supply = Supply::find($supply_id);
-            $actual_quantity = $supply->available_stock;
-            $supply->available_stock = $actual_quantity + $add_units;
+            $supply = $supply_class::find($supply_id);
+            $actual_quantity = $supply[$stock_name];
+            $supply[$stock_name] = $actual_quantity + $add_units;
 
             $supply->save();
         });
     }    
 
-    public function reverseOperation($id)
+    public function reverseOperation()
     {
         $class_table = get_class($this);
         // $class_table === OrderToProvider::class
-        $details = $this::find($id)->details()->get();
+        // $details = $this::find($id)->details()->get();
+        if ($class_table === OrderToProvider::class) {
+            $item_name = 'material_id';
+            $supply_class = Supply::class;
+            $stock_name = 'available_stock';
+        }
+        if ($class_table === ClientOrder::class) {
+            $item_name = 'product_id';
+            $supply_class = Product::class;
+            $stock_name = 'stock';
+        }
+        $details = $this::details()->get();
 
-        $details->map(function ($i) {
-            $supply_id = $i->pivot['material_id'];
+        $details->map(function ($i) use ($item_name,$supply_class,$stock_name){
+            $supply_id = $i->pivot[$item_name];
             $rest_units = $i->pivot['units'];
-            $supply = Supply::find($supply_id);
-            $actual_quantity = $supply->available_stock;
-            $supply->available_stock = $actual_quantity - $rest_units;
+            $supply = $supply_class::find($supply_id);
+            $actual_quantity = $supply[$stock_name];
+            $supply[$stock_name] = $actual_quantity - $rest_units;
 
             $supply->save();
         });

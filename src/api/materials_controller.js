@@ -107,3 +107,19 @@ export const remove_order = (item) => new Promise((resolve, reject) => {
     reject(err);
   })
 });
+
+export const add_operation = (id) => new Promise((resolve, reject) => {
+  apiCall({url: '/orders/providers/make_operation', method: 'POST', data: { id: id, operation: "add"} }).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});
+
+export const revert_operation = (id) => new Promise((resolve, reject) => {
+  apiCall({url: '/orders/providers/make_operation', method: 'POST', data: { id: id, operation: "revert"} }).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});

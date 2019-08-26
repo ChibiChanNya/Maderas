@@ -226,6 +226,8 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
+              <v-btn v-if="!editedItem.done_operation" color="green darken-1" flat @click="make_operation">Agregar a Inventario</v-btn>
+              <v-btn v-else color="green darken-1" flat @click="revert_operation">Revertir Agregar</v-btn>
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
             </v-card-actions>
@@ -368,7 +370,9 @@ import {
   index_orders,
   update_order,
   create_order,
-  remove_order
+  remove_order,
+  add_operation,
+  revert_operation
 } from '../../api/materials_controller';
 import utils from "../../mixins/utils"
 import server_pagination from "../../mixins/server_pagination"
@@ -438,6 +442,7 @@ export default {
         status: null,
         remaining_cost: 0,
         invoice: '',
+        done_operation: false,
       },
       defaultItem: {
         id: '',
@@ -451,6 +456,7 @@ export default {
         status: null,
         remaining_cost: 0,
         invoice: '',
+        done_operation: false,
       },
 
     }
@@ -498,7 +504,6 @@ export default {
       this.dialog = true;
     },
 
-
     save() {
       if (this.$refs.form.validate()) {
         this.loading = true;
@@ -529,7 +534,33 @@ export default {
       }
     },
 
+    make_operation(){
+      this.loading = true;
+      const id = this.editedItem.id;
+      add_operation(id).then( () => {
+        this.editedItem.done_operation = true;
+        this.items[this.editedIndex].done_operation = true;
+        this.$store.commit('setSnack', {text: "Insumos agregados al inventario", color: 'success'});
+      }).catch(err => {
+        this.$store.commit('setSnack', {text: err, color: 'red'});
+      }).finally(() => {
+        this.loading = false
+      });
+    },
 
+    revert_operation(){
+      this.loading = true;
+      const id = this.editedItem.id;
+      revert_operation(id).then( () => {
+        this.editedItem.done_operation = false;
+        this.items[this.editedIndex].done_operation = false;
+        this.$store.commit('setSnack', {text: "Insumos eliminados del inventario", color: 'info'});
+      }).catch(err => {
+        this.$store.commit('setSnack', {text: err, color: 'red'});
+      }).finally(() => {
+        this.loading = false
+      });
+    },
   }
 }
 </script>

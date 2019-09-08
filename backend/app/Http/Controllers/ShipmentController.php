@@ -18,6 +18,7 @@ class ShipmentController extends Controller
             'cost' => 'required',
             'certificate' => 'required',
             'status' => 'required',
+            'shipment_details' => 'required',
         ]);
         if ($v->fails())
         {
@@ -33,6 +34,11 @@ class ShipmentController extends Controller
         $shipment->delivery_date = $request->delivery_date ?? null;
         $shipment->status = $request->status;
         $shipment->save();
+
+        $shipment_details = $request->shipment_details;
+        foreach($shipment_details as $key => $value){
+            $shipment->details()->attach($value['product_id'],['units' => $value['units'], 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
+        }
         
         $admin_user = auth()->user();
 
@@ -106,6 +112,15 @@ class ShipmentController extends Controller
             $shipment->fill($request->all());
             $shipment->save();
 
+            if(!empty($request->shipment_details)){
+                $shipment->details()->detach();
+
+                $shipment_details = $request->shipment_details;
+                foreach($shipment_details as $key => $value){
+                    $shipment->details()->attach($value['product_id'],['units' => $value['units'], 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
+                }
+            }
+
             $admin_user = auth()->user();
             $admin_user->registerLog('updates shipment '. $shipment->id);
             return $shipment;
@@ -144,6 +159,58 @@ class ShipmentController extends Controller
             'status' => 'done'
         ], 200);
         
+    }
+
+    public function make_operation(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'id' => 'required',
+        ]);
+        if ($v->fails())
+        {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $v->errors()
+            ], 422);
+        }
+
+        $shipment_id = $request->input('id');
+        $shipment = Shipment::with(['details' => function ($q){
+            $q->select('name');
+        }])->find($shipment_id);
+
+        if (!$shipment) {
+            return $this->respondWithError('no shipment found');
+        }
+
+        $shipment_details = [];
+        foreach ($shipment->details as $details) {
+            $pru_details['product_id'] = $details->pivot->product_id;
+            $pru_details['units'] = $details->pivot->units;
+            array_push($shipment_details, $pru_details);
+        }
+
+        $order = ClientOrder::find($shipment->order_id);
+        $operation = $request->operation;
+
+        switch ($operation) {
+            case 'rest':
+                $order->reverseOperation($shipment_details);
+                return response()->json([
+                    'status' => 'done'
+                ], 200);
+                break;
+            
+            case 'revert':
+                $order->makeOperation($shipment_details);
+                return response()->json([
+                    'status' => 'done'
+                ], 200);
+                break;
+
+            default:
+                return $this->respondWithError('no operation found');
+        }
     }
 
     protected function respondWithError($error)

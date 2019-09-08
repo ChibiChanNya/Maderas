@@ -168,6 +168,8 @@ Route::prefix('shipments')->group(function () {
         Route::post('update', 'ShipmentController@shipment_update');
         // Delete an Order
         Route::post('delete', 'ShipmentController@shipment_delete');
+        //Make an operation to the Storage
+        Route::post('make_operation', 'ShipmentController@make_operation');
     });
 });
 

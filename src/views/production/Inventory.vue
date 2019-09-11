@@ -298,8 +298,8 @@
 
 
       editItem(item) {
-        this.editedIndex = this.items.indexOf(item);
-        this.editedItem = Object.assign({}, item);
+          this.editedIndex = this.items.findIndex( (product) => product.id === item.id);
+          this.editedItem = JSON.parse(JSON.stringify(this.items[this.editedIndex]));
         this.$refs.form.resetValidation();
         this.dialog = true;
       },

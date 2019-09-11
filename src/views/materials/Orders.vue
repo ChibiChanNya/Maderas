@@ -56,6 +56,7 @@
                         ref="dialog1"
                         :return-value.sync="editedItem.request_date"
                         persistent
+                        v-model="modal_date_1"
                         lazy
                         full-width
                         width="290px"
@@ -226,7 +227,7 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn v-if="!editedItem.done_operation" color="green darken-1" flat @click="make_operation">Agregar a Inventario</v-btn>
+              <v-btn v-if="!editedItem.operation_dispatched" color="green darken-1" flat @click="make_operation">Agregar a Inventario</v-btn>
               <v-btn v-else color="green darken-1" flat @click="revert_operation">Revertir Agregar</v-btn>
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
@@ -442,7 +443,7 @@ export default {
         status: null,
         remaining_cost: 0,
         invoice: '',
-        done_operation: false,
+        operation_dispatched: false,
       },
       defaultItem: {
         id: '',
@@ -456,7 +457,7 @@ export default {
         status: null,
         remaining_cost: 0,
         invoice: '',
-        done_operation: false,
+        operation_dispatched: false,
       },
 
     }
@@ -498,8 +499,8 @@ export default {
     },
 
     editItem(item) {
-      this.editedIndex = this.items.indexOf(item);
-      this.editedItem = JSON.parse(JSON.stringify(item));
+      this.editedIndex = this.items.findIndex( (order) => order.id === item.id);
+      this.editedItem = JSON.parse(JSON.stringify(this.items[this.editedIndex]));
       this.$refs.form.resetValidation();
       this.dialog = true;
     },
@@ -538,8 +539,8 @@ export default {
       this.loading = true;
       const id = this.editedItem.id;
       add_operation(id).then( () => {
-        this.editedItem.done_operation = true;
-        this.items[this.editedIndex].done_operation = true;
+        this.editedItem.operation_dispatched = true;
+        this.items[this.editedIndex].operation_dispatched = true;
         this.$store.commit('setSnack', {text: "Insumos agregados al inventario", color: 'success'});
       }).catch(err => {
         this.$store.commit('setSnack', {text: err, color: 'red'});
@@ -552,8 +553,8 @@ export default {
       this.loading = true;
       const id = this.editedItem.id;
       revert_operation(id).then( () => {
-        this.editedItem.done_operation = false;
-        this.items[this.editedIndex].done_operation = false;
+        this.editedItem.operation_dispatched = false;
+        this.items[this.editedIndex].operation_dispatched = false;
         this.$store.commit('setSnack', {text: "Insumos eliminados del inventario", color: 'info'});
       }).catch(err => {
         this.$store.commit('setSnack', {text: err, color: 'red'});

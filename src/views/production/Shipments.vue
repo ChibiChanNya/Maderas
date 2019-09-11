@@ -91,7 +91,6 @@
                     <v-flex xs12>
                       <h3>Productos Solicitados</h3>
                     </v-flex>
-                    <template>
                       <template
                         v-for="product in editedItem.shipment_details">
 
@@ -135,8 +134,6 @@
                         <v-btn flat color="info" @click="addProduct">Agregar nuevo producto
                         </v-btn>
                       </v-flex>
-                    </template>
-
                   </v-layout>
                 </v-container>
               </v-form>
@@ -145,6 +142,10 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
+              <v-btn v-if="!editedItem.operation_dispatched" color="green darken-1" flat @click="make_operation">Sacar
+                de Inventario
+              </v-btn>
+              <v-btn v-else color="green darken-1" flat @click="revert_operation">Regresar a Inventario</v-btn>
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
             </v-card-actions>
@@ -255,7 +256,9 @@ import {
   index_orders_lite,
   update_shipment,
   create_shipment,
-  remove_shipment
+  remove_shipment,
+  rest_operation,
+  revert_operation
 } from '../../api/production_controller';
 import utils from "../../mixins/utils"
 import server_pagination from "../../mixins/server_pagination";
@@ -311,20 +314,22 @@ export default {
         order_id: '',
         cost: 0,
         certificate: '',
-        delivery_date: this.$moment(),
+        delivery_date: new Date().toISOString().slice(0, 10),
         status: null,
         invoice: null,
-        shipment_details: [""],
+        shipment_details: [],
+        operation_dispatched: false,
       },
       defaultItem: {
         id: '',
         order_id: '',
         cost: 0,
         certificate: '',
-        delivery_date: this.$moment(),
+        delivery_date: new Date().toISOString().slice(0, 10),
         status: null,
         invoice: null,
-        shipment_details: [""],
+        shipment_details: [],
+        operation_dispatched: false,
       },
 
     }
@@ -374,8 +379,8 @@ export default {
 
 
     editItem(item) {
-      this.editedIndex = this.items.indexOf(item);
-      this.editedItem = JSON.parse(JSON.stringify(item));
+      this.editedIndex = this.items.findIndex( (shipment) => shipment.id === item.id);
+      this.editedItem = JSON.parse(JSON.stringify(this.items[this.editedIndex]));
       this.$refs.form.resetValidation();
       this.dialog = true;
     },
@@ -409,6 +414,34 @@ export default {
         }
 
       }
+    },
+
+    make_operation() {
+      this.loading = true;
+      const id = this.editedItem.id;
+      rest_operation(id).then(() => {
+        this.editedItem.operation_dispatched = true;
+        this.items[this.editedIndex].operation_dispatched = true;
+        this.$store.commit('setSnack', {text: "Insumos eliminados del inventario", color: 'success'});
+      }).catch(err => {
+        this.$store.commit('setSnack', {text: err, color: 'red'});
+      }).finally(() => {
+        this.loading = false
+      });
+    },
+
+    revert_operation() {
+      this.loading = true;
+      const id = this.editedItem.id;
+      revert_operation(id).then(() => {
+        this.editedItem.operation_dispatched = false;
+        this.items[this.editedIndex].operation_dispatched = false;
+        this.$store.commit('setSnack', {text: "Insumos regresados al inventario", color: 'info'});
+      }).catch(err => {
+        this.$store.commit('setSnack', {text: err, color: 'red'});
+      }).finally(() => {
+        this.loading = false
+      });
     },
 
   },

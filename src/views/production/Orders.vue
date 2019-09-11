@@ -463,8 +463,8 @@ export default {
 
 
     editItem(item) {
-      this.editedIndex = this.items.indexOf(item);
-      this.editedItem = JSON.parse(JSON.stringify(item));
+      this.editedIndex = this.items.findIndex( (order) => order.id === item.id);
+      this.editedItem = JSON.parse(JSON.stringify(this.items[this.editedIndex]));
       this.$refs.form.resetValidation();
       this.dialog = true;
     },

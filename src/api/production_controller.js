@@ -125,7 +125,7 @@ export const index_shipments_lite = () => new Promise((resolve, reject) => {
 });
 
 export const update_shipment = (item) => new Promise((resolve, reject) => {
-  apiCall({url: '/orders/shipment/update', method: 'POST', data: item}).then(resp => {
+  apiCall({url: '/shipments/update', method: 'POST', data: item}).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);
@@ -142,6 +142,22 @@ export const create_shipment = (item) => new Promise((resolve, reject) => {
 
 export const remove_shipment = (item) => new Promise((resolve, reject) => {
   apiCall({url: '/shipments/delete', method: 'POST', data: item}).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});
+
+export const rest_operation = (id) => new Promise((resolve, reject) => {
+  apiCall({url: '/shipments/make_operation', method: 'POST', data: { id: id, operation: "rest"} }).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});
+
+export const revert_operation = (id) => new Promise((resolve, reject) => {
+  apiCall({url: '/shipments/make_operation', method: 'POST', data: { id: id, operation: "revert"} }).then(resp => {
     resolve(resp);
   }).catch(err => {
     reject(err);

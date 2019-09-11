@@ -39,9 +39,12 @@ trait OperationsOrder
 
             $supply->save();
         });
+
+        $this->operation_dispatched = true;
+        $this->save();
     }    
 
-    public function reverseOperation()
+    public function reverseOperation($units = null)
     {
         $class_table = get_class($this);
         // $class_table === OrderToProvider::class
@@ -61,12 +64,16 @@ trait OperationsOrder
         $details->map(function ($i) use ($item_name,$supply_class,$stock_name){
             $supply_id = $i->pivot[$item_name];
             $rest_units = $i->pivot['units'];
+            dd('error');
             $supply = $supply_class::find($supply_id);
             $actual_quantity = $supply[$stock_name];
             $supply[$stock_name] = $actual_quantity - $rest_units;
 
             $supply->save();
         });
+
+        $this->operation_dispatched = false;
+        $this->save();
     }    
 
     protected static function getRecordActivityEvents()

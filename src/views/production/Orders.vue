@@ -272,17 +272,11 @@
                     <th>Costo</th>
                     <th>Status</th>
                     <th>Fecha de Entrega</th>
-                    <th v-for="product in props.item.order_details" :key="product.product_id">
-                      {{product_name(product.product_id)}}
-                    </th>
                   </tr>
                   <tr v-for="item in getShipments(props.item)" :key="item.id">
                     <td>{{item.cost | currency('$') || "--"}}</td>
                     <td>{{status_name_shipment(item.status)}}</td>
                     <td>{{ (item.delivery_date || "--") | moment('DD/M/YYYY') }}</td>
-                    <td v-for="(product, index) in item.order_details" :key="index">
-                      {{ product.units }}
-                    </td>
                   </tr>
                 </template>
                 <template v-else>
@@ -474,9 +468,10 @@ export default {
       if (this.$refs.form.validate()) {
         this.loading = true;
         // Editing an User
+        const payload = JSON.parse(JSON.stringify(this.editedItem));
         if (this.editedIndex > -1) {
-          update_order(this.editedItem).then(() => {
-            Object.assign(this.items[this.editedIndex], this.editedItem);
+          update_order(payload).then(() => {
+            this.$set(this.items, this.editedIndex, payload);
             this.$store.commit('setSnack', {text: "Pedido actualizado exitosamente", color: 'success'});
             this.close();
           }).catch(err => {
@@ -486,8 +481,8 @@ export default {
           });
           //  Creating a new User
         } else {
-          create_order(this.editedItem).then(() => {
-            this.items.push(Object.assign({}, this.editedItem));
+          create_order(payload).then(() => {
+            this.items.push(JSON.parse(JSON.stringify(this.editedItem)));
             this.$store.commit('setSnack', {text: "Pedido creado exitosamente", color: 'success'});
             this.close();
           }).catch(err => {

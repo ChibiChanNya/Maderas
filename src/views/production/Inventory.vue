@@ -310,7 +310,7 @@
           // Editing an User
           if (this.editedIndex > -1) {
             update_product(this.editedItem).then(() => {
-              Object.assign(this.items[this.editedIndex], this.editedItem);
+                this.$set(this.items, this.editedIndex, JSON.parse(JSON.stringify(this.editedItem)));
               this.$store.commit('setSnack', {text: "Producto actualizado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {

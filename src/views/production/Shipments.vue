@@ -317,7 +317,7 @@ export default {
         delivery_date: new Date().toISOString().slice(0, 10),
         status: null,
         invoice: null,
-        shipment_details: [],
+        shipment_details: [""],
         operation_dispatched: false,
       },
       defaultItem: {
@@ -328,7 +328,7 @@ export default {
         delivery_date: new Date().toISOString().slice(0, 10),
         status: null,
         invoice: null,
-        shipment_details: [],
+        shipment_details: [""],
         operation_dispatched: false,
       },
 
@@ -383,6 +383,7 @@ export default {
       this.editedItem = JSON.parse(JSON.stringify(this.items[this.editedIndex]));
       this.$refs.form.resetValidation();
       this.dialog = true;
+      console.log("EDITED ITEM", this.editedItem);
     },
 
 
@@ -390,10 +391,11 @@ export default {
       if (this.$refs.form.validate()) {
         this.loading = true;
         // Editing an User
+        const payload = JSON.parse(JSON.stringify(this.editedItem));
         if (this.editedIndex > -1) {
-          update_shipment(this.editedItem).then(() => {
-            this.items[this.editedIndex] = JSON.parse(JSON.stringify(this.editedItem));
-            this.$store.commit('setSnack', {text: "Entrega actualizada exitosamente", color: 'success'});
+          update_shipment(payload).then((result) => {
+            this.$set(this.items, this.editedIndex, payload);
+            this.$store.commit('setSnack', {text: "Pedido actualizado exitosamente", color: 'success'});
             this.close();
           }).catch(err => {
             this.$store.commit('setSnack', {text: err, color: 'red'});
@@ -402,7 +404,7 @@ export default {
           });
           //  Creating a new User
         } else {
-          create_shipment(this.editedItem).then(() => {
+          create_shipment(payload).then(() => {
             this.items.push(JSON.parse(JSON.stringify(this.editedItem)));
             this.$store.commit('setSnack', {text: "Pedido creado exitosamente", color: 'success'});
             this.close();
@@ -417,6 +419,10 @@ export default {
     },
 
     make_operation() {
+      if(this.editedItem.shipment_details.length < 1){
+        this.$store.commit('setSnack', {text: "No hay productos en este pedido", color: 'red'});
+        return;
+      }
       this.loading = true;
       const id = this.editedItem.id;
       rest_operation(id).then(() => {
@@ -431,6 +437,10 @@ export default {
     },
 
     revert_operation() {
+      if(this.editedItem.shipment_details.length < 1){
+        this.$store.commit('setSnack', {text: "No hay productos en este pedido", color: 'red'});
+        return;
+      }
       this.loading = true;
       const id = this.editedItem.id;
       revert_operation(id).then(() => {

@@ -536,6 +536,10 @@ export default {
     },
 
     make_operation(){
+      if(this.editedItem.order_details.length < 1){
+        this.$store.commit('setSnack', {text: "No hay productos en este pedido", color: 'red'});
+        return;
+      }
       this.loading = true;
       const id = this.editedItem.id;
       add_operation(id).then( () => {
@@ -550,6 +554,10 @@ export default {
     },
 
     revert_operation(){
+      if(this.editedItem.order_details.length < 1){
+        this.$store.commit('setSnack', {text: "No hay productos en este pedido", color: 'red'});
+        return;
+      }
       this.loading = true;
       const id = this.editedItem.id;
       revert_operation(id).then( () => {

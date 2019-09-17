@@ -511,7 +511,7 @@ export default {
         // Editing an User
         if (this.editedIndex > -1) {
           update_order(this.editedItem).then(() => {
-            this.items[this.editedIndex] = JSON.parse(JSON.stringify(this.editedItem));
+            this.$set(this.items, this.editedIndex, JSON.parse(JSON.stringify(this.editedItem)));
             this.$store.commit('setSnack', {text: "Pedido actualizado exitosamente", color: 'success'});
             this.close();
           }).catch(err => {

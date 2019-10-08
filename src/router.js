@@ -73,17 +73,15 @@ export default new Router({
         layout: 'App'
       }
     },
-
     {
       path: '/dashboard',
       name: 'Dashboard',
-      component: () => import('./views/Dashboard.vue'),
+      component: () => import('./views/dashboard/Dashboard.vue'),
       beforeEnter: ifAuthenticated,
       meta: {
         layout: 'App'
       }
     },
-
     {
       path: '/users',
       name: 'users',

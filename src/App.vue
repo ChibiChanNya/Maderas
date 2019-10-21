@@ -9,7 +9,7 @@
 <script>
   /* eslint-disable no-unused-vars */
   import VueExtendLayouts from 'vue-extend-layout'
-  import {AUTH_LOGOUT} from "./store/actions/auth";
+  import {AUTH_LOGOUT, AUTH_REFRESH} from "./store/actions/auth";
   import Snackbar from './components/Snackbar'
 
   export default {
@@ -28,6 +28,7 @@
         throw err;
       });
     });
+    this.$store.dispatch(AUTH_REFRESH)
   },
 
 }

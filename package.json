@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^0.18.1",
     "chart.js": "^2.8.0",
+    "chartjs-plugin-labels": "^1.1.0",
     "core-js": "^2.6.9",
     "lodash.debounce": "^4.0.8",
     "node-sass": "^4.12.0",

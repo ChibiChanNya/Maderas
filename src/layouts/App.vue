@@ -144,7 +144,7 @@ export default {
     refresh_token(){
       if (this.$store.getters.isAuthenticated) {
         this.$store.dispatch(AUTH_REFRESH, {username: this.$store.getters.getUsername}).then(() => {
-          this.$store.commit('setSnack', {text: "Token Refreshed", color: 'info'});
+          // this.$store.commit('setSnack', {text: "Token Refreshed", color: 'info'});
         }).catch(() => {
           this.$store.commit('setSnack', {
             text: "Tu sesión ha expirado, por favor ingresa de nuevo.",

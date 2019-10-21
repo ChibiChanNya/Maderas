@@ -14,6 +14,9 @@
           <v-flex xs12 sm6 md5>
             <ledger-history></ledger-history>
           </v-flex>
+          <v-flex xs12 sm6 md5>
+            <provider-payables></provider-payables>
+          </v-flex>
         </v-layout>
       </v-container>
     </v-card>
@@ -24,9 +27,10 @@
 import LowStockList from "./LowStockDash";
 import LedgerHistory from "./LedgerHistoryDash";
 import PendingInvoices from "./PendingInvoicesDash";
+import ProviderPayables from "./ProviderPayablesDash"
 export default {
   name: "Dashboard",
-  components: { LowStockList, LedgerHistory, PendingInvoices },
+  components: { LowStockList, LedgerHistory, PendingInvoices, ProviderPayables },
   data(){
     return{
     //  Dummy Data for displaying on dashboard.

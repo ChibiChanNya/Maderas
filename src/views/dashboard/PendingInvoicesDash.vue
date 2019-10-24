@@ -2,7 +2,6 @@
   <v-card elevation="2" class="fill-height">
     <v-card-title class="blue darken-1 white--text">
       <span class="title mx-auto">Facturas por cobrar</span>
-
     </v-card-title>
     <v-card-text>
       <table class="mx-auto">
@@ -23,6 +22,9 @@
         </tr>
         </tbody>
       </table>
+      <div class="font-weight-bold text-md-right">
+        <p >TOTAL: <span class="red--text ml-4">{{ totalAmount | currency('$')}}</span></p>
+      </div>
     </v-card-text>
 
   </v-card>
@@ -38,6 +40,13 @@ export default {
         { invoice: 12334, paymentDate: new Date(), status: "entregado", contract: 111144, amount: 1000 },
         { invoice: 654457, paymentDate: new Date(), status: "pendiente", contract: 123000, amount: 4500 },
       ]
+    }
+  },
+  computed: {
+    totalAmount(){
+      return this.items.reduce((a, b)=> {
+        return a + b.amount
+      }, 0)
     }
   }
 }

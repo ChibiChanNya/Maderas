@@ -5,16 +5,16 @@
     <v-card>
       <v-container fluid grid-list-xl>
         <v-layout row wrap justify-space-around>
-          <v-flex xs12 sm6 md5>
+          <v-flex xs12 sm6>
             <low-stock-list :items="low_stock"></low-stock-list>
           </v-flex>
-          <v-flex xs12 sm6 md5 >
+          <v-flex xs12 sm6 >
             <pending-invoices></pending-invoices>
           </v-flex>
-          <v-flex xs12 sm6 md5>
+          <v-flex xs12 sm6>
             <ledger-history></ledger-history>
           </v-flex>
-          <v-flex xs12 sm6 md5>
+          <v-flex xs12 sm6>
             <provider-payables></provider-payables>
           </v-flex>
         </v-layout>

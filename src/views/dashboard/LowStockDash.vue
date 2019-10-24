@@ -37,7 +37,7 @@ export default {
   name: "LowStockList",
   props: {
     items: {
-      type: Object
+      type: Array
     }
   }
 }

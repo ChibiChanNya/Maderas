@@ -384,8 +384,8 @@ export default {
         contract: '',
         total_cost: 0,
         order_details: [""],
-        request_date: this.$moment(),
-        finish_date: this.$moment(),
+        request_date: new Date().toISOString().slice(0, 10),
+        finish_date: new Date().toISOString().slice(0, 10),
         status: null,
       },
       defaultItem: {

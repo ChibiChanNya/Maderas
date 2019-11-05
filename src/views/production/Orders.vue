@@ -79,6 +79,7 @@
                             readonly
                             clearable
                             :value="formatted_date(editedItem.request_date)"
+                            @click:clear="editedItem.request_date = null"
                             v-on="on"
                           ></v-text-field>
                         </template>
@@ -111,6 +112,7 @@
                             clearable
                             :value="formatted_date(editedItem.finish_date)"
                             :rules="after_order_date_rule"
+                            @click:clear="editedItem.finish_date = null"
                             readonly
                             v-on="on"
                           ></v-text-field>

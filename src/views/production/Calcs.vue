@@ -109,7 +109,7 @@
         const dimensiones = {
           name: "Base",
           headers: [
-            {text: "P/U", value: "per_unit", sortable: false, align: "center"},
+            {text: "NP", value: "per_unit", sortable: false, align: "center"},
             {text: "Cant. Pzas", value: "amount", sortable: false, align: "center"},
             {text: "Espesor", value: "height", sortable: false, align: "center"},
             {text: "Ancho", value: "width", sortable: false, align: "center"},

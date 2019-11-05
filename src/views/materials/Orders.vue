@@ -68,6 +68,7 @@
                             readonly
                             clearable
                             :value="formatted_date(editedItem.request_date)"
+                            @click:clear="editedItem.request_date = null"
                             v-on="on"
                           ></v-text-field>
                         </template>
@@ -83,8 +84,8 @@
                         </v-date-picker>
                       </v-dialog>
                     </v-flex>
-
-                    <v-flex xs12 sm6 v-if="editedIndex > -1">
+                    <!-- DLEIVERY DATE -->
+                    <v-flex xs12 sm6>
                       <v-dialog
                         ref="dialog2"
                         :return-value.sync="editedItem.delivery_date"
@@ -101,7 +102,7 @@
                             clearable
                             :value="formatted_date(editedItem.delivery_date)"
                             :rules="after_order_date_rule"
-                            readonly
+                            @click:clear="editedItem.delivery_date = null"
                             v-on="on"
                           ></v-text-field>
                         </template>
@@ -117,8 +118,8 @@
                         </v-date-picker>
                       </v-dialog>
                     </v-flex>
-
-                    <v-flex xs12 sm6 v-if="editedIndex > -1">
+                    <!-- PAYMENT DATE -->
+                    <v-flex xs12 sm6>
                       <v-dialog
                         ref="dialog3"
                         :return-value.sync="editedItem.payment_date"
@@ -135,7 +136,7 @@
                             clearable
                             :value="formatted_date(editedItem.payment_date)"
                             :rules="after_order_date_rule"
-                            readonly
+                            @click:clear="editedItem.payment_date = null"
                             v-on="on"
                           ></v-text-field>
                         </template>
@@ -158,22 +159,22 @@
                                     type="number"
                                     label="Precio Total"></v-text-field>
                     </v-flex>
-                    <v-flex xs6 md6 v-if="editedIndex > -1">
+                    <v-flex xs6 md6>
                       <v-text-field v-model.number="editedItem.remaining_cost"
                                     :rules="numberRules"
                                     type="number"
 
                                     label="Restante por Pagar"></v-text-field>
                     </v-flex>
-                    <v-flex xs6 md6 v-if="editedIndex > -1">
+                    <v-flex xs6 md6>
                       <v-text-field v-model="editedItem.invoice"
                                     label="# Factura"></v-text-field>
                     </v-flex>
 
-                    <v-flex xs12 v-if="editedIndex > -1">
-                      <h3>Insumos recibidos</h3>
+                    <v-flex xs12>
+                      <h3>Lista de insumos</h3>
                     </v-flex>
-                    <template v-if="editedIndex > -1">
+                    <template>
                       <template
                         v-for="(mat, index) in editedItem.order_details">
 
@@ -221,14 +222,9 @@
                   </v-layout>
                 </v-container>
               </v-form>
-
             </v-card-text>
-
-
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn v-if="!editedItem.operation_dispatched" color="green darken-1" flat @click="make_operation">Agregar a Inventario</v-btn>
-              <v-btn v-else color="green darken-1" flat @click="revert_operation">Revertir Agregar</v-btn>
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
             </v-card-actions>
@@ -366,21 +362,21 @@
 
 <script>
 import {
-  index_suppliers,
+  add_operation,
+  create_order,
   index_materials,
   index_orders,
-  update_order,
-  create_order,
+  index_suppliers,
   remove_order,
-  add_operation,
-  revert_operation
-} from '../../api/materials_controller';
-import utils from "../../mixins/utils"
-import server_pagination from "../../mixins/server_pagination"
+  revert_operation,
+  update_order,
+} from '../../api/materials_controller'
+import utils from '../../mixins/utils'
+import server_pagination from '../../mixins/server_pagination'
 import Vue2Filters from 'vue2-filters'
 
 export default {
-  name: "MaterialOrders",
+  name: 'MaterialOrders',
 
   mixins: [utils, server_pagination, Vue2Filters.mixin],
 
@@ -396,18 +392,18 @@ export default {
       modal_date_3: false,
       search: '',
       pagination: {
-        sortBy: 'request_date'
+        sortBy: 'request_date',
       },
       headers: [
-        {text: 'Proveedor', value: 'provider_id', align: 'center'},
-        {text: 'Fecha Solicitud', value: 'request_date', align: 'center'},
-        {text: 'Costo Total', value: 'total_cost', align: 'center'},
-        {text: 'Fecha Entrega', value: 'delivery_date', align: 'center'},
-        {text: 'Status', value: 'status', align: 'center'},
-        {text: 'Por Pagar', value: 'remaining_cost', align: 'center'},
-        {text: '# Factura', value: 'invoice', align: 'center'},
-        {text: 'Fecha de Pago', value: 'payment_date', align: 'center'},
-        {text: 'Acciones', value: 'id', align: 'center', sortable: false},
+        { text: 'Proveedor', value: 'provider_id', align: 'center' },
+        { text: 'Fecha Solicitud', value: 'request_date', align: 'center' },
+        { text: 'Costo Total', value: 'total_cost', align: 'center' },
+        { text: 'Fecha Entrega', value: 'delivery_date', align: 'center' },
+        { text: 'Status', value: 'status', align: 'center' },
+        { text: 'Por Pagar', value: 'remaining_cost', align: 'center' },
+        { text: '# Factura', value: 'invoice', align: 'center' },
+        { text: 'Fecha de Pago', value: 'payment_date', align: 'center' },
+        { text: 'Acciones', value: 'id', align: 'center', sortable: false },
       ],
       items: [],
       total_items: 0,
@@ -415,19 +411,19 @@ export default {
       materials: [],
 
       status_list: [
-        {name: "Pendiente", value: "pendiente"},
-        {name: "Entregado", value: "entregado"},
-        {name: "Pagado", value: "pagado"},
+        { name: 'Pendiente', value: 'pendiente' },
+        { name: 'Entregado', value: 'entregado' },
+        { name: 'Pagado', value: 'pagado' },
       ],
 
       valid_form: true,
 
       after_order_date_rule: [
         v => {
-          const request_date = this.editedItem.request_date && this.$moment(this.editedItem.request_date.slice(0,10), 'YYYY-M-DD');
-          const current = v && this.$moment(v, 'DD/M/YYYY');
-          return (!v || request_date.isBefore(current)) || "Debe ser posterior a fecha de pedido";
-        }
+          const request_date = this.editedItem.request_date && this.$moment(this.editedItem.request_date.slice(0, 10), 'YYYY-M-DD')
+          const current = v && this.$moment(v, 'DD/M/YYYY')
+          return (!v || request_date.isBefore(current)) || 'Debe ser posterior a fecha de pedido'
+        },
       ],
 
       editedIndex: -1,
@@ -435,11 +431,11 @@ export default {
         id: '',
         provider_id: '',
         description: '',
-        order_details: [""],
+        order_details: [''],
         total_cost: null,
         request_date: new Date().toISOString().slice(0, 10),
-        delivery_date: new Date().toISOString().slice(0, 10),
-        payment_date: new Date().toISOString().slice(0, 10),
+        delivery_date: '',
+        payment_date: '',
         status: null,
         remaining_cost: 0,
         invoice: '',
@@ -449,11 +445,11 @@ export default {
         id: '',
         provider_id: '',
         description: '',
-        order_details: [""],
+        order_details: [''],
         total_cost: 0,
         request_date: new Date().toISOString().slice(0, 10),
-        delivery_date: new Date().toISOString().slice(0, 10),
-        payment_date: new Date().toISOString().slice(0, 10),
+        delivery_date: '',
+        payment_date: '',
         status: null,
         remaining_cost: 0,
         invoice: '',
@@ -467,110 +463,144 @@ export default {
       return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
     },
     material_choices() {
-      return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.length > 0 && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id)) || [];
+      return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.length > 0 && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id)) || []
     },
   },
   mounted() {
     this.axios.all([index_materials(), index_suppliers()])
-        .then(this.axios.spread(function (materials, providers) {
-              // Both requests are now complete
-              this.materials = materials.data;
-              this.providers = providers.data;
+      .then(this.axios.spread(function (materials, providers) {
+          // Both requests are now complete
+          this.materials = materials.data
+          this.providers = providers.data
 
-            }.bind(this)
-        ))
-        .catch(error => {
-          this.$store.commit('setSnack', {text: error, color: 'red'});
-        })
-        .finally(() => {
-          this.loading = false;
-        })
+        }.bind(this),
+      ))
+      .catch(error => {
+        this.$store.commit('setSnack', { text: error, color: 'red' })
+      })
+      .finally(() => {
+        this.loading = false
+      })
   },
 
   methods: {
 
     addMaterial() {
-      this.editedItem.order_details.push({material_id: null, units: 0});
+      this.editedItem.order_details.push({ material_id: null, units: 0 })
     },
 
     removeMaterial(item) {
-      const index = this.editedItem.order_details.indexOf(item);
-      this.editedItem.order_details.splice(index, 1);
+      const index = this.editedItem.order_details.indexOf(item)
+      this.editedItem.order_details.splice(index, 1)
     },
 
     editItem(item) {
-      this.editedIndex = this.items.findIndex( (order) => order.id === item.id);
-      this.editedItem = JSON.parse(JSON.stringify(this.items[this.editedIndex]));
-      this.$refs.form.resetValidation();
-      this.dialog = true;
+      this.editedIndex = this.items.findIndex((order) => order.id === item.id)
+      this.editedItem = JSON.parse(JSON.stringify(this.items[this.editedIndex]))
+      this.$refs.form.resetValidation()
+      this.dialog = true
     },
 
-    save() {
+    isProductDelivered(status) {
+      return ['entregado', 'pagado'].includes(status)
+    },
+
+    async save() {
       if (this.$refs.form.validate()) {
-        this.loading = true;
+        this.loading = true
+        let makeOperation = 0
         // Editing an User
         if (this.editedIndex > -1) {
-          update_order(this.editedItem).then(() => {
-            this.$set(this.items, this.editedIndex, JSON.parse(JSON.stringify(this.editedItem)));
-            this.$store.commit('setSnack', {text: "Pedido actualizado exitosamente", color: 'success'});
-            this.close();
-          }).catch(err => {
-            this.$store.commit('setSnack', {text: err, color: 'red'});
-          }).finally(() => {
-            this.loading = false
-          });
-          //  Creating a new User
-        } else {
-          create_order(this.editedItem).then(() => {
-            this.items.push(JSON.parse(JSON.stringify(this.editedItem)));
-            this.$store.commit('setSnack', {text: "Pedido creado exitosamente", color: 'success'});
-            this.close();
-          }).catch(err => {
-            this.$store.commit('setSnack', {text: err, color: 'red'});
-          }).finally(() => {
-            this.loading = false
-          });
+          const oldItem = this.items[this.editedIndex]
+          /* Check if the prder is moving from pending -> delivered or forward*/
+          if (!this.isProductDelivered(oldItem) && this.isProductDelivered(this.editedItem)) {
+            this.$dialog
+              .confirm('El cambió de status resultará en agregar los nuevos insumos a inventario, ¿continuar?')
+              .then((dialog) => {
+                makeOperation = 1
+                dialog.close()
+              }).catch(() => {
+              this.close()
+              this.loading = false
+              return false
+            })
+          }
+          /* Check if an order is being reverted */
+          else if (this.isProductDelivered(oldItem) && !this.isProductDelivered(this.editedItem)) {
+            this.$dialog
+              .confirm('El cambió de status resultará en sacar los insumos del inventario por cancelación, ¿continuar?')
+              .then((dialog) => {
+                makeOperation = -1
+                dialog.close()
+              }).catch(() => {
+              this.close()
+              return false
+            })
+          }
         }
-
+        update_order(this.editedItem).then(async () => {
+          this.$set(this.items, this.editedIndex, JSON.parse(JSON.stringify(this.editedItem)))
+          this.$store.commit('setSnack', { text: 'Pedido actualizado exitosamente', color: 'success' })
+          /* Run the make operation or reverse if required now that we have ID */
+          if (makeOperation > 0) await this.make_operation()
+          else if (makeOperation < 0) await this.revert_operation()
+          /* Close the editor */
+          this.close()
+        }).catch(err => {
+          this.$store.commit('setSnack', { text: err, color: 'red' })
+        }).finally(() => {
+          this.loading = false
+        })
+        //  Creating a new Order
+      } else {
+        create_order(this.editedItem).then(() => {
+          this.items.push(JSON.parse(JSON.stringify(this.editedItem)))
+          this.$store.commit('setSnack', { text: 'Pedido creado exitosamente', color: 'success' })
+          this.close()
+        }).catch(err => {
+          this.$store.commit('setSnack', { text: err, color: 'red' })
+        }).finally(() => {
+          this.loading = false
+        })
       }
     },
 
-    make_operation(){
-      if(this.editedItem.order_details.length < 1){
-        this.$store.commit('setSnack', {text: "No hay productos en este pedido", color: 'red'});
-        return;
+    make_operation() {
+      if (this.editedItem.order_details.length < 1) {
+        this.$store.commit('setSnack', { text: 'No hay productos en este pedido', color: 'red' })
+        return
       }
-      this.loading = true;
-      const id = this.editedItem.id;
-      add_operation(id).then( () => {
-        this.editedItem.operation_dispatched = true;
-        this.items[this.editedIndex].operation_dispatched = true;
-        this.$store.commit('setSnack', {text: "Insumos agregados al inventario", color: 'success'});
+      this.loading = true
+      const id = this.editedItem.id
+      add_operation(id).then(() => {
+        this.editedItem.operation_dispatched = true
+        this.items[this.editedIndex].operation_dispatched = true
+        this.$store.commit('setSnack', { text: 'Insumos agregados al inventario', color: 'success' })
       }).catch(err => {
-        this.$store.commit('setSnack', {text: err, color: 'red'});
+        this.$store.commit('setSnack', { text: err, color: 'red' })
       }).finally(() => {
         this.loading = false
-      });
+      })
     },
 
-    revert_operation(){
-      if(this.editedItem.order_details.length < 1){
-        this.$store.commit('setSnack', {text: "No hay productos en este pedido", color: 'red'});
-        return;
+    revert_operation() {
+      if (this.editedItem.order_details.length < 1) {
+        this.$store.commit('setSnack', { text: 'No hay productos en este pedido', color: 'red' })
+        return
       }
-      this.loading = true;
-      const id = this.editedItem.id;
-      revert_operation(id).then( () => {
-        this.editedItem.operation_dispatched = false;
-        this.items[this.editedIndex].operation_dispatched = false;
-        this.$store.commit('setSnack', {text: "Insumos eliminados del inventario", color: 'info'});
+      this.loading = true
+      const id = this.editedItem.id
+      revert_operation(id).then(() => {
+        this.editedItem.operation_dispatched = false
+        this.items[this.editedIndex].operation_dispatched = false
+        this.$store.commit('setSnack', { text: 'Insumos eliminados del inventario', color: 'info' })
       }).catch(err => {
-        this.$store.commit('setSnack', {text: err, color: 'red'});
+        this.$store.commit('setSnack', { text: err, color: 'red' })
       }).finally(() => {
         this.loading = false
-      });
+      })
     },
-  }
+  },
 }
 </script>
 

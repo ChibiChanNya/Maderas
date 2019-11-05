@@ -65,6 +65,7 @@
                             readonly
                             clearable
                             :value="formatted_date(editedItem.delivery_date)"
+                            @click:clear="editedItem.delivery_date = null"
                             v-on="on"
                           ></v-text-field>
                         </template>
@@ -142,10 +143,10 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn v-if="!editedItem.operation_dispatched" color="green darken-1" flat @click="make_operation">Sacar
-                de Inventario
-              </v-btn>
-              <v-btn v-else color="green darken-1" flat @click="revert_operation">Regresar a Inventario</v-btn>
+<!--              <v-btn v-if="!editedItem.operation_dispatched" color="green darken-1" flat @click="make_operation">Sacar-->
+<!--                de Inventario-->
+<!--              </v-btn>-->
+<!--              <v-btn v-else color="green darken-1" flat @click="revert_operation">Regresar a Inventario</v-btn>-->
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
             </v-card-actions>
@@ -383,20 +384,56 @@ export default {
       this.editedItem = JSON.parse(JSON.stringify(this.items[this.editedIndex]));
       this.$refs.form.resetValidation();
       this.dialog = true;
-      console.log("EDITED ITEM", this.editedItem);
     },
 
+    isProductDelivered(status) {
+      return ['enviado', 'facturado', 'pendiente pago', 'completo'].includes(status)
+    },
 
-    save() {
+    async save() {
       if (this.$refs.form.validate()) {
         this.loading = true;
+        let makeOperation = 0
+
+        if (this.editedIndex > -1) {
+          const oldItem = this.items[this.editedIndex]
+          /* Check if the prder is moving from pending -> delivered or forward*/
+          if (!this.isProductDelivered(oldItem) && this.isProductDelivered(this.editedItem)) {
+            this.$dialog
+              .confirm('El cambió de status resultará en sacar los productos seleccionados del inventario, ¿continuar?')
+              .then((dialog) => {
+                makeOperation = 1
+                dialog.close()
+              }).catch(() => {
+              this.close()
+              this.loading = false
+              return false
+            })
+          }
+          /* Check if an order is being reverted */
+          else if (this.isProductDelivered(oldItem) && !this.isProductDelivered(this.editedItem)) {
+            this.$dialog
+              .confirm('El cambió de status resultará en regresar los productos al inventario por cancelación, ¿continuar?')
+              .then((dialog) => {
+                makeOperation = -1
+                dialog.close()
+              }).catch(() => {
+              this.close()
+              return false
+            })
+          }
+        }
         // Editing an User
         const payload = JSON.parse(JSON.stringify(this.editedItem));
         if (this.editedIndex > -1) {
-          update_shipment(payload).then((result) => {
+          update_shipment(payload).then(async (result) => {
             this.$set(this.items, this.editedIndex, payload);
             this.$store.commit('setSnack', {text: "Pedido actualizado exitosamente", color: 'success'});
-            this.close();
+            /* Run the make operation or reverse if required now that we have ID */
+            if (makeOperation > 0) await this.make_operation()
+            else if (makeOperation < 0) await this.revert_operation()
+            /* Close the editor */
+            this.close()
           }).catch(err => {
             this.$store.commit('setSnack', {text: err, color: 'red'});
           }).finally(() => {

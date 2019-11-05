@@ -44,7 +44,7 @@ export default {
   methods: {
 
     formatted_date(date) {
-      return date ? this.$moment(date).format("DD/M/YYYY") : "";
+      return date && date.length>0 ? this.$moment(date).format("DD/M/YYYY") : "";
     },
 
     client_name(id) {

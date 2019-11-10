@@ -34,7 +34,8 @@ class ClientController extends Controller
         $admin_user = auth()->user();
 
         $admin_user->registerLog('creates client '. $client->id);
-        return response()->json(['status' => 'success'], 200);
+        // return response()->json(['status' => 'success'], 200);
+        return $client;
     }
 
     public function clients_list(){

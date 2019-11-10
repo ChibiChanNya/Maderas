@@ -54,7 +54,8 @@ class OrderToProviderController extends Controller
         $admin_user = auth()->user();
 
         $admin_user->registerLog('creates order '. $order->id . ' to provider');
-        return response()->json(['status' => 'success'], 200);
+        // return response()->json(['status' => 'success'], 200);
+        return $order;
     }
 
     public function orders_list(Request $request){

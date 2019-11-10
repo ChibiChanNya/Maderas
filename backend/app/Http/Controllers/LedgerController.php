@@ -43,7 +43,8 @@ class LedgerController extends Controller
         $admin_user = auth()->user();
 
         $admin_user->registerLog('creates ledger '. $ledger->id);
-        return response()->json(['status' => 'success'], 200);
+        // return response()->json(['status' => 'success'], 200);
+        return $ledger;
     }
 
     public function ledgers_list(Request $request)

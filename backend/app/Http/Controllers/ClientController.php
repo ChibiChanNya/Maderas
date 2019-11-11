@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Validator;
 use App\Client;
+use App\InvoiceOperations;
 
 class ClientController extends Controller
 {
@@ -13,7 +14,9 @@ class ClientController extends Controller
         $v = Validator::make($request->all(), [
             'name' => 'required|min:3',
             'business_name' => 'required',
-            'rfc'  => 'required',
+            'rfc'  => 'required|min:12',
+            'email' => 'required',
+            'zip' => 'required',
         ]);
         if ($v->fails())
         {
@@ -29,7 +32,12 @@ class ClientController extends Controller
         // dd(bcrypt($request->password));
         $client->rfc = $request->rfc;
         $client->money_debt = $request->money_debt ?? 0.0;
+        $client->email = $request->email;
+        $client->zip_code = $request->zip;
         $client->save();
+
+        $invoiceService = new InvoiceOperations();
+        $invoiceService->createClient($client);
 
         $admin_user = auth()->user();
 

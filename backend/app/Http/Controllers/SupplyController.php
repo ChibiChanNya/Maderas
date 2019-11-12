@@ -37,7 +37,8 @@ class SupplyController extends Controller
         $admin_user = auth()->user();
 
         $admin_user->registerLog('creates supply '. $supply->id);
-        return response()->json(['status' => 'success'], 200);
+        // return response()->json(['status' => 'success'], 200);
+        return $supply;
     }
 
     public function supplies_list(){

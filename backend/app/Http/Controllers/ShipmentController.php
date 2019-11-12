@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Validator;
 use App\Shipment;
 use App\User;
+use App\ClientOrder;
 
 use Carbon\Carbon;
 
@@ -43,7 +44,8 @@ class ShipmentController extends Controller
         $admin_user = auth()->user();
 
         $admin_user->registerLog('creates shipment '. $shipment->id);
-        return response()->json(['status' => 'success'], 200);
+        // return response()->json(['status' => 'success'], 200);
+        return $shipment;
     }
 
     public function shipments_list(Request $request){
@@ -190,19 +192,19 @@ class ShipmentController extends Controller
             array_push($shipment_details, $pru_details);
         }
 
-        $order = ClientOrder::find($shipment->order_id);
+        // $order = ClientOrder::find($shipment->order_id);
         $operation = $request->operation;
 
         switch ($operation) {
             case 'rest':
-                $order->reverseOperation($shipment_details);
+                $shipment->reverseOperation($shipment_details);
                 return response()->json([
                     'status' => 'done'
                 ], 200);
                 break;
             
             case 'revert':
-                $order->makeOperation($shipment_details);
+                $shipment->makeOperation($shipment_details);
                 return response()->json([
                     'status' => 'done'
                 ], 200);

@@ -150,7 +150,7 @@ Route::prefix('orders/clients')->group(function () {
         // Delete an Order
         Route::post('delete', 'ClientOrderController@order_delete');
         //Make an operation to the Storage
-        Route::post('make_operation', 'ClientOrderController@make_operation');
+        // Route::post('make_operation', 'ClientOrderController@make_operation');
     });
 });
 

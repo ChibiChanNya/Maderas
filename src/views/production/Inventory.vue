@@ -309,8 +309,8 @@
           this.loading = true;
           // Editing an User
           if (this.editedIndex > -1) {
-            update_product(this.editedItem).then(() => {
-                this.$set(this.items, this.editedIndex, JSON.parse(JSON.stringify(this.editedItem)));
+            update_product(this.editedItem).then(({ data: newItem }) => {
+                this.$set(newItem);
               this.$store.commit('setSnack', {text: "Producto actualizado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {
@@ -320,8 +320,8 @@
             });
             //  Creating a new User
           } else {
-            create_product(this.editedItem).then(() => {
-              this.items.push(Object.assign({}, this.editedItem));
+            create_product(this.editedItem).then(({ data: newItem }) => {
+              this.items.push(newItem);
               this.$store.commit('setSnack', {text: "Producto creado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {

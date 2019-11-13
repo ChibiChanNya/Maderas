@@ -133,50 +133,48 @@
                     <v-flex xs12>
                       <h3>Productos Solicitados</h3>
                     </v-flex>
-                    <template>
-                      <template
-                        v-for="product in editedItem.order_details">
+                    <v-layout
+                      v-for="(product, index) in editedItem.order_details" :key="index">
 
-                        <v-flex xs9 :key="product.id">
-                          <v-select
-                            v-model="product.product_id"
-                            hint="Producto"
-                            item-value="id"
-                            label="Elije un producto"
-                            :items="products"
-                            persistent-hint
-                            single-line
-                            :rules="required">
+                      <v-flex xs9>
+                        <v-select
+                          v-model="product.product_id"
+                          hint="Producto"
+                          item-value="id"
+                          label="Elije un producto"
+                          :items="products"
+                          persistent-hint
+                          single-line
+                          :rules="required">
 
-                            <template v-slot:item="props">
-                              {{ props.item.name }}
-                            </template>
-                            <template v-slot:selection="props">
-                              {{ props.item.name }}
-                            </template>
-                          </v-select>
-                        </v-flex>
-                        <v-flex xs2 :key="product.id">
-                          <v-text-field v-model="product.units"
-                                        :rules="numberRules"
-                                        type="number"
-                                        label="Cantidad"></v-text-field>
-                        </v-flex>
-                        <v-flex xs1 :key="product.id">
-                          <v-btn flat icon style="align-self:center"
-                                 @click="removeProduct(product)">
-                            <v-icon class="red--text">close</v-icon>
-                          </v-btn>
-                        </v-flex>
-                      </template>
-                      <template v-if="editedItem.order_details.length === 0">
-                        <h4>No se han registrado productos para este pedido</h4>
-                      </template>
-                      <v-flex>
-                        <v-btn flat color="info" @click="addProduct">Agregar nuevo producto
+                          <template v-slot:item="props">
+                            {{ props.item.name }}
+                          </template>
+                          <template v-slot:selection="props">
+                            {{ props.item.name }}
+                          </template>
+                        </v-select>
+                      </v-flex>
+                      <v-flex xs2 >
+                        <v-text-field v-model="product.units"
+                                      :rules="numberRules"
+                                      type="number"
+                                      label="Cantidad"></v-text-field>
+                      </v-flex>
+                      <v-flex xs1 >
+                        <v-btn flat icon style="align-self:center"
+                               @click="removeProduct(product)">
+                          <v-icon class="red--text">close</v-icon>
                         </v-btn>
                       </v-flex>
+                    </v-layout>
+                    <template v-if="editedItem.order_details.length === 0">
+                      <h4>No se han registrado productos para este pedido</h4>
                     </template>
+                    <v-flex>
+                      <v-btn flat color="info" @click="addProduct">Agregar nuevo producto
+                      </v-btn>
+                    </v-flex>
                   </v-layout>
                 </v-container>
               </v-form>
@@ -214,9 +212,9 @@
             <td class="">{{ client_name(props.item.client_id) }}</td>
             <td class="">{{ props.item.contract }}</td>
             <td class="">{{ props.item.total_cost }}</td>
-            <td class="">{{ (props.item.request_date || "--") | moment('DD/M/YYYY')}}</td>
+            <td class="">{{ (props.item.request_date || '--') | moment('DD/M/YYYY')}}</td>
             <td class="">{{ status_name(props.item.status) }}</td>
-            <td class="">{{ (props.item.finish_date || "--") | moment('DD/M/YYYY') }}</td>
+            <td class="">{{ (props.item.finish_date || '--') | moment('DD/M/YYYY') }}</td>
             <td class="justify-start layout px-0">
               <v-btn flat small color="blue" @click="props.expanded = !props.expanded">DETALLES
               </v-btn>
@@ -276,9 +274,9 @@
                     <th>Fecha de Entrega</th>
                   </tr>
                   <tr v-for="item in getShipments(props.item)" :key="item.id">
-                    <td>{{item.cost | currency('$') || "--"}}</td>
+                    <td>{{item.cost | currency('$') || '--'}}</td>
                     <td>{{status_name_shipment(item.status)}}</td>
-                    <td>{{ (item.delivery_date || "--") | moment('DD/M/YYYY') }}</td>
+                    <td>{{ (item.delivery_date || '--') | moment('DD/M/YYYY') }}</td>
                   </tr>
                 </template>
                 <template v-else>
@@ -314,21 +312,21 @@
 
 <script>
 import {
-  index_products,
+  create_order,
   index_clients,
   index_orders,
-  update_order,
-  create_order,
+  index_products,
+  index_shipments_lite,
   remove_order,
-  index_shipments_lite
-} from '../../api/production_controller';
-import utils from "../../mixins/utils";
-import server_pagination from "../../mixins/server_pagination";
+  update_order,
+} from '../../api/production_controller'
+import utils from '../../mixins/utils'
+import server_pagination from '../../mixins/server_pagination'
 import Vue2Filters from 'vue2-filters'
 
 
 export default {
-  name: "ClientOrders",
+  name: 'ClientOrders',
   mixins: [utils, server_pagination, Vue2Filters.mixin],
 
   data() {
@@ -343,16 +341,16 @@ export default {
       modal_date_2: false,
       search: '',
       pagination: {
-        sortBy: 'request_date'
+        sortBy: 'request_date',
       },
       headers: [
-        {text: 'Cliente', value: 'client_id', align: 'center'},
-        {text: 'No. Contrato', value: 'contract', align: 'center'},
-        {text: 'Costo Total', value: 'total_cost', align: 'center'},
-        {text: 'Fecha Solicitud', value: 'reuest_date', align: 'center'},
-        {text: 'Status', value: 'status', align: 'center'},
-        {text: 'Fecha Terminación', value: 'finish_date', align: 'center'},
-        {text: 'Acciones', value: 'id', align: 'center', sortable: false},
+        { text: 'Cliente', value: 'client_id', align: 'center' },
+        { text: 'No. Contrato', value: 'contract', align: 'center' },
+        { text: 'Costo Total', value: 'total_cost', align: 'center' },
+        { text: 'Fecha Solicitud', value: 'reuest_date', align: 'center' },
+        { text: 'Status', value: 'status', align: 'center' },
+        { text: 'Fecha Terminación', value: 'finish_date', align: 'center' },
+        { text: 'Acciones', value: 'id', align: 'center', sortable: false },
       ],
       items: [],
       total_items: 0,
@@ -361,22 +359,22 @@ export default {
       shipments: [],
 
       status_list: [
-        {name: "Pendiente", value: "pendiente"},
-        {name: "En Producción", value: "produccion"},
-        {name: "En Stock", value: "stock"},
-        {name: "Standby", value: "standby"},
-        {name: "Parcial", value: "parcial"},
-        {name: "Completo", value: "completo"},
+        { name: 'Pendiente', value: 'pendiente' },
+        { name: 'En Producción', value: 'produccion' },
+        { name: 'En Stock', value: 'stock' },
+        { name: 'Standby', value: 'standby' },
+        { name: 'Parcial', value: 'parcial' },
+        { name: 'Completo', value: 'completo' },
       ],
 
       valid_form: true,
 
       after_order_date_rule: [
         v => {
-          const request_date = this.editedItem.request_date && this.$moment(this.editedItem.request_date.slice(0, 10), 'YYYY-M-DD');
-          const current = this.$moment(v, 'DD/M/YYYY');
-          return (!v || request_date.isBefore(current)) || "Debe ser posterior a fecha de pedido";
-        }
+          const request_date = this.editedItem.request_date && this.$moment(this.editedItem.request_date.slice(0, 10), 'YYYY-M-DD')
+          const current = this.$moment(v, 'DD/M/YYYY')
+          return (!v || request_date.isBefore(current)) || 'Debe ser posterior a fecha de pedido'
+        },
       ],
 
       editedIndex: -1,
@@ -385,7 +383,7 @@ export default {
         client_id: '',
         contract: '',
         total_cost: 0,
-        order_details: [""],
+        order_details: [''],
         request_date: new Date().toISOString().slice(0, 10),
         finish_date: new Date().toISOString().slice(0, 10),
         status: null,
@@ -395,7 +393,7 @@ export default {
         client_id: '',
         contract: '',
         total_cost: 0,
-        order_details: [""],
+        order_details: [''],
         request_date: new Date().toISOString().slice(0, 10),
         finish_date: new Date().toISOString().slice(0, 10),
         status: null,
@@ -413,85 +411,87 @@ export default {
 
   mounted() {
     this.axios.all([index_products(), index_clients(), index_shipments_lite()])
-        .then(this.axios.spread(function (products, clients, shipments) {
-              // Both requests are now complete
-              this.products = products.data;
-              this.clients = clients.data;
-              this.shipments = shipments.data;
-            }.bind(this)
-        ))
-        .catch(error => {
-          this.$store.commit('setSnack', {text: error, color: 'red'});
-        })
-        .finally(() => {
-          this.loading = false;
-        })
+      .then(this.axios.spread(function (products, clients, shipments) {
+          // Both requests are now complete
+          this.products = products.data
+          this.clients = clients.data
+          this.shipments = shipments.data
+        }.bind(this),
+      ))
+      .catch(error => {
+        this.$store.commit('setSnack', { text: error, color: 'red' })
+      })
+      .finally(() => {
+        this.loading = false
+      })
   },
 
   methods: {
 
     status_name_shipment(val) {
       const status_list = [
-        {name: "Pendiente", value: "pendiente"},
-        {name: "Pendiente Tratamiento", value: "pendiente tratamiento"},
-        {name: "Listo", value: "listo"},
-        {name: "Enviado", value: "enviado"},
-        {name: "Pagado", value: "pagado"},
-      ];
+        { name: 'Pendiente', value: 'pendiente' },
+        { name: 'Pendiente Tratamiento', value: 'pendiente tratamiento' },
+        { name: 'Listo', value: 'listo' },
+        { name: 'Enviado', value: 'enviado' },
+        { name: 'Pagado', value: 'pagado' },
+      ]
 
-      const status = status_list.find(stat => stat.value === val);
-      return (status && status.name) || "Null";
+      const status = status_list.find(stat => stat.value === val)
+      return (status && status.name) || 'Null'
     },
 
     getShipments(item) {
-      const ships = this.shipments.filter((ship) => ship.order_id === item.id);
-      return ships || [];
+      const ships = this.shipments.filter((ship) => ship.order_id === item.id)
+      return ships || []
     },
 
     addProduct() {
-      this.editedItem.order_details.push({product_id: null, units: 0});
+      this.editedItem.order_details.push({ product_id: null, units: 0 })
     },
 
     removeProduct(item) {
-      const index = this.editedItem.order_details.indexOf(item);
-      this.editedItem.order_details.splice(index, 1);
+      const index = this.editedItem.order_details.indexOf(item)
+      this.editedItem.order_details.splice(index, 1)
     },
 
 
     editItem(item) {
-      this.editedIndex = this.items.findIndex( (order) => order.id === item.id);
-      this.editedItem = JSON.parse(JSON.stringify(this.items[this.editedIndex]));
-      this.$refs.form.resetValidation();
-      this.dialog = true;
+      this.editedIndex = this.items.findIndex((order) => order.id === item.id)
+      this.editedItem = JSON.parse(JSON.stringify(this.items[this.editedIndex]))
+      this.$refs.form.resetValidation()
+      this.dialog = true
     },
 
 
     save() {
       if (this.$refs.form.validate()) {
-        this.loading = true;
+        this.loading = true
         // Editing an User
-        const payload = JSON.parse(JSON.stringify(this.editedItem));
+        const payload = JSON.parse(JSON.stringify(this.editedItem))
         if (this.editedIndex > -1) {
-          update_order(payload).then(() => {
-            this.$set(this.items, this.editedIndex, payload);
-            this.$store.commit('setSnack', {text: "Pedido actualizado exitosamente", color: 'success'});
-            this.close();
+          update_order(payload).then(({ data: newItem }) => {
+            this.editedItem.id = newItem.id
+            this.$set(this.items, this.editedIndex, payload)
+            this.$store.commit('setSnack', { text: 'Pedido actualizado exitosamente', color: 'success' })
+            this.close()
           }).catch(err => {
-            this.$store.commit('setSnack', {text: err, color: 'red'});
+            this.$store.commit('setSnack', { text: err, color: 'red' })
           }).finally(() => {
             this.loading = false
-          });
+          })
           //  Creating a new User
         } else {
-          create_order(payload).then(() => {
-            this.items.push(JSON.parse(JSON.stringify(this.editedItem)));
-            this.$store.commit('setSnack', {text: "Pedido creado exitosamente", color: 'success'});
-            this.close();
+          create_order(payload).then(({ data: newItem }) => {
+            this.editedItem.id = newItem.id
+            this.items.push(JSON.parse(JSON.stringify(this.editedItem)))
+            this.$store.commit('setSnack', { text: 'Pedido creado exitosamente', color: 'success' })
+            this.close()
           }).catch(err => {
-            this.$store.commit('setSnack', {text: err, color: 'red'});
+            this.$store.commit('setSnack', { text: err, color: 'red' })
           }).finally(() => {
             this.loading = false
-          });
+          })
         }
 
       }

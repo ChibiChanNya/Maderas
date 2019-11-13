@@ -155,13 +155,13 @@
 
                     <v-flex xs6 md6>
                       <v-text-field v-model.number="editedItem.total_cost"
-                                    :rules="numberRules"
+                                    :rules="moneyRules"
                                     type="number"
                                     label="Precio Total"></v-text-field>
                     </v-flex>
                     <v-flex xs6 md6>
                       <v-text-field v-model.number="editedItem.remaining_cost"
-                                    :rules="numberRules"
+                                    :rules="moneyRules"
                                     type="number"
 
                                     label="Restante por Pagar"></v-text-field>
@@ -174,51 +174,48 @@
                     <v-flex xs12>
                       <h3>Lista de insumos</h3>
                     </v-flex>
-                    <template>
-                      <template
-                        v-for="(mat, index) in editedItem.order_details">
+                    <v-layout
+                      v-for="(mat, index) in editedItem.order_details" :key="index">
 
-                        <v-flex xs9 :key="mat.id">
-                          <v-select
-                            v-model="mat.material_id"
-                            hint="Insumo"
-                            item-value="id"
-                            label="Elije un insumo"
-                            :items="material_choices"
-                            persistent-hint
-                            single-line
-                            :rules="required">
+                      <v-flex xs9>
+                        <v-select
+                          v-model="mat.material_id"
+                          hint="Insumo"
+                          item-value="id"
+                          label="Elije un insumo"
+                          :items="material_choices"
+                          persistent-hint
+                          single-line
+                          :rules="required">
 
-                            <template v-slot:item="props">
-                              {{ props.item.name }} - {{ props.item.type }}
-                            </template>
-                            <template v-slot:selection="props">
-                              {{ props.item.name }} - {{ props.item.type }}
-                            </template>
-                          </v-select>
-                        </v-flex>
-                        <v-flex xs2 :key="mat.id">
-                          <v-text-field v-model="mat.units"
-                                        :rules="numberRules"
-                                        type="number"
-                                        label="Cantidad"></v-text-field>
-                        </v-flex>
-                        <v-flex xs1 :key="mat.id">
-                          <v-btn flat icon style="align-self:center"
-                                 @click="removeMaterial(mat)">
-                            <v-icon class="red--text">close</v-icon>
-                          </v-btn>
-                        </v-flex>
-                      </template>
-                      <template v-if="editedItem.order_details.length === 0">
-                        <h4>No se han registrado insumos para este pedido</h4>
-                      </template>
-                      <v-flex>
-                        <v-btn flat color="info" @click="addMaterial">Agregar nuevo insumo
+                          <template v-slot:item="props">
+                            {{ props.item.name }} - {{ props.item.type }}
+                          </template>
+                          <template v-slot:selection="props">
+                            {{ props.item.name }} - {{ props.item.type }}
+                          </template>
+                        </v-select>
+                      </v-flex>
+                      <v-flex xs2>
+                        <v-text-field v-model="mat.units"
+                                      :rules="numberRules"
+                                      type="number"
+                                      label="Cantidad"></v-text-field>
+                      </v-flex>
+                      <v-flex xs1 >
+                        <v-btn flat icon style="align-self:center"
+                               @click="removeMaterial(mat)">
+                          <v-icon class="red--text">close</v-icon>
                         </v-btn>
                       </v-flex>
+                    </v-layout>
+                    <template v-if="editedItem.order_details.length === 0">
+                      <h4>No se han registrado insumos para este pedido</h4>
                     </template>
-
+                    <v-flex>
+                      <v-btn flat color="info" @click="addMaterial">Agregar nuevo insumo
+                      </v-btn>
+                    </v-flex>
                   </v-layout>
                 </v-container>
               </v-form>
@@ -431,7 +428,7 @@ export default {
         id: '',
         provider_id: '',
         description: '',
-        order_details: [''],
+        order_details: [],
         total_cost: null,
         request_date: new Date().toISOString().slice(0, 10),
         delivery_date: '',
@@ -445,7 +442,7 @@ export default {
         id: '',
         provider_id: '',
         description: '',
-        order_details: [''],
+        order_details: [],
         total_cost: 0,
         request_date: new Date().toISOString().slice(0, 10),
         delivery_date: '',
@@ -501,8 +498,8 @@ export default {
       this.dialog = true
     },
 
-    isProductDelivered(status) {
-      return ['entregado', 'pagado'].includes(status)
+    isProductDelivered(item) {
+      return ['entregado', 'pagado'].includes(item.status)
     },
 
     async save() {
@@ -514,60 +511,63 @@ export default {
           const oldItem = this.items[this.editedIndex]
           /* Check if the prder is moving from pending -> delivered or forward*/
           if (!this.isProductDelivered(oldItem) && this.isProductDelivered(this.editedItem)) {
-            this.$dialog
+            makeOperation = await this.$dialog
               .confirm('El cambió de status resultará en agregar los nuevos insumos a inventario, ¿continuar?')
               .then((dialog) => {
-                makeOperation = 1
                 dialog.close()
+                return 1
               }).catch(() => {
-              this.close()
-              this.loading = false
-              return false
-            })
+                return 'stop'
+              })
           }
           /* Check if an order is being reverted */
           else if (this.isProductDelivered(oldItem) && !this.isProductDelivered(this.editedItem)) {
-            this.$dialog
+            makeOperation = await this.$dialog
               .confirm('El cambió de status resultará en sacar los insumos del inventario por cancelación, ¿continuar?')
               .then((dialog) => {
-                makeOperation = -1
                 dialog.close()
+                return -1
               }).catch(() => {
-              this.close()
-              return false
-            })
+                return 'stop'
+              })
           }
+          if (makeOperation === 'stop') {
+            this.close()
+            this.loading = false
+            return false
+          }
+          update_order(this.editedItem).then(async ({ data: newItem }) => {
+            this.editedItem.id = newItem.id
+            this.$set(this.items, this.editedIndex, JSON.parse(JSON.stringify(this.editedItem)))
+            this.$store.commit('setSnack', { text: 'Pedido actualizado exitosamente', color: 'success' })
+            /* Run the make operation or reverse if required now that we have ID */
+            if (makeOperation > 0) await this.make_operation()
+            else if (makeOperation < 0) await this.revert_operation()
+            /* Close the editor */
+            this.close()
+          }).catch(err => {
+            this.$store.commit('setSnack', { text: err, color: 'red' })
+          }).finally(() => {
+            this.loading = false
+          })
+          //  Creating a new Order
+        } else {
+          create_order(this.editedItem).then(({ data: newItem }) => {
+            this.editedItem.id = newItem.id
+            this.items.push(JSON.parse(JSON.stringify(this.editedItem)))
+            this.$store.commit('setSnack', { text: 'Pedido creado exitosamente', color: 'success' })
+            this.close()
+          }).catch(err => {
+            this.$store.commit('setSnack', { text: err, color: 'red' })
+          }).finally(() => {
+            this.loading = false
+          })
         }
-        update_order(this.editedItem).then(async () => {
-          this.$set(this.items, this.editedIndex, JSON.parse(JSON.stringify(this.editedItem)))
-          this.$store.commit('setSnack', { text: 'Pedido actualizado exitosamente', color: 'success' })
-          /* Run the make operation or reverse if required now that we have ID */
-          if (makeOperation > 0) await this.make_operation()
-          else if (makeOperation < 0) await this.revert_operation()
-          /* Close the editor */
-          this.close()
-        }).catch(err => {
-          this.$store.commit('setSnack', { text: err, color: 'red' })
-        }).finally(() => {
-          this.loading = false
-        })
-        //  Creating a new Order
-      } else {
-        create_order(this.editedItem).then(() => {
-          this.items.push(JSON.parse(JSON.stringify(this.editedItem)))
-          this.$store.commit('setSnack', { text: 'Pedido creado exitosamente', color: 'success' })
-          this.close()
-        }).catch(err => {
-          this.$store.commit('setSnack', { text: err, color: 'red' })
-        }).finally(() => {
-          this.loading = false
-        })
       }
     },
 
     make_operation() {
       if (this.editedItem.order_details.length < 1) {
-        this.$store.commit('setSnack', { text: 'No hay productos en este pedido', color: 'red' })
         return
       }
       this.loading = true
@@ -585,7 +585,6 @@ export default {
 
     revert_operation() {
       if (this.editedItem.order_details.length < 1) {
-        this.$store.commit('setSnack', { text: 'No hay productos en este pedido', color: 'red' })
         return
       }
       this.loading = true

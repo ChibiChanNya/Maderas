@@ -262,10 +262,10 @@
       save() {
         if (this.$refs.form.validate()) {
           this.loading = true;
-          // Editing an User
+          // Editing a Client
           if (this.editedIndex > -1) {
-            update_client(this.editedItem).then(() => {
-                this.$set(this.items, this.editedIndex, JSON.parse(JSON.stringify(this.editedItem)));
+            update_client(this.editedItem).then(({ data: newItem }) => {
+                this.$set(newItem);
               this.$store.commit('setSnack', {text: "Cliente actualizado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {
@@ -273,10 +273,10 @@
             }).finally(() => {
               this.loading = false
             });
-            //  Creating a new User
+            //  Creating a new Client
           } else {
-            create_client(this.editedItem).then(() => {
-              this.items.push(Object.assign({}, this.editedItem));
+            create_client(this.editedItem).then(({ data: newItem }) => {
+              this.items.push(newItem);
               this.$store.commit('setSnack', {text: "Cliente creado exitosamente", color: 'success'});
               this.close();
             }).catch(err => {

@@ -65,6 +65,12 @@ class InvoiceOperations
         $zip = $client->zip_code;
         $uid = $client->invoice_uid;
 
+        $existance = $this->http->request('GET', 'v1/clients/' . $rfc);
+        $response_existance = json_decode((string) $existance->getBody()->getContents(), false);
+        if ($response_existance->message == 'El cliente no existe') {
+            return $this->createClient($client);
+        }
+
         $invoice_client = [
             'nombre' => $name,
             'email' => $email,

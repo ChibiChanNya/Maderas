@@ -9,6 +9,10 @@ use App\InvoiceOperations;
 
 class ClientController extends Controller
 {
+    public function __construct() {
+        $this->invoiceService = new InvoiceOperations();
+    }
+
     public function create(Request $request)
     {
         $v = Validator::make($request->all(), [
@@ -16,7 +20,7 @@ class ClientController extends Controller
             'business_name' => 'required',
             'rfc'  => 'required|min:12',
             'email' => 'required',
-            'zip' => 'required',
+            'zip_code' => 'required',
         ]);
         if ($v->fails())
         {
@@ -33,11 +37,11 @@ class ClientController extends Controller
         $client->rfc = $request->rfc;
         $client->money_debt = $request->money_debt ?? 0.0;
         $client->email = $request->email;
-        $client->zip_code = $request->zip;
+        $client->zip_code = $request->zip_code;
         $client->save();
 
-        $invoiceService = new InvoiceOperations();
-        $invoiceService->createClient($client);
+        //$invoiceService = new InvoiceOperations();
+        $this->invoiceService->createClient($client);
 
         $admin_user = auth()->user();
 
@@ -75,6 +79,8 @@ class ClientController extends Controller
         if($client){
             $client->fill($request->all());
             $client->save();
+
+            $this->invoiceService->updateClient($client);
 
             $admin_user = auth()->user();
             $admin_user->registerLog('updates client '. $client->id);

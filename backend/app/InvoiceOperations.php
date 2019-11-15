@@ -54,6 +54,30 @@ class InvoiceOperations
         // dd($response['Data']->UID);
         $client->invoice_uid = $response->Data->UID;
         $client->save();
+    }   
+
+    public function updateClient(Client $client)
+    {
+        $name = $client->name;
+        $email = $client->email;
+        $razons = $client->business_name;
+        $rfc = $client->rfc;
+        $zip = $client->zip_code;
+        $uid = $client->invoice_uid;
+
+        $invoice_client = [
+            'nombre' => $name,
+            'email' => $email,
+            'razons' => $razons,
+            'rfc' => $rfc,
+            'codpos' => $zip,
+        ];
+
+        $params = ['json' => $invoice_client];
+
+        //$request = $this->http->request('GET', 'v1/clients');
+        $request = $this->http->request('POST', 'v1/clients/' . $uid . '/update', $params);
+        $response = json_decode((string) $request->getBody()->getContents(), false);
     }    
 
     public function reverseOperation($units = null)

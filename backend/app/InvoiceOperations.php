@@ -12,6 +12,7 @@ use App\Client;
 use Auth;
 use Carbon\Carbon;
 use GuzzleHttp;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -52,6 +53,10 @@ class InvoiceOperations
         $response = json_decode((string) $request->getBody()->getContents(), false);
         // dd($response->Data->UID);
         // dd($response['Data']->UID);
+        if ($response->status == 'error') {
+            $data = json_encode($response->message);
+            throw new Exception($data);
+        }
         $client->invoice_uid = $response->Data->UID;
         $client->save();
     }   

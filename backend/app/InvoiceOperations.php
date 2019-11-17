@@ -89,43 +89,39 @@ class InvoiceOperations
         //$request = $this->http->request('GET', 'v1/clients');
         $request = $this->http->request('POST', 'v1/clients/' . $uid . '/update', $params);
         $response = json_decode((string) $request->getBody()->getContents(), false);
-    }    
+    }
 
-    public function reverseOperation($units = null)
+    public function listUnitCodes()
     {
-        $class_table = get_class($this);
-        // $class_table === OrderToProvider::class
-        // $details = $this::find($id)->details()->get();
-        if ($class_table === OrderToProvider::class) {
-            $item_name = 'material_id';
-            $supply_class = Supply::class;
-            $stock_name = 'available_stock';
-        }
-        if ($class_table === Shipment::class) {
-            $item_name = 'product_id';
-            $supply_class = Product::class;
-            $stock_name = 'stock';
-        }
-        // if ($class_table === ClientOrder::class) {
-        //     $item_name = 'product_id';
-        //     $supply_class = Product::class;
-        //     $stock_name = 'stock';
-        // }
-        $details = $this::details()->get();
+        $request = $this->http->request('GET', 'v3/catalogo/ClaveUnidad');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
 
-        $details->map(function ($i) use ($item_name,$supply_class,$stock_name){
-            $supply_id = $i->pivot[$item_name];
-            $rest_units = $i->pivot['units'];
-            $supply = $supply_class::find($supply_id);
-            $actual_quantity = $supply[$stock_name];
-            $supply[$stock_name] = $actual_quantity - $rest_units;
+        return $response;
+    }  
 
-            $supply->save();
-        });
+    public function listPaymentMethods()
+    {
+        $request = $this->http->request('GET', 'v3/catalogo/MetodoPago');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
 
-        $this->operation_dispatched = false;
-        $this->save();
-    }    
+        return $response;
+    }   
+
+    public function listPaymentForms()
+    {
+        $request = $this->http->request('GET', 'v3/catalogo/FormaPago');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
+
+        return $response;
+    }   
+
+    public function listCfdiUses()
+    {
+        $request = $this->http->request('GET', 'v3/catalogo/UsoCfdi');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
+
+        return $response;
+    }   
 
     protected static function getRecordActivityEvents()
     {

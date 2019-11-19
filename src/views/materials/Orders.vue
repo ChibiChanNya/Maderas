@@ -15,7 +15,7 @@
 
             <v-card-text class="pt-0" style="height: 500px">
               <v-form ref="form" v-model="valid_form" lazy-validation>
-                <v-container grid-list-md>
+                <v-container grid-list-md class="py-0">
                   <v-layout wrap justify-center>
                     <v-flex xs12 sm8>
                       <v-select
@@ -173,6 +173,7 @@
 
                     <v-flex xs12>
                       <h3>Lista de insumos</h3>
+                      <h4>Costo total esperado: <span class="green--text">{{totalPrice | currency('$')}}</span></h4>
                     </v-flex>
                     <v-layout
                       v-for="(mat, index) in editedItem.order_details" :key="index">
@@ -202,7 +203,7 @@
                                       type="number"
                                       label="Cantidad"></v-text-field>
                       </v-flex>
-                      <v-flex xs1 >
+                      <v-flex xs1>
                         <v-btn flat icon style="align-self:center"
                                @click="removeMaterial(mat)">
                           <v-icon class="red--text">close</v-icon>
@@ -462,10 +463,14 @@ export default {
     material_choices() {
       return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.length > 0 && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id)) || []
     },
+    totalPrice() {
+      if (this.editedItem && this.editedIndex >= 0)
+        return this.calculateTotalPrice(this.editedItem)
+    },
   },
   mounted() {
     this.axios.all([index_materials(), index_suppliers()])
-      .then(this.axios.spread(function (materials, providers) {
+      .then(this.axios.spread(function(materials, providers) {
           // Both requests are now complete
           this.materials = materials.data
           this.providers = providers.data
@@ -500,6 +505,15 @@ export default {
 
     isProductDelivered(item) {
       return ['entregado', 'pagado'].includes(item.status)
+    },
+
+    calculateTotalPrice(item) {
+      const details = item.order_details || []
+      return details.reduce((total, next) => {
+        if (next.material_id && next.units > 0)
+          return total + (this.getMaterialPrice(next.material_id) * next.units)
+        else return total
+      }, 0)
     },
 
     async save() {

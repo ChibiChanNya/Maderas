@@ -15,7 +15,7 @@
 
             <v-card-text class="pt-0" style="height: 500px">
               <v-form ref="form" v-model="valid_form" lazy-validation>
-                <v-container grid-list-md>
+                <v-container grid-list-md class="py-0">
                   <v-layout wrap justify-center>
                     <v-flex xs12 sm6>
                       <v-select
@@ -132,6 +132,7 @@
 
                     <v-flex xs12>
                       <h3>Productos Solicitados</h3>
+                      <h4>Precio total recomendado: <span class="green--text">{{totalPrice | currency('$')}}</span></h4>
                     </v-flex>
                     <v-layout
                       v-for="(product, index) in editedItem.order_details" :key="index">
@@ -406,7 +407,10 @@ export default {
     formTitle() {
       return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
     },
-
+    totalPrice(){
+      if(this.editedItem && this.editedIndex >= 0)
+        return this.calculateTotalPrice(this.editedItem)
+    }
   },
 
   mounted() {
@@ -444,6 +448,15 @@ export default {
     getShipments(item) {
       const ships = this.shipments.filter((ship) => ship.order_id === item.id)
       return ships || []
+    },
+
+    calculateTotalPrice(item){
+      const details = item.order_details || []
+      return details.reduce((total, next) => {
+        if(next.product_id && next.units > 0)
+          return total + (this.getProductPrice(next.product_id) * next.units)
+        else return total
+      }, 0)
     },
 
     addProduct() {

@@ -15,7 +15,7 @@
 
                         <v-card-text>
                             <v-form ref="form" v-model="valid_form" lazy-validation>
-                                <v-container grid-list-md>
+                                <v-container grid-list-md class="py-0">
                                     <v-layout wrap justify-center>
                                         <v-flex xs12 sm6>
                                             <v-text-field v-model="editedItem.name"

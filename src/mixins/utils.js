@@ -38,6 +38,13 @@ export default {
       stockRules: [
         v => (!v || (!isNaN(v) && v >= 0)) || "Debe ser un número positivo",
       ],
+      zipCodeRules: [
+        v => (!isNaN(v) && v.length === 5) || "Código postal consiste en 5 números"
+      ],
+      emailRules: [
+        v => !!v || 'E-mail requerido',
+        v => /.+@.+/.test(v) || 'E-mail must be valid',
+      ],
     }
   },
 
@@ -55,6 +62,15 @@ export default {
     product_name(id) {
       const product = (this.products && this.products.length > 0 && this.products.find((mat) => mat.id === id));
       return (product && product.name) || "Producto no encontrado";
+    },
+
+    getProductPrice(id){
+      const product = (this.products && this.products.length > 0 && this.products.find((mat) => mat.id === id));
+      return product.price || 0
+    },
+    getMaterialPrice(id){
+      const material = (this.materials && this.materials.length > 0 && this.materials.find((mat) => mat.id === id));
+      return material.recent_price || 0
     },
 
     status_name(val) {

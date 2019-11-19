@@ -12,6 +12,7 @@ use App\Client;
 use Auth;
 use Carbon\Carbon;
 use GuzzleHttp;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -52,45 +53,75 @@ class InvoiceOperations
         $response = json_decode((string) $request->getBody()->getContents(), false);
         // dd($response->Data->UID);
         // dd($response['Data']->UID);
+        if ($response->status == 'error') {
+            $data = json_encode($response->message);
+            throw new Exception($data);
+        }
         $client->invoice_uid = $response->Data->UID;
         $client->save();
-    }    
+    }   
 
-    public function reverseOperation($units = null)
+    public function updateClient(Client $client)
     {
-        $class_table = get_class($this);
-        // $class_table === OrderToProvider::class
-        // $details = $this::find($id)->details()->get();
-        if ($class_table === OrderToProvider::class) {
-            $item_name = 'material_id';
-            $supply_class = Supply::class;
-            $stock_name = 'available_stock';
+        $name = $client->name;
+        $email = $client->email;
+        $razons = $client->business_name;
+        $rfc = $client->rfc;
+        $zip = $client->zip_code;
+        $uid = $client->invoice_uid;
+
+        $existance = $this->http->request('GET', 'v1/clients/' . $rfc);
+        $response_existance = json_decode((string) $existance->getBody()->getContents(), false);
+        if ($response_existance->message == 'El cliente no existe') {
+            return $this->createClient($client);
         }
-        if ($class_table === Shipment::class) {
-            $item_name = 'product_id';
-            $supply_class = Product::class;
-            $stock_name = 'stock';
-        }
-        // if ($class_table === ClientOrder::class) {
-        //     $item_name = 'product_id';
-        //     $supply_class = Product::class;
-        //     $stock_name = 'stock';
-        // }
-        $details = $this::details()->get();
 
-        $details->map(function ($i) use ($item_name,$supply_class,$stock_name){
-            $supply_id = $i->pivot[$item_name];
-            $rest_units = $i->pivot['units'];
-            $supply = $supply_class::find($supply_id);
-            $actual_quantity = $supply[$stock_name];
-            $supply[$stock_name] = $actual_quantity - $rest_units;
+        $invoice_client = [
+            'nombre' => $name,
+            'email' => $email,
+            'razons' => $razons,
+            'rfc' => $rfc,
+            'codpos' => $zip,
+        ];
 
-            $supply->save();
-        });
+        $params = ['json' => $invoice_client];
 
-        $this->operation_dispatched = false;
-        $this->save();
-    }    
+        //$request = $this->http->request('GET', 'v1/clients');
+        $request = $this->http->request('POST', 'v1/clients/' . $uid . '/update', $params);
+        $response = json_decode((string) $request->getBody()->getContents(), false);
+    }
+
+    public function listUnitCodes()
+    {
+        $request = $this->http->request('GET', 'v3/catalogo/ClaveUnidad');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
+
+        return $response;
+    }  
+
+    public function listPaymentMethods()
+    {
+        $request = $this->http->request('GET', 'v3/catalogo/MetodoPago');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
+
+        return $response;
+    }   
+
+    public function listPaymentForms()
+    {
+        $request = $this->http->request('GET', 'v3/catalogo/FormaPago');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
+
+        return $response;
+    }   
+
+    public function listCfdiUses()
+    {
+        $request = $this->http->request('GET', 'v3/catalogo/UsoCfdi');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
+
+        return $response;
+    }   
 
     protected static function getRecordActivityEvents()
     {

@@ -173,7 +173,6 @@ Route::prefix('shipments')->group(function () {
     });
 });
 
-
 Route::prefix('ledger')->group(function () {
     // Route::post('register', 'UserController@register');
     // Below mention routes are available only for the authenticated users.
@@ -186,6 +185,25 @@ Route::prefix('ledger')->group(function () {
         Route::post('update', 'LedgerController@ledger_update');
         // Delete an Order
         Route::post('delete', 'LedgerController@ledger_delete');
+    });
+});
+
+Route::prefix('invoices')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New Invoice
+        Route::post('create', 'InvoiceController@create');
+        // Get all Invoices (locally)
+        Route::get('list', 'InvoiceController@invoices_list');
+        // Get all unit codes from API
+        Route::get('unit_codes', 'InvoiceController@unit_codes');
+        // Get all payment forms from API
+        Route::get('payment_forms', 'InvoiceController@payment_forms');
+        // Get all payment methods from API
+        Route::get('payment_methods', 'InvoiceController@payment_methods');
+        // Get all cfdi uses from API
+        Route::get('cfdi_uses', 'InvoiceController@cfdi_uses');
     });
 });
 

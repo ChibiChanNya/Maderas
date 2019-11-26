@@ -13,7 +13,8 @@ class Product extends Model
      */
     protected $fillable = [
         'sku','name', 'price', 'description', 'box_volume', 'materials_volume', 
-        'width','height','length','stock'
+        'width','height','length','stock','product_service_code','unit_code',
+        'unit_description',
     ];
 
     /**

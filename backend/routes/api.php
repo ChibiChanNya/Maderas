@@ -204,6 +204,8 @@ Route::prefix('invoices')->group(function () {
         Route::get('payment_methods', 'InvoiceController@payment_methods');
         // Get all cfdi uses from API
         Route::get('cfdi_uses', 'InvoiceController@cfdi_uses');
+        // Create CFDI
+        Route::post('create_cfdi', 'InvoiceController@create_cfdi');
     });
 });
 

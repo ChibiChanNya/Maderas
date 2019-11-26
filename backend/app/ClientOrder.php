@@ -33,4 +33,8 @@ class ClientOrder extends Model
     public function details(){
         return $this->belongsToMany('App\Product', 'client_orders_details', 'order_id', 'product_id')->withPivot('product_id', 'units');
     }
+
+    public function client(){
+        return $this->belongsTo('App\Client', 'client_id');
+    }
 }

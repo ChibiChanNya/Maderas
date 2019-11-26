@@ -121,4 +121,12 @@ class ClientController extends Controller
         ], 200);
         
     }
+
+    protected function respondWithError($error)
+    {
+        return response()->json([
+            'status' => 'error',
+            'errors' => $error
+        ], 422);
+    }
 }

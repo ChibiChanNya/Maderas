@@ -34,4 +34,9 @@ class Shipment extends Model
         // return $this->belongsToMany('App\Product', 'client_orders_details', 'order_id', 'product_id','order_id')->withPivot('product_id', 'units');
         return $this->belongsToMany('App\Product', 'shipments_details', 'shipment_id', 'product_id')->withPivot('product_id', 'units');
     }
+
+    public function order(){
+        // return $this->belongsToMany('App\Product', 'client_orders_details', 'order_id', 'product_id','order_id')->withPivot('product_id', 'units');
+        return $this->belongsTo('App\ClientOrder', 'order_id');
+    }
 }

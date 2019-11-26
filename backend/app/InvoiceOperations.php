@@ -91,6 +91,68 @@ class InvoiceOperations
         $response = json_decode((string) $request->getBody()->getContents(), false);
     }
 
+    public function createCfdi(Shipment $shipment, string $cfdi_use, string $payment_form)
+    {
+        $client_order = $shipment->order;
+        $client = $client_order->client;
+        $client_reference = $client->invoice_uid;
+        $document_type = "factura";
+        $payment_method = "PUE";
+        $currency = "MXN";
+
+        $details = $shipment->details;
+        $concepts = [];
+        foreach($details as $key => $value){
+            $item = [
+                'ClaveProdServ' => $value['product_service_code'],
+                'NoIdentificacion' => $value['sku'],
+                'Cantidad' => $value->pivot->units,
+                'ClaveUnidad' => $value['unit_code'],
+                'Unidad' => $value['unit_description'],
+                'ValorUnitario' => $value['price'],
+                'Descripcion' => $value['description'],
+            ];
+
+            $response = $this->checkParameters($item, $value);
+
+            if (!empty($response)) {
+                $data = json_encode($response);
+                throw new Exception($data);
+            }
+
+            array_push($concepts, $item);
+        }
+        
+        $request = $this->http->request('GET', 'v1/series');
+        $response = json_decode((string) $request->getBody()->getContents(), false);
+        $key = array_search("F", array_column($response->data, 'SerieName'));
+        $serie_code = $response->data[$key]->SerieID;
+
+        $invoice_info = [
+            'Receptor' => [
+                'UID' => $client_reference,
+            ],
+            'TipoDocumento' => $document_type,
+            'Conceptos' => $concepts,
+            'UsoCFDI' => $cfdi_use,
+            'Serie' => $serie_code,
+            'FormaPago' => $payment_form,
+            'MetodoPago' => $payment_method,
+            'Moneda' => $currency,
+        ];
+
+        $params = ['json' => $invoice_info];
+        $request = $this->http->request('POST', 'v3/cfdi33/create', $params);
+        $response = json_decode((string) $request->getBody()->getContents(), false);
+
+        if ($response->response == 'error') {
+            $data = json_encode($response->message);
+            throw new Exception($data);
+        }
+        
+        return json_encode($response);
+    } 
+
     public function listUnitCodes()
     {
         $request = $this->http->request('GET', 'v3/catalogo/ClaveUnidad');
@@ -122,6 +184,18 @@ class InvoiceOperations
 
         return $response;
     }   
+
+    protected function checkParameters($array, $item)
+    {
+        $errors = [];
+        foreach ($array as $key => $value) {
+            if (!isset($value)) {
+                array_push($errors, 'No ' . $key . ' in product ' . $item['id']);
+            }
+        }
+
+        return $errors;
+    }
 
     protected static function getRecordActivityEvents()
     {

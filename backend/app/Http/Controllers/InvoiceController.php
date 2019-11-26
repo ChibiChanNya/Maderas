@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\InvoiceOperations;
+use App\Shipment;
+use Validator;
 
 class InvoiceController extends Controller
 {
@@ -41,5 +43,41 @@ class InvoiceController extends Controller
 
         // return response()->json(['status' => 'success'], 200);
         return $codes;
+    }
+
+    public function create_cfdi(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'shipment_id' => 'required',
+            'uso_cfdi' => 'required',
+            'forma_pago' => 'required',
+        ]);
+        if ($v->fails())
+        {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $v->errors()
+            ], 422);
+        }
+        $shipment_id = $request->input('shipment_id');
+        $cfdi_use = $request->input('uso_cfdi');
+        $payment_form = $request->input('forma_pago');
+
+        $shipment = Shipment::find($shipment_id);
+
+        if ($shipment){
+            $confirmation = $this->invoiceService->createCfdi($shipment, $cfdi_use, $payment_form);
+            return $confirmation;
+        }
+        
+        return $this->respondWithError('no shipment found');
+    }
+
+    protected function respondWithError($error)
+    {
+        return response()->json([
+            'status' => 'error',
+            'errors' => $error
+        ], 422);
     }
 }

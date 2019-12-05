@@ -394,7 +394,7 @@ export default {
         } else {
           this.calc_permissions_decimal()
           create(this.editedItem).then(({ data: newItem }) => {
-            this.users.push(newItem)
+            this.users.push(JSON.parse(JSON.stringify(this.editedItem)))
             this.$store.commit('setSnack', { text: 'Usuario creado exitosamente', color: 'success' })
             this.close()
           }).catch(err => {

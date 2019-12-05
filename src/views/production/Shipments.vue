@@ -144,6 +144,7 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
+              <v-btn color="red darken-1" flat @click="startInvoice">Factura</v-btn>
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
             </v-card-actions>
@@ -499,6 +500,10 @@ export default {
         this.loading = false
       })
     },
+
+    startInvoice(){
+      this.$store.commit('setSnack', { text: "End desarrollo...", color: 'blue' })
+    }
 
   },
 

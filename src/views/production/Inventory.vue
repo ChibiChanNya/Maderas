@@ -68,23 +68,23 @@
                                     label="Largo"></v-text-field>
                     </v-flex>
 
-<!--                    <v-flex xs12 sm12>-->
-<!--                      <v-select-->
-<!--                        v-model="editedItem.unit_code"-->
-<!--                        :items="unit_codes"-->
-<!--                        label="Unidad de Medida (factura)"-->
-<!--                        item-value="key"-->
-<!--                        persistent-hint-->
-<!--                        :rules="required"-->
-<!--                      >-->
-<!--                        <template v-slot:item="props">-->
-<!--                          {{ props.item.name }} ({{props.item.key}})-->
-<!--                        </template>-->
-<!--                        <template v-slot:selection="props">-->
-<!--                          {{ props.item.name }} ({{props.item.key}})-->
-<!--                        </template>-->
-<!--                      </v-select>-->
-<!--                    </v-flex>-->
+                    <v-flex xs12 sm12>
+                      <v-select
+                        v-model="editedItem.unit_code"
+                        :items="unit_codes"
+                        label="Unidad de Medida (factura)"
+                        item-value="key"
+                        persistent-hint
+                        :rules="required"
+                      >
+                        <template v-slot:item="props">
+                          {{ props.item.name }} ({{props.item.key}})
+                        </template>
+                        <template v-slot:selection="props">
+                          {{ props.item.name }} ({{props.item.key}})
+                        </template>
+                      </v-select>
+                    </v-flex>
                   </v-layout>
                 </v-container>
               </v-form>

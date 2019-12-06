@@ -130,7 +130,7 @@
                     </v-layout>
                     <template
                       v-if="!editedItem.shipment_details || editedItem.shipment_details.length === 0">
-                      <h4>No se han registrado productos para este pedido</h4>
+                      <h4>No se han registrado productos para este envío</h4>
                     </template>
                     <v-flex>
                       <v-btn flat color="info" @click="addProduct">Agregar nuevo producto
@@ -336,7 +336,7 @@ export default {
 
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
+      return this.editedIndex === -1 ? 'Nuevo Envío' : 'Editar Envío'
     },
     totalPrice(){
       if(this.editedItem && this.editedIndex >= 0)

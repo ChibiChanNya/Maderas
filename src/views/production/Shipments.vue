@@ -17,25 +17,26 @@
               <v-form ref="form" v-model="valid_form" lazy-validation>
                 <v-container grid-list-md class="py-0">
                   <v-layout wrap justify-center>
-                    <v-flex xs12 sm8>
-                      <v-select
+                    <v-flex xs12>
+                      <v-autocomplete
                         v-model="editedItem.order_id"
-                        hint="Pedidos"
+                        hint="Pedido"
+                        :filter="ordersFilter"
                         :items="orders"
-                        item-text="contract"
                         item-value="id"
                         label="Elije el pedido"
                         persistent-hint
                         single-line
                         :rules="required"
-                      ></v-select>
+                      >
+                        <template v-slot:item="props">
+                          {{ props.item.id }} - {{props.item.user}} - {{props.item.description}}
+                        </template>
+                        <template v-slot:selection="props">
+                          {{ props.item.id }} - {{props.item.user}} - {{props.item.description}}
+                        </template>
+                      </v-autocomplete>
                     </v-flex>
-                    <v-flex xs4 sm4>
-                      <v-text-field v-model="editedItem.cost"
-                                    :rules="numberRules"
-                                    label="Precio Total"></v-text-field>
-                    </v-flex>
-
                     <v-flex xs12 sm6>
                       <v-select
                         v-model="editedItem.status"
@@ -59,8 +60,7 @@
                       >
                         <template v-slot:activator="{ on }">
                           <v-text-field
-                            v-model="editedItem.delivery_date"
-                            label="Fecha de solicitud"
+                            label="Fecha de envío"
                             prepend-icon="event"
                             readonly
                             clearable
@@ -81,17 +81,24 @@
                         </v-date-picker>
                       </v-dialog>
                     </v-flex>
-                    <v-flex xs6>
+                    <v-flex xs6 sm4>
                       <v-text-field v-model="editedItem.certificate"
-                                    label="Certificado de Tratamiento"></v-text-field>
+                                    label="Cert. Tratamiento"></v-text-field>
                     </v-flex>
-                    <v-flex xs6>
-                      <v-text-field v-model.number="editedItem.invoice"
-                                    label="# Factura"></v-text-field>
+                    <v-flex xs6 sm4>
+                      <v-text-field v-model.number="editedItem.buy_order"
+                                    label="Orden de Compra"></v-text-field>
+                    </v-flex>
+                    <v-flex xs6 sm4>
+                      <v-text-field :value="totalPrice"
+                                    color="green"
+                                    readonly
+                                    persistent-hint
+                                    prefix="$"
+                                    label="Precio Total"></v-text-field>
                     </v-flex>
                     <v-flex xs12>
                       <h3>Productos Enviados</h3>
-                      <h4>Precio recomendado: <span class="green--text">{{totalPrice | currency('$')}}</span></h4>
                     </v-flex>
                     <v-layout
                       v-for="(product, index) in editedItem.shipment_details" :key="index">
@@ -283,9 +290,9 @@ export default {
         { text: 'Pedido', value: 'order_id', align: 'center' },
         { text: 'Costo', value: 'cost', align: 'center' },
         { text: 'Status', value: 'status', align: 'center' },
-        { text: 'Fecha Envío', value: 'delivery_date', align: 'center' },
-        { text: 'Certificado de Tratamiento', value: 'certificate', align: 'center' },
-        { text: '# Factura', value: 'invoice', align: 'center' },
+        { text: 'Fecha de Envío', value: 'delivery_date', align: 'center' },
+        { text: 'Cert. Tratamiento', value: 'certificate', align: 'center' },
+        { text: 'Orden de Compra', value: 'buy_order', align: 'center' },
         { text: 'Acciones', value: 'id', align: 'center' },
       ],
       items: [],
@@ -315,7 +322,7 @@ export default {
         certificate: '',
         delivery_date: new Date().toISOString().slice(0, 10),
         status: null,
-        invoice: null,
+        buy_order: null,
         shipment_details: [''],
         operation_dispatched: false,
       },
@@ -326,7 +333,7 @@ export default {
         certificate: '',
         delivery_date: new Date().toISOString().slice(0, 10),
         status: null,
-        invoice: null,
+        buy_order: null,
         shipment_details: [''],
         operation_dispatched: false,
       },
@@ -340,8 +347,8 @@ export default {
     },
     totalPrice(){
       if(this.editedItem && this.editedIndex >= 0)
-        return this.calculateTotalPrice(this.editedItem)
-    }
+        return this.calculateTotalPrice(this.editedItem) || 0
+    },
   },
 
   mounted() {
@@ -363,10 +370,19 @@ export default {
 
   methods: {
 
+    ordersFilter(item, queryText, itemText) {
+      const textOne = item.id.toString()
+      const textTwo = item.description.toLowerCase()
+      const searchText = queryText.toLowerCase()
+
+      return textOne.indexOf(searchText) > -1 ||
+        textTwo.indexOf(searchText) > -1
+    },
+
     order_data(id) {
       const order = this.orders && this.orders.find((order) => order.id === id)
       if (order)
-        return `${order.contract} - ${this.client_name(order.client_id)}`
+        return `${order.id} - ${order.user || ''} - ${order.description}`
       else return 'Insumo no encontrado'
     },
 

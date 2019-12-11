@@ -46,7 +46,7 @@
                         item-value="value"
                         persistent-hint
                         :rules="required"
-                      ></v-select>
+                      />
                     </v-flex>
                     <v-flex xs12 sm6>
                       <v-dialog
@@ -67,12 +67,12 @@
                             :value="formatted_date(editedItem.delivery_date)"
                             @click:clear="editedItem.delivery_date = null"
                             v-on="on"
-                          ></v-text-field>
+                          />
                         </template>
                         <v-date-picker v-model="editedItem.delivery_date" scrollable
                                        locale="es-mx"
                         >
-                          <v-spacer></v-spacer>
+                          <v-spacer/>
                           <v-btn flat color="primary" @click="modal_date_1 = false">Cancelar
                           </v-btn>
                           <v-btn flat color="primary"
@@ -83,11 +83,11 @@
                     </v-flex>
                     <v-flex xs6 sm4>
                       <v-text-field v-model="editedItem.certificate"
-                                    label="Cert. Tratamiento"></v-text-field>
+                                    label="Cert. Tratamiento"/>
                     </v-flex>
                     <v-flex xs6 sm4>
                       <v-text-field v-model.number="editedItem.buy_order"
-                                    label="Orden de Compra"></v-text-field>
+                                    label="Orden de Compra"/>
                     </v-flex>
                     <v-flex xs6 sm4>
                       <v-text-field :value="totalPrice"
@@ -95,7 +95,7 @@
                                     readonly
                                     persistent-hint
                                     prefix="$"
-                                    label="Precio Total"></v-text-field>
+                                    label="Precio Total"/>
                     </v-flex>
                     <v-flex xs12>
                       <h3>Productos Enviados</h3>
@@ -103,7 +103,7 @@
                     <v-layout
                       v-for="(product, index) in editedItem.shipment_details" :key="index">
 
-                      <v-flex xs8 >
+                      <v-flex xs8>
                         <v-select
                           v-model="product.product_id"
                           hint="Producto"
@@ -122,13 +122,13 @@
                           </template>
                         </v-select>
                       </v-flex>
-                      <v-flex xs2 >
+                      <v-flex xs2>
                         <v-text-field v-model="product.units"
                                       :rules="numberRules"
                                       type="number"
-                                      label="Cantidad"></v-text-field>
+                                      label="Cantidad"/>
                       </v-flex>
-                      <v-flex xs1 >
+                      <v-flex xs1>
                         <v-btn flat icon style="align-self:center"
                                @click="removeProduct(product)">
                           <v-icon class="red--text">close</v-icon>
@@ -150,14 +150,14 @@
             </v-card-text>
 
             <v-card-actions>
-              <v-spacer></v-spacer>
+              <v-spacer/>
               <v-btn color="red darken-1" flat @click="startInvoice">Factura</v-btn>
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-spacer></v-spacer>
+        <v-spacer/>
         <v-text-field
           v-model="search"
           @input="isTyping = true"
@@ -165,7 +165,7 @@
           label="Buscar..."
           single-line
           hide-details
-        ></v-text-field>
+        />
       </v-card-title>
 
       <v-data-table
@@ -178,10 +178,12 @@
         rows-per-page-text="Elementos por página"
       >
         <template v-slot:items="props">
-          <tr>
+          <tr :class="{'red lighten-4': isShipmentBehindOnPayments(props.item)}">
             <td class="">{{ order_data(props.item.order_id) }}</td>
             <td class="">{{ props.item.cost | currency('$') }}</td>
-            <td class="">{{ status_name(props.item.status) }}</td>
+            <!-- If it's 30 days behind on payment, show alert -->
+            <td v-if="isShipmentBehindOnPayments(props.item)" class="red--text text--darken-3 font-weight-bold">SIN PAGAR</td>
+            <td v-else>{{  status_name(props.item.status) }}</td>
             <template v-if="props.item.delivery_date">
               {{ props.item.delivery_date | moment('DD/M/YYYY')}}
             </template>
@@ -291,7 +293,7 @@ export default {
         { text: 'Pedido', value: 'order_id', align: 'center' },
         { text: 'Costo', value: 'cost', align: 'center' },
         { text: 'Status', value: 'status', align: 'center' },
-        { text: 'Fecha de Envío', value: 'delivery_date', align: 'center' },
+        { text: 'Fecha de Envío', value: 'delivery_date', align: 'left' },
         { text: 'Cert. Tratamiento', value: 'certificate', align: 'center' },
         { text: 'Orden de Compra', value: 'buy_order', align: 'center' },
         { text: 'Acciones', value: 'id', align: 'center' },
@@ -346,15 +348,15 @@ export default {
     formTitle() {
       return this.editedIndex === -1 ? 'Nuevo Envío' : 'Editar Envío'
     },
-    totalPrice(){
-      if(this.editedItem)
+    totalPrice() {
+      if (this.editedItem)
         return this.calculateTotalPrice(this.editedItem) || 0
     },
   },
 
   mounted() {
     this.axios.all([index_orders_lite(), index_clients(), index_products()])
-      .then(this.axios.spread(function (orders, clients, products) {
+      .then(this.axios.spread(function(orders, clients, products) {
           // Both requests are now complete
           this.orders = orders.data
           this.clients = clients.data
@@ -370,6 +372,14 @@ export default {
   },
 
   methods: {
+
+    isShipmentBehindOnPayments(item) {
+      console.log(this.$moment().diff(this.$moment(item.delivery_date), 'days'))
+      console.log(item.status)
+      const res = item.delivery_date && item.status !== 'completo' && this.$moment().diff(this.$moment(item.delivery_date), 'days') > 30
+      console.log(res)
+      return res;
+    },
 
     ordersFilter(item, queryText, itemText) {
       const textOne = item.id.toString()
@@ -396,10 +406,10 @@ export default {
       this.editedItem.shipment_details.splice(index, 1)
     },
 
-    calculateTotalPrice(item){
+    calculateTotalPrice(item) {
       const details = item.shipment_details || []
       return details.reduce((total, next) => {
-        if(next.product_id && next.units > 0)
+        if (next.product_id && next.units > 0)
           return total + (this.getProductPrice(next.product_id) * next.units)
         else return total
       }, 0)
@@ -520,9 +530,9 @@ export default {
       })
     },
 
-    startInvoice(){
-      this.$store.commit('setSnack', { text: "End desarrollo...", color: 'blue' })
-    }
+    startInvoice() {
+      this.$store.commit('setSnack', { text: 'End desarrollo...', color: 'blue' })
+    },
 
   },
 

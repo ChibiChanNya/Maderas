@@ -277,7 +277,7 @@
                     <th>Fecha de Entrega</th>
                   </tr>
                   <tr v-for="item in getShipments(props.item)" :key="item.id">
-                    <td>{{ (item.cost | currency('$')) || '--'}}</td>
+                    <td>{{ item.cost | currency('$')}}</td>
                     <td>{{status_name_shipment(item.status)}}</td>
                     <td>{{ (item.delivery_date || '--') | moment('DD/M/YYYY') }}</td>
                   </tr>
@@ -434,6 +434,13 @@ export default {
   },
 
   methods: {
+
+    isOrderAtLeast80Percent(item){
+      function totalItems(order_details){
+        return order_details.reduce((total, next) => total + next.units, 0)
+      }
+      return totalItems(item.order_details)
+    },
 
     status_name_shipment(val) {
       const status_list = [

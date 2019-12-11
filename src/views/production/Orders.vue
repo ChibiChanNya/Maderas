@@ -32,8 +32,8 @@
                     </v-flex>
 
                     <v-flex xs4 sm6>
-                      <v-text-field v-model="editedItem.contract"
-                                    label="No. Contrato"></v-text-field>
+                      <v-text-field v-model="editedItem.user"
+                                    label="Usuario"></v-text-field>
                     </v-flex>
 
                     <v-flex xs12 class="mt-3">
@@ -43,7 +43,7 @@
                                   label="Descripción del pedido"></v-textarea>
                     </v-flex>
 
-                    <v-flex xs6 sm6>
+                    <v-flex xs6 sm4>
                       <v-select
                         v-model="editedItem.status"
                         :items="status_list"
@@ -55,13 +55,17 @@
                       ></v-select>
                     </v-flex>
 
-                    <v-flex xs4 sm6>
+                    <v-flex xs6 sm4>
                       <v-text-field :value="totalPrice"
                                     color="green"
                                     readonly
                                     persistent-hint
                                     prefix="$"
                                     label="Precio Total"/>
+                    </v-flex>
+                    <v-flex xs6 sm4>
+                      <v-text-field v-model="editedItem.contract"
+                                    label="No. Contrato"></v-text-field>
                     </v-flex>
 
                     <v-flex xs12 sm6>
@@ -157,13 +161,13 @@
                           </template>
                         </v-select>
                       </v-flex>
-                      <v-flex xs2 >
+                      <v-flex xs2>
                         <v-text-field v-model="product.units"
                                       :rules="numberRules"
                                       type="number"
                                       label="Cantidad"></v-text-field>
                       </v-flex>
-                      <v-flex xs1 >
+                      <v-flex xs1>
                         <v-btn flat icon style="align-self:center"
                                @click="removeProduct(product)">
                           <v-icon class="red--text">close</v-icon>
@@ -213,11 +217,28 @@
         <template v-slot:items="props">
           <tr>
             <td class="">{{ client_name(props.item.client_id) }}</td>
-            <td class="">{{ props.item.contract }}</td>
-            <td class="">{{ props.item.total_cost }}</td>
-            <td class="">{{ (props.item.request_date || '--') | moment('DD/M/YYYY')}}</td>
             <td class="">{{ status_name(props.item.status) }}</td>
-            <td class="">{{ (props.item.finish_date || '--') | moment('DD/M/YYYY') }}</td>
+            <td class="">{{ props.item.user }}</td>
+            <td class="">{{ props.item.description }}</td>
+            <td>
+              <template v-if="props.item.order_details.length >0">
+                <v-layout v-for="(product, index) in props.item.order_details" :key="index" justify-start>
+                  <v-flex>
+                    {{product_name(product.product_id)}} -
+                  </v-flex>
+                  <v-flex>
+                    {{product.units}}
+                  </v-flex>
+                </v-layout>
+              </template>
+              <template v-else>
+                <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
+                  Sin productos
+                </div>
+              </template>
+            </td>
+
+            <td class="">{{ props.item.total_cost }}</td>
             <td class="justify-start layout px-0">
               <v-btn flat small color="blue" @click="props.expanded = !props.expanded">DETALLES
               </v-btn>
@@ -243,31 +264,7 @@
         <template v-slot:expand="props">
           <div class="grey lighten-3 pl-2">
             <v-layout row>
-              <v-flex xs3>
-                <template v-if="props.item.order_details.length >0">
-                  <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
-                  <tr>
-                    <th>Producto Solicitado</th>
-                    <th>Unidades</th>
-
-                  </tr>
-                  <tr v-for="product in props.item.order_details" :key="product.product_id">
-                    <td class="text-xs-left">
-                      {{ product_name(product.product_id)}}
-                    </td>
-                    <td class="text-xs-left">
-                      {{ product.units || 0}}
-                    </td>
-                  </tr>
-                </template>
-                <template v-else>
-                  <h3 class="text-md-left pa-2">{{ props.item.description }}</h3>
-                  <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
-                    Aún no se agregan los detalles del pedido
-                  </div>
-                </template>
-              </v-flex>
-              <v-divider vertical></v-divider>
+              <v-divider vertical/>
               <v-flex xs6>
                 <h3 class="pa-2">Entregas</h3>
                 <template v-if="getShipments(props.item).length >0">
@@ -349,11 +346,11 @@ export default {
       },
       headers: [
         { text: 'Cliente', value: 'client_id', align: 'center' },
-        { text: 'No. Contrato', value: 'contract', align: 'center' },
-        { text: 'Costo Total', value: 'total_cost', align: 'center' },
-        { text: 'Fecha Solicitud', value: 'reuest_date', align: 'center' },
         { text: 'Status', value: 'status', align: 'center' },
-        { text: 'Fecha Terminación', value: 'finish_date', align: 'center' },
+        { text: 'Usuario', value: 'user', align: 'center' },
+        { text: 'Descripción', value: 'description', align: 'center' },
+        { text: 'Detalles', value: 'details', align: 'center' },
+        { text: 'Costo Total', value: 'total_cost', align: 'center' },
         { text: 'Acciones', value: 'id', align: 'center', sortable: false },
       ],
       items: [],
@@ -410,15 +407,15 @@ export default {
     formTitle() {
       return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
     },
-    totalPrice(){
-      if(this.editedItem && this.editedIndex >= 0)
+    totalPrice() {
+      if (this.editedItem && this.editedIndex >= 0)
         return this.calculateTotalPrice(this.editedItem)
-    }
+    },
   },
 
   mounted() {
     this.axios.all([index_products(), index_clients(), index_shipments_lite()])
-      .then(this.axios.spread(function (products, clients, shipments) {
+      .then(this.axios.spread(function(products, clients, shipments) {
           // Both requests are now complete
           this.products = products.data
           this.clients = clients.data
@@ -435,11 +432,19 @@ export default {
 
   methods: {
 
-    isOrderAtLeast80Percent(item){
-      function totalItems(order_details){
-        return order_details.reduce((total, next) => total + next.units, 0)
-      }
-      return totalItems(item.order_details)
+    isOrderAtLeast80Percent(item) {
+      const shipments = this.getShipments(item)
+      console.log(shipments)
+      if (!item.order_details || item.order_details.length < 1 || !shipments.length < 1)
+        return
+      const shippedItems = shipments.reduce((total, next) => total + this.totalItems(next.order_details), 0)
+      const requestedItems = this.totalItems(item.order_details)
+      // console.log(shippedItems, requestedItems)
+      return shippedItems / requestedItems >= 0.8
+    },
+
+    totalItems(order_details) {
+      return order_details.reduce((total, next) => total + Number(next.units), 0)
     },
 
     status_name_shipment(val) {
@@ -460,10 +465,10 @@ export default {
       return ships || []
     },
 
-    calculateTotalPrice(item){
+    calculateTotalPrice(item) {
       const details = item.order_details || []
       return details.reduce((total, next) => {
-        if(next.product_id && next.units > 0)
+        if (next.product_id && next.units > 0)
           return total + (this.getProductPrice(next.product_id) * next.units)
         else return total
       }, 0)

@@ -66,7 +66,7 @@ export default {
         const search_params = {};
         if (sortBy) search_params.sort = `${sortBy}__${descending ? "desc" : "asc"}`;
         search_params.page = page || 1;
-        search_params.per_page = rowsPerPage || 10;
+        search_params.per_page = rowsPerPage || 30;
         if (this.search) search_params.search = this.search;
 
         this.index_fn(search_params).then(res => {

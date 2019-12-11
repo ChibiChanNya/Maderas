@@ -180,7 +180,7 @@
         <template v-slot:items="props">
           <tr>
             <td class="">{{ order_data(props.item.order_id) }}</td>
-            <td class="">{{ props.item.cost | currency('$') || '----' }}</td>
+            <td class="">{{ props.item.cost | currency('$') }}</td>
             <td class="">{{ status_name(props.item.status) }}</td>
             <template v-if="props.item.delivery_date">
               {{ props.item.delivery_date | moment('DD/M/YYYY')}}
@@ -305,8 +305,8 @@ export default {
         { name: 'En Producción', value: 'produccion' },
         { name: 'En Stock', value: 'stock' },
         { name: 'Standby', value: 'standby' },
-        { name: 'Enviado', value: 'facturado' },
-        { name: 'Facturado', value: 'parcial' },
+        { name: 'Enviado', value: 'enviado' },
+        { name: 'Facturado', value: 'facturado' },
         { name: 'Pendiente Pago', value: 'pendiente pago' },
         { name: 'Completo', value: 'completo' },
       ],
@@ -323,7 +323,7 @@ export default {
         delivery_date: new Date().toISOString().slice(0, 10),
         status: null,
         buy_order: null,
-        shipment_details: [''],
+        shipment_details: [],
         operation_dispatched: false,
       },
       defaultItem: {
@@ -334,7 +334,7 @@ export default {
         delivery_date: new Date().toISOString().slice(0, 10),
         status: null,
         buy_order: null,
-        shipment_details: [''],
+        shipment_details: [],
         operation_dispatched: false,
       },
 
@@ -346,7 +346,7 @@ export default {
       return this.editedIndex === -1 ? 'Nuevo Envío' : 'Editar Envío'
     },
     totalPrice(){
-      if(this.editedItem && this.editedIndex >= 0)
+      if(this.editedItem)
         return this.calculateTotalPrice(this.editedItem) || 0
     },
   },
@@ -418,6 +418,9 @@ export default {
     async save() {
       if (this.$refs.form.validate()) {
         this.loading = true
+        /* Set the  calculated cost as the total_cost */
+        this.editedItem.total_cost = this.totalPrice
+        // prepare to check operation
         let makeOperation = 0
         if (this.editedIndex > -1) {
           const oldItem = this.items[this.editedIndex]
@@ -448,7 +451,7 @@ export default {
             this.loading = false
             return false
           }
-          // Editing an User
+          // Editing a Shipment
           const payload = JSON.parse(JSON.stringify(this.editedItem))
           if (this.editedIndex > -1) {
             update_shipment(payload).then(async ({ data: newItem }) => {
@@ -479,7 +482,6 @@ export default {
             this.loading = false
           })
         }
-
       }
     },
 

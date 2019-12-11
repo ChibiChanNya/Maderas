@@ -32,7 +32,7 @@
                     </v-flex>
 
 
-                    <v-flex xs6 md4>
+                    <v-flex xs6 sm4>
                       <v-select
                         v-model="editedItem.status"
                         :items="status_list"
@@ -154,10 +154,12 @@
                     </v-flex>
 
                     <v-flex xs6 md6>
-                      <v-text-field v-model.number="editedItem.total_cost"
-                                    :rules="moneyRules"
-                                    type="number"
-                                    label="Precio Total"></v-text-field>
+                        <v-text-field :value="totalPrice"
+                                      color="green"
+                                      readonly
+                                      persistent-hint
+                                      prefix="$"
+                                      label="Precio Total"/>
                     </v-flex>
                     <v-flex xs6 md6>
                       <v-text-field v-model.number="editedItem.remaining_cost"
@@ -173,7 +175,6 @@
 
                     <v-flex xs12>
                       <h3>Lista de insumos</h3>
-                      <h4>Costo total esperado: <span class="green--text">{{totalPrice | currency('$')}}</span></h4>
                     </v-flex>
                     <v-layout
                       v-for="(mat, index) in editedItem.order_details" :key="index">
@@ -258,7 +259,7 @@
                 --
               </template>
             </td>
-            <td class="">{{ props.item.total_cost | currency('$') || '----'}}</td>
+            <td class="">{{ props.item.total_cost | currency('$')}}</td>
             <td class="">
               <template v-if="props.item.delivery_date">
                 {{ props.item.delivery_date | moment('DD/M/YYYY')}}
@@ -420,7 +421,7 @@ export default {
         v => {
           const request_date = this.editedItem.request_date && this.$moment(this.editedItem.request_date.slice(0, 10), 'YYYY-M-DD')
           const current = v && this.$moment(v, 'DD/M/YYYY')
-          return (!v || request_date.isBefore(current)) || 'Debe ser posterior a fecha de pedido'
+          return (!v || !request_date.isAfter(current)) || 'No puede ser antes de la fecha de pedido'
         },
       ],
 
@@ -430,12 +431,12 @@ export default {
         provider_id: '',
         description: '',
         order_details: [],
-        total_cost: null,
         request_date: new Date().toISOString().slice(0, 10),
         delivery_date: '',
         payment_date: '',
         status: null,
         remaining_cost: 0,
+        total_price: 0,
         invoice: '',
         operation_dispatched: false,
       },
@@ -444,11 +445,11 @@ export default {
         provider_id: '',
         description: '',
         order_details: [],
-        total_cost: 0,
         request_date: new Date().toISOString().slice(0, 10),
         delivery_date: '',
         payment_date: '',
         status: null,
+        total_price: 0,
         remaining_cost: 0,
         invoice: '',
         operation_dispatched: false,
@@ -464,7 +465,7 @@ export default {
       return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.length > 0 && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id)) || []
     },
     totalPrice() {
-      if (this.editedItem && this.editedIndex >= 0)
+      if (this.editedItem )
         return this.calculateTotalPrice(this.editedItem)
     },
   },
@@ -520,6 +521,8 @@ export default {
       if (this.$refs.form.validate()) {
         this.loading = true
         let makeOperation = 0
+        /* Set the  calculated cost as the total_cost */
+        this.editedItem.total_cost = this.totalPrice
         // Editing an User
         if (this.editedIndex > -1) {
           const oldItem = this.items[this.editedIndex]

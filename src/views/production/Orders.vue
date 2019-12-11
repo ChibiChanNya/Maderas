@@ -56,10 +56,12 @@
                     </v-flex>
 
                     <v-flex xs4 sm6>
-                      <v-text-field v-model.number="editedItem.total_cost"
-                                    :rules="numberRules"
-                                    type="number"
-                                    label="Precio Total"></v-text-field>
+                      <v-text-field :value="totalPrice"
+                                    color="green"
+                                    readonly
+                                    persistent-hint
+                                    prefix="$"
+                                    label="Precio Total"/>
                     </v-flex>
 
                     <v-flex xs12 sm6>
@@ -132,7 +134,6 @@
 
                     <v-flex xs12>
                       <h3>Productos Solicitados</h3>
-                      <h4>Precio total recomendado: <span class="green--text">{{totalPrice | currency('$')}}</span></h4>
                     </v-flex>
                     <v-layout
                       v-for="(product, index) in editedItem.order_details" :key="index">
@@ -275,7 +276,7 @@
                     <th>Fecha de Entrega</th>
                   </tr>
                   <tr v-for="item in getShipments(props.item)" :key="item.id">
-                    <td>{{item.cost | currency('$') || '--'}}</td>
+                    <td>{{ (item.cost | currency('$')) || '--'}}</td>
                     <td>{{status_name_shipment(item.status)}}</td>
                     <td>{{ (item.delivery_date || '--') | moment('DD/M/YYYY') }}</td>
                   </tr>
@@ -374,7 +375,7 @@ export default {
         v => {
           const request_date = this.editedItem.request_date && this.$moment(this.editedItem.request_date.slice(0, 10), 'YYYY-M-DD')
           const current = this.$moment(v, 'DD/M/YYYY')
-          return (!v || request_date.isBefore(current)) || 'Debe ser posterior a fecha de pedido'
+          return (!v || !request_date.isAfter(current)) || 'Debe ser posterior a fecha de pedido'
         },
       ],
 
@@ -384,7 +385,7 @@ export default {
         client_id: '',
         contract: '',
         total_cost: 0,
-        order_details: [''],
+        order_details: [],
         request_date: new Date().toISOString().slice(0, 10),
         finish_date: new Date().toISOString().slice(0, 10),
         status: null,
@@ -394,7 +395,7 @@ export default {
         client_id: '',
         contract: '',
         total_cost: 0,
-        order_details: [''],
+        order_details: [],
         request_date: new Date().toISOString().slice(0, 10),
         finish_date: new Date().toISOString().slice(0, 10),
         status: null,
@@ -481,6 +482,8 @@ export default {
       if (this.$refs.form.validate()) {
         this.loading = true
         // Editing an User
+        /* Set the  calculated cost as the total_cost */
+        this.editedItem.total_cost = this.totalPrice
         const payload = JSON.parse(JSON.stringify(this.editedItem))
         if (this.editedIndex > -1) {
           update_order(payload).then(({ data: newItem }) => {

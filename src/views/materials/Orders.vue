@@ -247,6 +247,8 @@
         :loading="loading"
         :pagination.sync="pagination"
         :total-items="total_items"
+        rows-per-page-text="Elementos por página"
+
       >
         <template v-slot:items="props">
           <tr>
@@ -392,6 +394,7 @@ export default {
       search: '',
       pagination: {
         sortBy: 'request_date',
+        rowsPerPage: 25,
       },
       headers: [
         { text: 'Proveedor', value: 'provider_id', align: 'center' },

@@ -208,6 +208,7 @@
         :loading="loading"
         :search="search"
         :pagination.sync="pagination"
+        rows-per-page-text="Elementos por página"
       >
         <template v-slot:items="props">
           <tr>
@@ -344,6 +345,7 @@ export default {
       search: '',
       pagination: {
         sortBy: 'request_date',
+        rowsPerPage: 25,
       },
       headers: [
         { text: 'Cliente', value: 'client_id', align: 'center' },

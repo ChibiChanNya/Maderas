@@ -89,6 +89,7 @@
         :search="search"
         hide-actions
       >
+
         <template v-slot:items="props">
           <tr>
             <td class="">{{ props.item.username }}</td>

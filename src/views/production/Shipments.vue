@@ -190,8 +190,23 @@
             <template v-else>
               --
             </template>
-            <td class="">{{ props.item.certificate }}</td>
-            <td class="">{{ props.item.invoice || '--'}}</td>
+            <td>
+              <template v-if="props.item.shipment_details.length >0">
+                <v-layout v-for="(product, index) in props.item.shipment_details" :key="index" justify-start>
+                  <v-flex>
+                    {{product_name(product.product_id)}}
+                  </v-flex>
+                  <v-flex>
+                    {{product.units}}
+                  </v-flex>
+                </v-layout>
+              </template>
+              <template v-else>
+                <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
+                  Sin productos
+                </div>
+              </template>
+            </td>
             <td class="justify-start layout px-0">
               <v-btn flat small color="warning" @click="props.expanded = !props.expanded">EXPANDIR</v-btn>
 
@@ -294,8 +309,7 @@ export default {
         { text: 'Costo', value: 'cost', align: 'center' },
         { text: 'Status', value: 'status', align: 'center' },
         { text: 'Fecha de Envío', value: 'delivery_date', align: 'left' },
-        { text: 'Cert. Tratamiento', value: 'certificate', align: 'center' },
-        { text: 'Orden de Compra', value: 'buy_order', align: 'center' },
+        { text: 'Detalles', value: 'details', align: 'center' },
         { text: 'Acciones', value: 'id', align: 'center' },
       ],
       items: [],

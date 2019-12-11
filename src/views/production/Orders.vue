@@ -28,19 +28,19 @@
                         persistent-hint
                         single-line
                         :rules="required"
-                      ></v-select>
+                      />
                     </v-flex>
 
                     <v-flex xs4 sm6>
                       <v-text-field v-model="editedItem.user"
-                                    label="Usuario"></v-text-field>
+                                    label="Usuario"/>
                     </v-flex>
 
                     <v-flex xs12 class="mt-3">
                       <v-textarea outline auto-grow rows="2"
                                   v-model="editedItem.description"
                                   :rules="required"
-                                  label="Descripción del pedido"></v-textarea>
+                                  label="Descripción del pedido"/>
                     </v-flex>
 
                     <v-flex xs6 sm4>
@@ -52,7 +52,7 @@
                         item-value="value"
                         persistent-hint
                         :rules="required"
-                      ></v-select>
+                      />
                     </v-flex>
 
                     <v-flex xs6 sm4>
@@ -65,7 +65,7 @@
                     </v-flex>
                     <v-flex xs6 sm4>
                       <v-text-field v-model="editedItem.contract"
-                                    label="No. Contrato"></v-text-field>
+                                    label="No. Contrato"/>
                     </v-flex>
 
                     <v-flex xs12 sm6>
@@ -87,12 +87,12 @@
                             :value="formatted_date(editedItem.request_date)"
                             @click:clear="editedItem.request_date = null"
                             v-on="on"
-                          ></v-text-field>
+                          />
                         </template>
                         <v-date-picker v-model="editedItem.request_date" scrollable
                                        locale="es-mx"
                         >
-                          <v-spacer></v-spacer>
+                          <v-spacer/>
                           <v-btn flat color="primary" @click="modal_date_1 = false">Cancelar
                           </v-btn>
                           <v-btn flat color="primary"
@@ -121,12 +121,12 @@
                             @click:clear="editedItem.finish_date = null"
                             readonly
                             v-on="on"
-                          ></v-text-field>
+                          />
                         </template>
                         <v-date-picker v-model="editedItem.finish_date" scrollable
                                        locale="es-mx"
                         >
-                          <v-spacer></v-spacer>
+                          <v-spacer/>
                           <v-btn flat color="primary" @click="modal_date_2 = false">Cancelar
                           </v-btn>
                           <v-btn flat color="primary"
@@ -165,7 +165,7 @@
                         <v-text-field v-model="product.units"
                                       :rules="numberRules"
                                       type="number"
-                                      label="Cantidad"></v-text-field>
+                                      label="Cantidad"/>
                       </v-flex>
                       <v-flex xs1>
                         <v-btn flat icon style="align-self:center"
@@ -188,13 +188,13 @@
             </v-card-text>
 
             <v-card-actions>
-              <v-spacer></v-spacer>
+              <v-spacer/>
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-spacer></v-spacer>
+        <v-spacer/>
         <v-text-field
           v-model="search"
           append-icon="search"
@@ -202,7 +202,7 @@
           label="Buscar..."
           single-line
           hide-details
-        ></v-text-field>
+        />
       </v-card-title>
 
       <v-data-table
@@ -224,7 +224,7 @@
               <template v-if="props.item.order_details.length >0">
                 <v-layout v-for="(product, index) in props.item.order_details" :key="index" justify-start>
                   <v-flex>
-                    {{product_name(product.product_id)}} -
+                    {{product_name(product.product_id)}}
                   </v-flex>
                   <v-flex>
                     {{product.units}}

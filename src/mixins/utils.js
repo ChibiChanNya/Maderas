@@ -8,7 +8,7 @@ export default {
       ],
 
       rfcRules: [
-        v => (!v || (v.length === 13 || v.length === 14)) || 'RFC debe estar compuesto por 13 or 14 símbolos'
+        v => (!v || (v.length === 12 || v.length === 13) || 'RFC debe estar compuesto por 12 or 13 símbolos')
       ],
 
       clabeRules: [

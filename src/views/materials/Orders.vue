@@ -230,14 +230,14 @@
           </v-card>
         </v-dialog>
         <v-spacer></v-spacer>
-        <v-text-field
-          v-model="search"
-          @input="isTyping = true"
-          append-icon="search"
-          label="Buscar..."
-          single-line
-          hide-details
-        ></v-text-field>
+<!--        <v-text-field-->
+<!--          v-model="search"-->
+<!--          @input="isTyping = true"-->
+<!--          append-icon="search"-->
+<!--          label="Buscar..."-->
+<!--          single-line-->
+<!--          hide-details-->
+<!--        ></v-text-field>-->
       </v-card-title>
 
       <v-data-table
@@ -394,7 +394,6 @@ export default {
       search: '',
       pagination: {
         sortBy: 'request_date',
-        rowsPerPage: 25,
       },
       headers: [
         { text: 'Proveedor', value: 'provider_id', align: 'center' },

@@ -24,7 +24,7 @@
     "vue2-filters": "^0.7.0",
     "vuejs-dialog": "^1.4.1",
     "vuelidate": "^0.7.4",
-    "vuetify": "^1.5.5",
+    "vuetify": "1.5.21",
     "vuetify-confirm": "^0.2.6",
     "vuex": "^3.0.1"
   },

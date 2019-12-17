@@ -45,27 +45,27 @@
                     <v-flex xs6 sm3>
                       <v-text-field v-model.number="editedItem.box_volume" type="number"
                                     :rules="numberRules"
-                                    label="Volumen Caja"></v-text-field>
+                                    label="Volumen Caja"/>
                     </v-flex>
                     <v-flex xs6 sm3>
                       <v-text-field v-model.number="editedItem.materials_volume" type="number"
                                     :rules="numberRules"
-                                    label="Volumen Materiales"></v-text-field>
+                                    label="Volumen Materiales"/>
                     </v-flex>
                     <v-flex xs4>
                       <v-text-field v-model.number="editedItem.width" type="number"
                                     :rules="numberRules"
-                                    label="Ancho"></v-text-field>
+                                    label="Ancho"/>
                     </v-flex>
                     <v-flex xs4>
                       <v-text-field v-model.number="editedItem.height" type="number"
                                     :rules="numberRules"
-                                    label="Alto"></v-text-field>
+                                    label="Alto"/>
                     </v-flex>
                     <v-flex xs4>
                       <v-text-field v-model.number="editedItem.length" type="number"
                                     :rules="numberRules"
-                                    label="Largo"></v-text-field>
+                                    label="Largo"/>
                     </v-flex>
 
                     <v-flex xs12 sm12>
@@ -85,6 +85,28 @@
                         </template>
                       </v-select>
                     </v-flex>
+                    <v-flex xs12 sm12>
+                      <v-autocomplete
+                        v-model="editedItem.product_service_code"
+                        :loading="codesLoading"
+                        :search-input.sync="codeSearch"
+                        cache-items
+                        :items="product_codes"
+                        label="Clave de Producto/Servicio"
+                        placeholder="Escribe 3 caracteres para buscar más"
+                        item-value="code"
+                        no-data-text="No se encontraron resultados"
+                        persistent-hint
+                        :rules="required"
+                      >
+                        <template v-slot:item="props">
+                          {{ props.item.text }} ({{props.item.code}})
+                        </template>
+                        <template v-slot:selection="props">
+                          {{ props.item.text }} ({{props.item.code}})
+                        </template>
+                      </v-autocomplete>
+                    </v-flex>
                   </v-layout>
                 </v-container>
               </v-form>
@@ -98,14 +120,14 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-spacer></v-spacer>
+        <v-spacer/>
         <v-text-field
           v-model="search"
           append-icon="search"
           label="Buscar..."
           single-line
           hide-details
-        ></v-text-field>
+        />
       </v-card-title>
 
       <v-data-table
@@ -121,7 +143,7 @@
             <td class="">{{ props.item.sku }}</td>
             <td class="">{{ props.item.name }}</td>
             <td class="">{{ props.item.description }}</td>
-            <td class="">{{ props.item.price | currency('$') || '----' }}</td>
+            <td class="">{{ props.item.price | currency('$')}}</td>
             <td class="">{{ props.item.stock }}</td>
             <td class="">
               <v-btn flat small color="blue" @click="props.expanded2 = !props.expanded2">
@@ -218,6 +240,7 @@ import {
 import utils from '../../mixins/utils'
 import Vue2Filters from 'vue2-filters'
 import unit_codes from './cfdUnitCodes'
+import debounce from "lodash.debounce";
 
 export default {
   name: 'ProductsInventory',
@@ -227,6 +250,17 @@ export default {
     return {
       index_fn: index_products,
       delete_fn: remove_product,
+
+      codesLoading: false,
+      base_product_codes: [
+        { text: 'Embalaje de Madera', code: '24112901'},
+        { text: 'Embalaje', code: '24112900'},
+        { text: 'Madera', code: '11121600'},
+        { text: 'Madera Tratada', code: '11122006'},
+        { text: 'Pallets de Madera', code: '24112701'},
+      ],
+      product_codes: [],
+      codeSearch: null,
 
       loading: true,
       dialog: false,
@@ -283,6 +317,18 @@ export default {
     }
   },
 
+  watch: {
+    codeSearch(val){
+      this.codesLoading = true
+      if (val && val.length >= 3 && val !== this.editedItem.product_service_code)
+        this.debouncedFetchCodes(val)
+      else{
+        this.product_codes = this.base_product_codes
+        this.codesLoading = false;
+      }
+    }
+  },
+
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? 'Nuevo Producto' : 'Editar Producto'
@@ -292,10 +338,13 @@ export default {
 
   created() {
     this.unit_codes = unit_codes
+
+    this.debouncedFetchCodes = debounce(this.fetchCFDICodes, 300)
   },
 
 
   mounted() {
+    this.product_codes = this.base_product_codes
     this.axios.all([index_products(), index_orders()])
       .then(this.axios.spread(function(materials, orders) {
           // Both requests are now complete
@@ -313,6 +362,33 @@ export default {
   },
 
   methods: {
+
+    fetchCFDICodes(v) {
+      setTimeout(async () => {
+        const url = `https://www.plataformakoatl.com/appSupport/Services/AjaxRequestManagers/PublicToolsAjaxRequestManager.ashx?commandName=GetCodeProdServByDescription&inputParameters=%7B%22NameString%22%3A%22${v}%22%7D&`
+        try {
+          let response = await fetch(url, { mode: 'cors' })
+          let json = await response.json()
+          if (json['Status'] === 'success') {
+            const codes = json.CodeProdServ
+            const list = []
+            for (var prop in codes) {
+              if (Object.prototype.hasOwnProperty.call(codes, prop)) {
+                list.push({ code: prop, text: codes[prop] })
+              }
+            }
+            this.product_codes = list
+          } else {
+            console.log('failed')
+          }
+        } catch (e) {
+          console.log(e)
+        } finally {
+          this.codesLoading = false
+        }
+
+      }, 500)
+    },
 
     item_orders(item) {
       return this.orders.filter((order) => order.material_id === item.id && order.status === 'pendiente')
@@ -361,7 +437,8 @@ export default {
 
       }
     },
-  },
+  }
+  ,
 
 }
 </script>

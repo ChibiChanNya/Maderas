@@ -3,7 +3,10 @@ import debounce from "lodash.debounce";
 export default {
   data() {
     return {
-      isTyping: false
+      isTyping: false,
+      pagination: {
+        rowsPerPage: 25,
+      }
     }
   },
   watch: {
@@ -23,10 +26,9 @@ export default {
     }, 500),
 
     isTyping: function (value) {
-      if (!value) {
+      if (value) {
         this.index_details()
             .then(data => {
-              console.log("GOT SEARCH RESULTS", data);
               this.items = data.items;
               this.total_items = data.total_items;
             })
@@ -36,7 +38,6 @@ export default {
 
   methods: {
     index_details: function () {
-      console.log("Index!");
       this.loading = true;
       return new Promise((resolve, reject) => {
         const {sortBy, descending, page, rowsPerPage} = this.pagination;
@@ -70,7 +71,6 @@ export default {
         if (this.search) search_params.search = this.search;
 
         this.index_fn(search_params).then(res => {
-          console.log("Index finishes", res.data.data);
           resolve({
             items: res.data.data,
             total: res.data.total

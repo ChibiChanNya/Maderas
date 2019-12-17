@@ -195,14 +195,14 @@
           </v-card>
         </v-dialog>
         <v-spacer/>
-        <v-text-field
-          v-model="search"
-          append-icon="search"
-          @input="isTyping = true"
-          label="Buscar..."
-          single-line
-          hide-details
-        />
+<!--        <v-text-field-->
+<!--          v-model="search"-->
+<!--          append-icon="search"-->
+<!--          @input="isTyping = true"-->
+<!--          label="Buscar..."-->
+<!--          single-line-->
+<!--          hide-details-->
+<!--        />-->
       </v-card-title>
 
       <v-data-table
@@ -210,8 +210,8 @@
         :items="items"
         class="elevation-1"
         :loading="loading"
-        :search="search"
         :pagination.sync="pagination"
+        :total-items="total_items"
         rows-per-page-text="Elementos por página"
       >
         <template v-slot:items="props">
@@ -226,6 +226,7 @@
                   <v-flex>
                     {{product_name(product.product_id)}}
                   </v-flex>
+                  <v-flex> x </v-flex>
                   <v-flex>
                     {{product.units}}
                   </v-flex>
@@ -324,7 +325,6 @@ import utils from '../../mixins/utils'
 import server_pagination from '../../mixins/server_pagination'
 import Vue2Filters from 'vue2-filters'
 
-
 export default {
   name: 'ClientOrders',
   mixins: [utils, server_pagination, Vue2Filters.mixin],
@@ -341,8 +341,7 @@ export default {
       modal_date_2: false,
       search: '',
       pagination: {
-        sortBy: 'request_date',
-        rowsPerPage: 25,
+        sortBy: 'request_date'
       },
       headers: [
         { text: 'Cliente', value: 'client_id', align: 'center' },
@@ -437,13 +436,13 @@ export default {
       console.log(shipments)
       if (!item.order_details || item.order_details.length < 1 || !shipments.length < 1)
         return
-      const shippedItems = shipments.reduce((total, next) => total + this.totalItems(next.order_details), 0)
-      const requestedItems = this.totalItems(item.order_details)
+      const shippedItems = shipments.reduce((total, next) => total + this.totalItemsInOrder(next.order_details), 0)
+      const requestedItems = this.totalItemsInOrder(item.order_details)
       // console.log(shippedItems, requestedItems)
       return shippedItems / requestedItems >= 0.8
     },
 
-    totalItems(order_details) {
+    totalItemsInOrder(order_details) {
       return order_details.reduce((total, next) => total + Number(next.units), 0)
     },
 

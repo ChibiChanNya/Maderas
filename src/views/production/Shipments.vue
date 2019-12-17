@@ -151,21 +151,21 @@
 
             <v-card-actions>
               <v-spacer/>
-              <v-btn color="red darken-1" flat @click="startInvoice">Factura</v-btn>
+              <v-btn color="red darken-1" v-if="editedIndex >= 0" flat @click="startInvoice">Factura</v-btn>
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
         <v-spacer/>
-        <v-text-field
-          v-model="search"
-          @input="isTyping = true"
-          append-icon="search"
-          label="Buscar..."
-          single-line
-          hide-details
-        />
+<!--        <v-text-field-->
+<!--          v-model="search"-->
+<!--          @input="isTyping = true"-->
+<!--          append-icon="search"-->
+<!--          label="Buscar..."-->
+<!--          single-line-->
+<!--          hide-details-->
+<!--        />-->
       </v-card-title>
 
       <v-data-table
@@ -173,8 +173,8 @@
         :items="items"
         class="elevation-1"
         :loading="loading"
-        :search="search"
         :pagination.sync="pagination"
+        :total-items="total_items"
         rows-per-page-text="Elementos por página"
       >
         <template v-slot:items="props">
@@ -263,7 +263,6 @@
         <template v-slot:pageText="props">
           Elementos {{ props.pageStart }} - {{ props.pageStop }} de {{ props.itemsLength }}
         </template>
-
       </v-data-table>
     </v-card>
 
@@ -302,7 +301,6 @@ export default {
       search: '',
       pagination: {
         sortBy: 'delivery_date',
-        rowsPerPage: 25,
       },
       headers: [
         { text: 'Pedido', value: 'order_id', align: 'center' },
@@ -313,6 +311,7 @@ export default {
         { text: 'Acciones', value: 'id', align: 'center' },
       ],
       items: [],
+      total_items: 0,
       orders: [],
       products: [],
       clients: [],

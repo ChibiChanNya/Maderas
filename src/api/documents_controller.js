@@ -35,3 +35,27 @@ export const remove_ledger = (item) => new Promise((resolve, reject) => {
     reject(err);
   })
 });
+
+export const get_payment_methods = (args) => new Promise((resolve, reject) => {
+  apiCall({url: '/invoices/payment_methods', method: 'GET', params: args}).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});
+
+export const get_payment_forms = (args) => new Promise((resolve, reject) => {
+  apiCall({url: '/invoices/payment_forms', method: 'GET', params: args}).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});
+
+export const get_cfdi_uses = (args) => new Promise((resolve, reject) => {
+  apiCall({url: '/invoices/cfdi_uses', method: 'GET', params: args}).then(resp => {
+    resolve(resp);
+  }).catch(err => {
+    reject(err);
+  })
+});

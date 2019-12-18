@@ -192,12 +192,12 @@
             </template>
             <td>
               <template v-if="props.item.shipment_details.length >0">
-                <v-layout v-for="(product, index) in props.item.shipment_details" :key="index" justify-start>
+                <v-layout v-for="(details, index) in map_details(props.item)" :key="index" justify-start>
                   <v-flex>
-                    {{product_name(product.product_id)}}
+                    {{details.product}}
                   </v-flex>
                   <v-flex>
-                    {{product.units}}
+                    {{details.units}}
                   </v-flex>
                 </v-layout>
               </template>
@@ -208,7 +208,7 @@
               </template>
             </td>
             <td class="justify-start layout px-0">
-              <v-btn flat small color="warning" @click="props.expanded = !props.expanded">EXPANDIR</v-btn>
+              <invoice-modal :shipment_id="props.item.id" :shipment_details="map_details(props.item)"  :cost="props.item.cost" />
 
               <v-icon
                 small
@@ -227,27 +227,6 @@
               </v-icon>
             </td>
           </tr>
-        </template>
-
-        <template v-slot:expand="props">
-          <div class="grey lighten-3 pl-2">
-            <template v-if="props.item.shipment_details && props.item.shipment_details.length >0">
-              <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-              </tr>
-              <tr v-for="product in props.item.shipment_details" :key="product.product_id">
-                <td class="text-xs-left">
-                  {{ product_name(product.product_id) || '--'}}
-                </td>
-                <td class="text-xs-left">
-                  {{ product.units || '--'}}
-                </td>
-              </tr>
-            </template>
-
-          </div>
-
         </template>
 
         <template v-slot:no-data>
@@ -285,11 +264,12 @@ import {
 import utils from '../../mixins/utils'
 import server_pagination from '../../mixins/server_pagination'
 import Vue2Filters from 'vue2-filters'
+import InvoiceModal from '../../components/InvoiceModal'
 
 export default {
   name: 'Shipments',
   mixins: [utils, server_pagination, Vue2Filters.mixin],
-
+  components: { InvoiceModal },
   data() {
     return {
       index_fn: index_shipments,
@@ -304,7 +284,7 @@ export default {
       },
       headers: [
         { text: 'Pedido', value: 'order_id', align: 'center' },
-        { text: 'Costo', value: 'cost', align: 'center' },
+        { text: 'Precio', value: 'cost', align: 'center' },
         { text: 'Status', value: 'status', align: 'center' },
         { text: 'Fecha de Envío', value: 'delivery_date', align: 'left' },
         { text: 'Detalles', value: 'details', align: 'center' },
@@ -403,6 +383,12 @@ export default {
         textTwo.indexOf(searchText) > -1
     },
 
+    map_details(item){
+      if(item.shipment_details && item.shipment_details.length > 0)
+        return item.shipment_details.map((details) => ({ product: this.product_name(details.product_id) , units: details.units}))
+      else return []
+    },
+
     order_data(id) {
       const order = this.orders && this.orders.find((order) => order.id === id)
       if (order)
@@ -443,7 +429,7 @@ export default {
       if (this.$refs.form.validate()) {
         this.loading = true
         /* Set the  calculated cost as the total_cost */
-        this.editedItem.total_cost = this.totalPrice
+        this.editedItem.cost = this.totalPrice
         // prepare to check operation
         let makeOperation = 0
         if (this.editedIndex > -1) {

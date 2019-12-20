@@ -145,11 +145,6 @@
             <td class="">{{ props.item.description }}</td>
             <td class="">{{ props.item.price | currency('$')}}</td>
             <td class="">{{ props.item.stock }}</td>
-            <td class="">
-              <v-btn flat small color="blue" @click="props.expanded2 = !props.expanded2">
-                Pendiente
-              </v-btn>
-            </td>
 
             <td class="justify-start layout px-0">
               <v-layout row justify-center>
@@ -271,7 +266,6 @@ export default {
         { text: 'Descripción', value: 'description' },
         { text: 'Precio actual', value: 'price' },
         { text: 'Stock Disponible', value: 'stock' },
-        { text: 'Stock Pendiente', value: 'id', sortable: false },
         { text: 'Acciones', value: 'id', sortable: false, align: 'center' },
       ],
 

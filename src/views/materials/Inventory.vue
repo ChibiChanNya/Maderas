@@ -62,20 +62,20 @@
             </v-card-text>
 
             <v-card-actions>
-              <v-spacer></v-spacer>
+              <v-spacer/>
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-spacer></v-spacer>
+        <v-spacer/>
         <v-text-field
           v-model="search"
           append-icon="search"
           label="Buscar..."
           single-line
           hide-details
-        ></v-text-field>
+        />
       </v-card-title>
 
       <v-data-table

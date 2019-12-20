@@ -107,7 +107,6 @@ export default {
     this.cfdi_uses = cfdiUses
     this.payment_forms = paymentForms
     this.payment_methods = paymentMethods
-    // console.log(cfdiUses, paymentMethods, paymentForms)
   },
   methods: {
     create_cfdi() {

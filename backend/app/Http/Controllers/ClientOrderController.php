@@ -89,6 +89,9 @@ class ClientOrderController extends Controller
             }
             unset($i->details);
             $i->order_details = $details_arr;
+
+            $complete = $this->calculateCompleteness($i);
+            $i->completeness = $complete;
         });
 
         return $orders;
@@ -222,5 +225,13 @@ class ClientOrderController extends Controller
             'status' => 'error',
             'errors' => $error
         ], 422);
+    }
+
+    private function calculateCompleteness($order)
+    {
+        $total = $order->shipments->count();
+        $complete = $order->shipments->where('operation_dispatched',1)->count();
+
+        return ($complete/$total) * 100;
     }
 }

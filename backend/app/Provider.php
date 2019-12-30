@@ -23,4 +23,9 @@ class Provider extends Model
     protected $hidden = [
         'created_at', 'updated_at'
     ];
+
+    public function orders(){
+        return $this->hasMany('App\OrderToProvider', 'provider_id');
+        //return $this->belongsToMany('App\ClientOrder', 'client_orders_details', 'product_id', 'order_id')->withPivot('product_id', 'units');
+    }
 }

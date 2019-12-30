@@ -14,7 +14,7 @@ class ClientOrder extends Model
      * @var array
      */
     protected $fillable = [
-        'client_id', 'contract', 'request_date', 'finish_date', 'payment_date', 'description', 'total_cost', 'status', 'money_debt', 'invoice'
+        'client_id', 'contract', 'request_date', 'finish_date', 'payment_date', 'description', 'total_cost', 'status', 'money_debt', 'invoice', 'user',
     ];
 
     /**
@@ -36,5 +36,9 @@ class ClientOrder extends Model
 
     public function client(){
         return $this->belongsTo('App\Client', 'client_id');
+    }
+
+    public function shipments(){
+        return $this->hasMany('\App\Shipment', 'order_id');
     }
 }

@@ -232,6 +232,6 @@ class ClientOrderController extends Controller
         $total = $order->shipments->count();
         $complete = $order->shipments->where('operation_dispatched',1)->count();
 
-        return ($complete/$total) * 100;
+        return $total > 0 ? ($complete/$total) * 100 : 100;
     }
 }

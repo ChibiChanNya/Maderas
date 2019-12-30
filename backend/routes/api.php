@@ -195,7 +195,7 @@ Route::prefix('invoices')->group(function () {
         // Create New Invoice
         Route::post('create', 'InvoiceController@create');
         // Get all Invoices (locally)
-        Route::get('list', 'InvoiceController@invoices_list');
+        //Route::get('list', 'InvoiceController@invoices_list');
         // Get all unit codes from API
         Route::get('unit_codes', 'InvoiceController@unit_codes');
         // Get all payment forms from API
@@ -206,6 +206,18 @@ Route::prefix('invoices')->group(function () {
         Route::get('cfdi_uses', 'InvoiceController@cfdi_uses');
         // Create CFDI
         Route::post('create_cfdi', 'InvoiceController@create_cfdi');
+    });
+});
+
+Route::prefix('dashboard')->group(function () {
+    // Route::post('register', 'UserController@register');
+    // Below mention routes are available only for the authenticated users.
+    Route::middleware('auth:api')->group(function () {
+        // Create New Invoice
+        Route::get('graph_one', 'DashBoardController@graph_one');
+        Route::get('graph_two', 'DashBoardController@graph_two');
+        Route::get('graph_three', 'DashBoardController@graph_three');
+        Route::get('graph_four', 'DashBoardController@graph_four');
     });
 });
 

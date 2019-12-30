@@ -25,4 +25,14 @@ class Product extends Model
     protected $hidden = [
         'created_at', 'updated_at'
     ];
+
+    public function requested(){
+        return $this->hasMany('App\ClientOrderDetails', 'product_id');
+        //return $this->belongsToMany('App\ClientOrder', 'client_orders_details', 'product_id', 'order_id')->withPivot('product_id', 'units');
+    }
+
+    public function client_orders(){
+        //return $this->hasMany('App\ClientOrderDetails', 'product_id');
+        return $this->belongsToMany('App\ClientOrder', 'client_orders_details', 'product_id', 'order_id');
+    }
 }

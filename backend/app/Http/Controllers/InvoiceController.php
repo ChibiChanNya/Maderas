@@ -49,8 +49,8 @@ class InvoiceController extends Controller
     {
         $v = Validator::make($request->all(), [
             'shipment_id' => 'required',
-            'uso_cfdi' => 'required',
-            'forma_pago' => 'required',
+            'cfdi_use' => 'required',
+            'payment_form' => 'required',
         ]);
         if ($v->fails())
         {
@@ -60,8 +60,8 @@ class InvoiceController extends Controller
             ], 422);
         }
         $shipment_id = $request->input('shipment_id');
-        $cfdi_use = $request->input('uso_cfdi');
-        $payment_form = $request->input('forma_pago');
+        $cfdi_use = $request->input('cfdi_use');
+        $payment_form = $request->input('payment_form');
 
         $shipment = Shipment::find($shipment_id);
 

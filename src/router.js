@@ -190,6 +190,17 @@ export default new Router({
     },
 
     {
+      path: '/documents/invoices',
+      name: 'documents-invoices',
+      component: () => import('./views/documents/Invoices.vue'),
+      beforeEnter: hasPermissions,
+      meta: {
+        layout: 'App',
+        permission: 8,
+      }
+    },
+
+    {
       path: '*',
       name: 'Error',
       component: () => import('./views/404.vue'),

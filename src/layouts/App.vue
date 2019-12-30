@@ -110,7 +110,8 @@ export default {
       },
       {
         icon: 'attach_file', text: 'Documentos', permission: 8, options: [
-          {icon: 'attach_money', url: '/documents/income', text: "Ingresos/Egresos"}
+          {icon: 'attach_money', url: '/documents/income', text: "Ingresos/Egresos"},
+          {icon: 'description', url: '/documents/invoices', text: "Facturas"}
         ]
       },
     ],

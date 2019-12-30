@@ -113,7 +113,6 @@
             </td>
             <td>
               <v-btn flat small color="primary" @click="props.expanded = !props.expanded">Permisos</v-btn>
-              <v-btn flat small color="primary" @click="view_history(props.item)">Actividades</v-btn>
             </td>
           </tr>
         </template>
@@ -174,48 +173,6 @@
 
       </v-data-table>
     </v-card>
-
-    <!--        HISTORY MODAL     -->
-    <v-dialog
-      v-model="history_dialog"
-      scrollable
-      max-width="400"
-    >
-      <v-card>
-        <v-card-title class="blue white--text" dark>
-          <v-toolbar-title>Registro de <b>{{ history_name }}</b></v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-btn icon @click="history_dialog = false">
-            <v-icon color="white">close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text style="height: 500px; padding-top:0">
-          <v-list two-line>
-            <template v-for="(item, index) in current_history">
-              <v-list-tile :key="item.id">
-                <v-list-tile-content>
-                  <v-list-tile-title>{{item.action}}</v-list-tile-title>
-                  <v-list-tile-sub-title>{{item.dt_action | moment('calendar')}}
-                  </v-list-tile-sub-title>
-                </v-list-tile-content>
-
-              </v-list-tile>
-              <v-divider
-                v-if="index + 1 < current_history.length" :key="index"
-              ></v-divider>
-            </template>
-            <template v-if="current_history.length === 0">
-              <v-list-tile>
-                <v-list-tile-content>
-                  <v-list-tile-title>No hay actividades registradas para este usuario</v-list-tile-title>
-                </v-list-tile-content>
-              </v-list-tile>
-            </template>
-          </v-list>
-        </v-card-text>
-      </v-card>
-
-    </v-dialog>
 
   </section>
 </template>
@@ -331,19 +288,6 @@ export default {
       if (this.permissions_array.produccion) total += 2
       if (this.permissions_array.documentos) total += 8
       this.editedItem.permissions = (total >>> 0).toString(2)
-    },
-
-    view_history(item) {
-      this.loading = true
-      user_log(item).then(({ data }) => {
-        this.current_history = data
-        this.history_dialog = true
-        this.history_name = item.full_name
-      }).catch(err => {
-        this.$store.commit('setSnack', { text: err, color: 'red' })
-      }).finally(() => {
-        this.loading = false
-      })
     },
 
     editItem(item) {

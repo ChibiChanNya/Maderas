@@ -154,12 +154,12 @@
                     </v-flex>
 
                     <v-flex xs6 md6>
-                        <v-text-field :value="totalPrice"
-                                      color="green"
-                                      readonly
-                                      persistent-hint
-                                      prefix="$"
-                                      label="Precio Total"/>
+                      <v-text-field :value="totalPrice"
+                                    color="green"
+                                    readonly
+                                    persistent-hint
+                                    prefix="$"
+                                    label="Precio Total"/>
                     </v-flex>
                     <v-flex xs6 md6>
                       <v-text-field v-model.number="editedItem.remaining_cost"
@@ -230,14 +230,14 @@
           </v-card>
         </v-dialog>
         <v-spacer></v-spacer>
-<!--        <v-text-field-->
-<!--          v-model="search"-->
-<!--          @input="isTyping = true"-->
-<!--          append-icon="search"-->
-<!--          label="Buscar..."-->
-<!--          single-line-->
-<!--          hide-details-->
-<!--        ></v-text-field>-->
+        <!--        <v-text-field-->
+        <!--          v-model="search"-->
+        <!--          @input="isTyping = true"-->
+        <!--          append-icon="search"-->
+        <!--          label="Buscar..."-->
+        <!--          single-line-->
+        <!--          hide-details-->
+        <!--        ></v-text-field>-->
       </v-card-title>
 
       <v-data-table
@@ -261,34 +261,33 @@
                 --
               </template>
             </td>
+            <td class="">{{ status_name(props.item.status) || '--'}}</td>
+            <td>
+              <template v-if="props.item.order_details.length >0">
+                <v-layout v-for="(material, index) in props.item.order_details" :key="index">
+                  <v-flex>
+                    {{ material_name(material.material_id)}}
+                  </v-flex>
+                  <v-flex>
+                    x {{ material.units || 0}}
+                  </v-flex>
+                </v-layout>
+              </template>
+              <template v-else>
+                <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
+                  Sin productos
+                </div>
+              </template>
+            </td>
+
+
             <td class="">{{ props.item.total_cost | currency('$')}}</td>
             <td class="">
-              <template v-if="props.item.delivery_date">
-                {{ props.item.delivery_date | moment('DD/M/YYYY')}}
+              <template v-if="isNumber(props.item.remaining_cost)">
+                {{props.item.remaining_cost | currency('$')}}
               </template>
               <template v-else>
-                --
-              </template>
-            </td>
-            <td class="">{{ status_name(props.item.status) || '--'}}</td>
-            <td class="">
-              <v-btn flat small :color="props.item.status === 'pagado'? 'blue' : 'red'"
-                     @click="props.expanded = !props.expanded">
-                <template v-if="isNumber(props.item.remaining_cost)">
-                  {{props.item.remaining_cost | currency('$')}}
-                </template>
-                <template v-else>
-                  ----
-                </template>
-              </v-btn>
-            </td>
-            <td class="">{{ props.item.invoice || '--'}}</td>
-            <td class="">
-              <template v-if="props.item.payment_date">
-                {{ props.item.payment_date | moment('DD/M/YYYY')}}
-              </template>
-              <template v-else>
-                --
+                ----
               </template>
             </td>
             <td class="justify-start layout px-0">
@@ -311,34 +310,6 @@
           </tr>
         </template>
 
-        <template v-slot:expand="props">
-          <div class="grey lighten-3 pl-2">
-            <p class="text-md-left pa-2"><strong>Descripción: </strong> {{ props.item.description }}</p>
-
-            <template v-if="props.item.order_details.length >0">
-              <tr>
-                <th>Insumo Recibido</th>
-                <th>Unidades</th>
-
-              </tr>
-              <tr v-for="material in props.item.order_details" :key="material.material_id">
-                <td class="text-xs-left">
-                  {{ material_name(material.material_id)}}
-                </td>
-                <td class="text-xs-left">
-                  {{ material.units || 0}}
-                </td>
-              </tr>
-            </template>
-            <template v-else>
-              <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
-                Pedido pendiente de recibir
-              </div>
-            </template>
-
-          </div>
-
-        </template>
 
         <template v-slot:no-data>
           <h1 v-if="loading" class="text-md-center my-3">
@@ -398,12 +369,10 @@ export default {
       headers: [
         { text: 'Proveedor', value: 'provider_id', align: 'center' },
         { text: 'Fecha Solicitud', value: 'request_date', align: 'center' },
-        { text: 'Costo Total', value: 'total_cost', align: 'center' },
-        { text: 'Fecha Entrega', value: 'delivery_date', align: 'center' },
         { text: 'Status', value: 'status', align: 'center' },
+        { text: 'Insumos', value: 'payment_date', align: 'center' },
+        { text: 'Costo Total', value: 'total_cost', align: 'center' },
         { text: 'Por Pagar', value: 'remaining_cost', align: 'center' },
-        { text: '# Factura', value: 'invoice', align: 'center' },
-        { text: 'Fecha de Pago', value: 'payment_date', align: 'center' },
         { text: 'Acciones', value: 'id', align: 'center', sortable: false },
       ],
       items: [],
@@ -467,7 +436,7 @@ export default {
       return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.length > 0 && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id)) || []
     },
     totalPrice() {
-      if (this.editedItem )
+      if (this.editedItem)
         return this.calculateTotalPrice(this.editedItem)
     },
   },

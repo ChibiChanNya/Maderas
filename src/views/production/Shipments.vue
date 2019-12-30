@@ -197,7 +197,7 @@
                     {{details.product}}
                   </v-flex>
                   <v-flex>
-                    {{details.units}}
+                    x {{details.units}}
                   </v-flex>
                 </v-layout>
               </template>

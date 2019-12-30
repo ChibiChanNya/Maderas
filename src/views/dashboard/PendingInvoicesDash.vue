@@ -7,9 +7,9 @@
       <table class="mx-auto">
         <thead>
         <tr>
-          <th class="text-left"># Factura</th>
+          <th class="text-left">Envío</th>
           <th class="text-left">Fecha de Pago</th>
-          <th class="text-left">Contrato</th>
+          <th class="text-left">Productos</th>
           <th class="text-left">Monto a Pagar</th>
         </tr>
         </thead>
@@ -17,8 +17,23 @@
         <tr v-for="item in items" :key="item.invoice">
           <td>{{ item.invoice }}</td>
           <td >{{ item.paymentDate | moment('DD/M/YYYY') }}</td>
-          <td >{{ item.contract }}</td>
-          <td >{{ item.amount | currency('$')}}</td>
+          <td>
+            <template v-if="props.item.shipment_details.length >0">
+              <v-layout v-for="(details, index) in map_details(props.item)" :key="index" justify-start>
+                <v-flex>
+                  {{details.product}}
+                </v-flex>
+                <v-flex>
+                  {{details.units}}
+                </v-flex>
+              </v-layout>
+            </template>
+            <template v-else>
+              <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
+                Sin productos
+              </div>
+            </template>
+          </td>          <td >{{ item.amount | currency('$')}}</td>
         </tr>
         </tbody>
       </table>

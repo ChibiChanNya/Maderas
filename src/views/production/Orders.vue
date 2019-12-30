@@ -239,7 +239,7 @@
               </template>
             </td>
 
-            <td class="">{{ props.item.total_cost }}</td>
+            <td class="">{{ props.item.total_cost | currency('$')}}</td>
             <td class="justify-start layout px-0">
               <v-btn flat small color="blue" @click="props.expanded = !props.expanded">DETALLES
               </v-btn>

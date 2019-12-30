@@ -1,5 +1,6 @@
 <script>
 import {Pie} from 'vue-chartjs'
+import datalabels from 'chartjs-plugin-datalabels'
 
 export default {
   extends: Pie,

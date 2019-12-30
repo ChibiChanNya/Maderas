@@ -15,13 +15,14 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="item in items" :key="item.product_id">
+        <tr v-for="item in low_stock" :key="item.product_id">
           <td>{{ item.product_name }}</td>
           <td class="large" :class="{'red--text': item.stock < item.requested }">{{ item.stock }}</td>
           <td class="large">{{ item.requested }}</td>
           <td>
-            <span v-for="contract in item.contracts" class="mr-2">
+            <span v-for="(contract, index) in item.contracts" class="mr-2">
               {{contract}}
+              <span v-if="index != item.contracts.length - 1">, </span>
             </span>
           </td>
         </tr>
@@ -33,13 +34,19 @@
 </template>
 
 <script>
+import { get_inventory_dash } from '../../api/dashboardController'
+
 export default {
-  name: "LowStockList",
-  props: {
-    items: {
-      type: Array
+  name: 'LowStockList',
+  data() {
+    return {
+      low_stock: [],
     }
-  }
+  },
+  async mounted() {
+    const { data } = await get_inventory_dash()
+    this.low_stock = data
+  },
 }
 </script>
 

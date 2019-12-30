@@ -17,23 +17,24 @@
         <tr v-for="item in items" :key="item.invoice">
           <td>{{ item.invoice }}</td>
           <td >{{ item.paymentDate | moment('DD/M/YYYY') }}</td>
-          <td>
-            <template v-if="props.item.shipment_details.length >0">
-              <v-layout v-for="(details, index) in map_details(props.item)" :key="index" justify-start>
-                <v-flex>
-                  {{details.product}}
-                </v-flex>
-                <v-flex>
-                  {{details.units}}
-                </v-flex>
-              </v-layout>
-            </template>
-            <template v-else>
-              <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
-                Sin productos
-              </div>
-            </template>
-          </td>          <td >{{ item.amount | currency('$')}}</td>
+<!--          <td>-->
+<!--            <template v-if="props.item.shipment_details.length >0">-->
+<!--              <v-layout v-for="(details, index) in map_details(props.item)" :key="index" justify-start>-->
+<!--                <v-flex>-->
+<!--                  {{details.product}}-->
+<!--                </v-flex>-->
+<!--                <v-flex>-->
+<!--                  {{details.units}}-->
+<!--                </v-flex>-->
+<!--              </v-layout>-->
+<!--            </template>-->
+<!--            <template v-else>-->
+<!--              <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">-->
+<!--                Sin productos-->
+<!--              </div>-->
+<!--            </template>-->
+<!--          </td>         -->
+          <td >{{ item.amount | currency('$')}}</td>
         </tr>
         </tbody>
       </table>
@@ -46,6 +47,8 @@
 </template>
 
 <script>
+import { get_invoices_dash } from '../../api/dashboardController'
+
 export default {
   name: "PendingInvoicesDash",
   data() {
@@ -56,6 +59,10 @@ export default {
         { invoice: 654457, paymentDate: new Date(), status: "pendiente", contract: 123000, amount: 4500 },
       ]
     }
+  },
+  async mounted(){
+    const { data } = await get_invoices_dash()
+    console.log('STUFF', data)
   },
   computed: {
     totalAmount(){

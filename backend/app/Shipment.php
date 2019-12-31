@@ -14,7 +14,7 @@ class Shipment extends Model
      * @var array
      */
     protected $fillable = [
-        'order_id', 'cost', 'certificate', 'delivery_date', 'status'
+        'order_id', 'cost', 'certificate', 'delivery_date', 'status', 'buy_order'
     ];
 
     /**

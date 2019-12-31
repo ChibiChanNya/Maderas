@@ -154,6 +154,20 @@ class InvoiceOperations
         return json_encode($response);
     } 
 
+    public function sendCfdi(string $cfdi_uid)
+    {
+        $request = $this->http->request('GET', 'v3/cfdi33/'.$cfdi_uid.'/email');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
+        return $response;
+    }
+
+    public function cancelCfdi(string $cfdi_uid)
+    {
+        $request = $this->http->request('GET', 'v3/cfdi33/'.$cfdi_uid.'/cancel');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
+        return $response;
+    }
+
     public function listUnitCodes()
     {
         $request = $this->http->request('GET', 'v3/catalogo/ClaveUnidad');

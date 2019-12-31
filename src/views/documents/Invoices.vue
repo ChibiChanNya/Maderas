@@ -25,11 +25,11 @@
       >
         <template v-slot:items="props">
           <tr>
-            <td class="">{{ props.item['RazoSocialReceptor'] }}</td>
+            <td class="">{{ props.item['RazonSocialReceptor'] }}</td>
             <td class="">{{ props.item['Folio'] }}</td>
-            <td class="">{{ props.item['Total'] }}</td>
+            <td class="">{{ props.item['Total'] | currency('$') }}</td>
             <td class="">
-              <template v-if="props.item.date">
+              <template v-if="props.item['FechaTimbrado']">
                 {{ props.item['FechaTimbrado'] | moment('DD/M/YYYY')}}
               </template>
               <template v-else>
@@ -45,7 +45,7 @@
                 small
                 class="mr-4"
 
-                @click="deleteItem(props.item)"
+                @click="deleteInvoice(props.item['UID'])"
               >
                 delete
               </v-icon>
@@ -75,46 +75,64 @@
 </template>
 
 <script>
-import {
-  mail_cfdi,
-} from '../../api/documents_controller';
-import utils from "../../mixins/utils"
-import server_pagination from "../../mixins/server_pagination"
+import { index_cfdi, send_cfdi, cancel_cfdi } from '../../api/documents_controller'
+import utils from '../../mixins/utils'
+import server_pagination from '../../mixins/server_pagination'
 import Vue2Filters from 'vue2-filters'
 
 export default {
-  name: "IngresosEgresos",
+  name: 'IngresosEgresos',
   mixins: [utils, server_pagination, Vue2Filters.mixin],
 
   data() {
     return {
-      index_fn: index_ledger,
-      delete_fn: remove_ledger,
+      index_fn: index_cfdi,
+      delete_fn: cancel_cfdi,
 
       pagination: {
-        sortBy: 'date'
+        sortBy: 'date',
       },
       loading: true,
       dialog: false,
       search: '',
       headers: [
-        {text: 'Receptor', value: 'RazonSocialReceptor', align: 'center'},
+        { text: 'Receptor', value: 'RazonSocialReceptor', align: 'center' },
         { text: 'Folio', align: 'center', value: 'Folio' },
         { text: 'Total', align: 'center', value: 'Total' },
-        {text: 'Fecha', value: 'FechaTimbrado'},
-        {text: "Status", value: "status", align: 'center'},
-        {text: 'Acciones', value: 'id', align: 'center'},
+        { text: 'Fecha', value: 'FechaTimbrado' },
+        { text: 'Status', value: 'status', align: 'center' },
+        { text: 'Acciones', value: 'id', align: 'center' },
       ],
-
       items: [],
       total_items: 0,
     }
   },
   methods: {
-    emailInvoice(uid){
-      console.log('enviando factura...', uid)
-      // mail_cfdi
-    }
+    async emailInvoice(uid) {
+      this.loading = true
+      try {
+        await send_cfdi({ cfdi_uid: uid })
+      } catch (err) {
+        this.$store.commit('setSnack', { text: err, color: 'red' })
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteInvoice(uid) {
+      this.$dialog
+        .confirm('¿Estás seguro de que quieres cancelar esta factura? No podrá recuperarse')
+        .then((dialog) => {
+          this.delete_fn({cfdi_uid: uid}).then(() => {
+            this.$store.commit('setSnack', {text: "Factura cancelada exitosamente", color: 'success'});
+          }).catch(err => {
+            this.$store.commit('setSnack', {text: err.status || err, color: 'red'});
+          }).finally( ()=> {
+            this.pagination.page = 1
+            dialog.close();
+          })
+        })
+    },
   },
 
 }

@@ -81,7 +81,7 @@
                         </v-date-picker>
                       </v-dialog>
                     </v-flex>
-                    <v-flex xs6 sm4>
+                    <v-flex xs4>
                       <v-text-field v-model="editedItem.certificate"
                                     label="Cert. Tratamiento"/>
                     </v-flex>
@@ -89,7 +89,7 @@
                       <v-text-field v-model.number="editedItem.buy_order"
                                     label="Orden de Compra"/>
                     </v-flex>
-                    <v-flex xs6 sm4>
+                    <v-flex xs4>
                       <v-text-field :value="totalPrice"
                                     color="green"
                                     readonly
@@ -208,7 +208,7 @@
               </template>
             </td>
             <td class="justify-start layout px-0">
-              <invoice-modal :shipment_id="props.item.id" :shipment_details="map_details(props.item)"  :cost="props.item.cost" />
+              <invoice-modal :shipment_id="props.item.id" :shipment_details="map_details(props.item)"  :cost="Number(props.item.cost)" />
 
               <v-icon
                 small
@@ -367,10 +367,7 @@ export default {
   methods: {
 
     isShipmentBehindOnPayments(item) {
-      console.log(this.$moment().diff(this.$moment(item.delivery_date), 'days'))
-      console.log(item.status)
       const res = item.delivery_date && item.status !== 'completo' && this.$moment().diff(this.$moment(item.delivery_date), 'days') > 30
-      console.log(res)
       return res;
     },
 

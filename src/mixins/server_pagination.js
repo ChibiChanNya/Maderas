@@ -14,7 +14,7 @@ export default {
       handler() {
         this.index_details()
             .then(data => {
-              this.items = data.items;
+              this.items = data.items || data.data;
               this.total_items = data.total;
             })
       },

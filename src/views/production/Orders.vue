@@ -284,6 +284,14 @@
                   <h3 class="py-3">No se ha preparado ningun envío</h3>
                 </template>
               </v-flex>
+              <v-flex xs6>
+                <div class="mb-4">
+                  <h3>Procentaje de avance</h3>
+                </div>
+                <div>
+                  <h2>{{ props.item.completeness || 0 }} %</h2>
+                </div>
+              </v-flex>
             </v-layout>
 
           </div>

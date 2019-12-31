@@ -289,7 +289,6 @@ export default {
         stock: 0,
         product_service_code: '',
         unit_code: '',
-        unit_description: '',
       },
       defaultItem: {
         id: '',
@@ -305,7 +304,6 @@ export default {
         stock: 0,
         product_service_code: '',
         unit_code: '',
-        unit_description: '',
       },
 
     }
@@ -405,10 +403,13 @@ export default {
     save() {
       if (this.$refs.form.validate()) {
         this.loading = true
+        /* Add the CFDI unit description before saving */
+        const chosen_cfdi_unit = this.unit_codes.find((code)=> code.key === this.editedItem.unit_code)
+        this.editedItem.unit_description = chosen_cfdi_unit.name
         // Editing an User
         if (this.editedIndex > -1) {
           update_product(this.editedItem).then(({ data: newItem }) => {
-            this.$set(newItem)
+            this.$set(this.items, this.editedIndex, newItem)
             this.$store.commit('setSnack', { text: 'Producto actualizado exitosamente', color: 'success' })
             this.close()
           }).catch(err => {

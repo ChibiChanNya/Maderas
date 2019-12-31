@@ -8,7 +8,7 @@
         <thead>
         <tr>
           <th class="text-left">Envío</th>
-          <th class="text-left">Fecha de Pago</th>
+          <th class="text-left">Fecha de Envío</th>
           <th class="text-left">Productos</th>
           <th class="text-left">Monto a Pagar</th>
         </tr>
@@ -34,6 +34,7 @@
 <!--              </div>-->
 <!--            </template>-->
 <!--          </td>         -->
+          <td> () </td>
           <td >{{ item.amount | currency('$')}}</td>
         </tr>
         </tbody>

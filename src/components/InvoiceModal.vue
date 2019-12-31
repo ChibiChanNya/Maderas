@@ -32,6 +32,7 @@
                     label="Forma de Pago"
                     item-text="name"
                     item-value="key"
+                    v-model="payment_form"
                     :rules="required"
                   />
                 </v-flex>
@@ -48,6 +49,7 @@
                   <v-select
                     :items="cfdi_uses"
                     label="Uso de Factura"
+                    v-model="cfdi_use"
                     item-text="name"
                     item-value="key"
                     :rules="required"
@@ -58,8 +60,8 @@
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" type="button" flat @click="dialog = false">Cerrar</v-btn>
-            <v-btn color="blue darken-1" type="submit" flat>Crear Factura</v-btn>
+            <v-btn color="blue darken-1" :disabled="loading" type="button" flat @click="dialog = false">Cerrar</v-btn>
+            <v-btn color="blue darken-1" :disabled="loading" type="submit" flat>Crear Factura</v-btn>
           </v-card-actions>
         </v-card>
       </v-form>
@@ -68,7 +70,7 @@
 </template>
 
 <script>
-import {get_cfdi_uses, get_payment_forms, get_payment_methods} from '../api/documents_controller'
+import { create_cfdi, get_cfdi_uses, get_payment_forms, get_payment_methods } from '../api/documents_controller'
 import utils from '../mixins/utils'
 import Vue2Filters from 'vue2-filters'
 
@@ -77,7 +79,7 @@ export default {
   mixins: [utils, Vue2Filters.mixin],
   props: {
     shipment_id: {
-      type: String,
+      type: Number,
       required: true,
     },
     shipment_details: {
@@ -92,6 +94,8 @@ export default {
   data() {
     return {
       dialog: false,
+      cfdi_use: '',
+      payment_form: '',
       cfdi_uses: [],
       payment_methods: [],
       payment_forms: [],
@@ -109,10 +113,22 @@ export default {
     this.payment_methods = paymentMethods
   },
   methods: {
-    create_cfdi() {
+    async create_cfdi() {
       if (this.$refs.form.validate()) {
         this.loading = true
-        console.log("todo...")
+        try{
+          const item = {
+            shipment_id: this.shipment_id,
+            cfdi_use: this.cfdi_use,
+            payment_form: this.payment_form
+          }
+          const result = await create_cfdi(item)
+        } catch(err){
+          this.$store.commit('setSnack', { text: err, color: 'red' })
+
+        } finally{
+          this.loading = false
+        }
       }
       else{
         console.log('not ready')

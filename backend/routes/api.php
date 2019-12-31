@@ -193,9 +193,9 @@ Route::prefix('invoices')->group(function () {
     // Below mention routes are available only for the authenticated users.
     Route::middleware('auth:api')->group(function () {
         // Create New Invoice
-        Route::post('create', 'InvoiceController@create');
+        //Route::post('create', 'InvoiceController@create');
         // Get all Invoices (locally)
-        //Route::get('list', 'InvoiceController@invoices_list');
+        Route::get('list', 'InvoiceController@invoices_list');
         // Get all unit codes from API
         Route::get('unit_codes', 'InvoiceController@unit_codes');
         // Get all payment forms from API

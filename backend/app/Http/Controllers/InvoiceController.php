@@ -13,6 +13,14 @@ class InvoiceController extends Controller
         $this->invoiceService = new InvoiceOperations();
     }
 
+    public function invoices_list(Request $request)
+    {
+        $invoices = $this->invoiceService->listInvoices();
+
+        // return response()->json(['status' => 'success'], 200);
+        return $invoices;
+    }
+
     public function unit_codes(Request $request)
     {
         $codes = $this->invoiceService->listUnitCodes();

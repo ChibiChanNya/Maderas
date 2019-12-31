@@ -54,6 +54,7 @@ class InvoiceOperations
         // dd($response->Data->UID);
         // dd($response['Data']->UID);
         if ($response->status == 'error') {
+            //TODO: erase client when is an error
             $data = json_encode($response->message);
             throw new Exception($data);
         }
@@ -180,6 +181,14 @@ class InvoiceOperations
     public function listCfdiUses()
     {
         $request = $this->http->request('GET', 'v3/catalogo/UsoCfdi');
+        $response = json_decode((string) $request->getBody()->getContents(), true);
+
+        return $response;
+    }   
+
+    public function listInvoices()
+    {
+        $request = $this->http->request('GET', 'v3/cfdi33/list');
         $response = json_decode((string) $request->getBody()->getContents(), true);
 
         return $response;

@@ -415,8 +415,8 @@ export default {
       return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
     },
     totalPrice() {
-      if (this.editedItem && this.editedIndex >= 0)
-        return this.calculateTotalPrice(this.editedItem)
+      if (this.editedItem)
+        return this.calculateTotalPrice(this.editedItem) || 0
     },
   },
 

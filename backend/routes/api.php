@@ -206,6 +206,8 @@ Route::prefix('invoices')->group(function () {
         Route::get('cfdi_uses', 'InvoiceController@cfdi_uses');
         // Create CFDI
         Route::post('create_cfdi', 'InvoiceController@create_cfdi');
+        Route::post('send', 'InvoiceController@send_cfdi');
+        Route::post('cancel', 'InvoiceController@cancel_cfdi');
     });
 });
 

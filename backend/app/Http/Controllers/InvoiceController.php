@@ -81,6 +81,46 @@ class InvoiceController extends Controller
         return $this->respondWithError('no shipment found');
     }
 
+    public function send_cfdi(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'cfdi_uid' => 'required',
+        ]);
+        if ($v->fails())
+        {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $v->errors()
+            ], 422);
+        }
+
+        $cfdi_uid = $request->input('cfdi_uid');
+
+        $response = $this->invoiceService->sendCfdi($cfdi_uid);
+
+        return $response;
+    }
+
+    public function cancel_cfdi(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'cfdi_uid' => 'required',
+        ]);
+        if ($v->fails())
+        {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $v->errors()
+            ], 422);
+        }
+
+        $cfdi_uid = $request->input('cfdi_uid');
+
+        $response = $this->invoiceService->cancelCfdi($cfdi_uid);
+
+        return $response;
+    }
+
     protected function respondWithError($error)
     {
         return response()->json([

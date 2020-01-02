@@ -32,7 +32,7 @@ class ClientOrderController extends Controller
         // $order->material_id = $request->material_id;
         // dd(bcrypt($request->password));
         // $order->units = $request->units;
-        $order->contract = $request->contract;
+        $order->contract = $request->contract ?? null;
         $order->request_date = $request->request_date;
         $order->finish_date = $request->finish_date ?? null;
         $order->payment_date = $request->payment_date ?? null;

@@ -14,7 +14,7 @@ class ClientOrder extends Model
      * @var array
      */
     protected $fillable = [
-        'client_id', 'contract', 'request_date', 'finish_date', 'payment_date', 'description', 'total_cost', 'status', 'money_debt', 'invoice', 'user',
+        'client_id', 'contract', 'request_date', 'finish_date', 'payment_date', 'description', 'total_cost', 'status', 'money_debt', 'user',
     ];
 
     /**

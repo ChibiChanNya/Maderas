@@ -40,7 +40,6 @@ class ClientOrderController extends Controller
         $order->total_cost = $request->total_cost;
         $order->status = $request->status;
         $order->money_debt = $request->money_debt ?? null;
-        $order->invoice = $request->invoice ?? null;
         $order->save();
 
         $order_details = $request->order_details;
@@ -51,7 +50,7 @@ class ClientOrderController extends Controller
         }
         // dd($order_details[0]['units']);
         // $order->details()->attach($order_details, ['units' => $units]);
-        
+
         $admin_user = auth()->user();
 
         $admin_user->registerLog('creates order '. $order->id . ' of client');
@@ -141,9 +140,9 @@ class ClientOrderController extends Controller
             $admin_user->registerLog('updates order '. $order->id);
             return $order;
         }
-        
+
         return $this->respondWithError('no order found');
-        
+
     }
 
     /**
@@ -174,7 +173,7 @@ class ClientOrderController extends Controller
         return response()->json([
             'status' => 'done'
         ], 200);
-        
+
     }
 
     public function make_operation(Request $request)
@@ -206,7 +205,7 @@ class ClientOrderController extends Controller
                     'status' => 'done'
                 ], 200);
                 break;
-            
+
             case 'revert':
                 $order->makeOperation();
                 return response()->json([

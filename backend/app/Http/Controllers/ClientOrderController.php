@@ -17,7 +17,6 @@ class ClientOrderController extends Controller
             'client_id' => 'required',
             'request_date' => 'required',
             'status' => 'required',
-            'contract' => 'required',
             'order_details' => 'required',
         ]);
         if ($v->fails())

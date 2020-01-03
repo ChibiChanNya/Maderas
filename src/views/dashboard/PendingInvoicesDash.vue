@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="2" class="fill-height">
     <v-card-title class="blue darken-1 white--text">
-      <span class="title mx-auto">Facturas por cobrar</span>
+      <span class="title mx-auto">Envíos pendientes por cobrar</span>
     </v-card-title>
     <v-card-text>
       <table class="mx-auto">

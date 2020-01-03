@@ -17,23 +17,23 @@
         <tr v-for="item in items" :key="item.invoice">
           <td>{{ item.invoice }}</td>
           <td >{{ item.paymentDate | moment('DD/M/YYYY') }}</td>
-<!--          <td>-->
-<!--            <template v-if="props.item.shipment_details.length >0">-->
-<!--              <v-layout v-for="(details, index) in map_details(props.item)" :key="index" justify-start>-->
-<!--                <v-flex>-->
-<!--                  {{details.product}}-->
-<!--                </v-flex>-->
-<!--                <v-flex>-->
-<!--                  {{details.units}}-->
-<!--                </v-flex>-->
-<!--              </v-layout>-->
-<!--            </template>-->
-<!--            <template v-else>-->
-<!--              <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">-->
-<!--                Sin productos-->
-<!--              </div>-->
-<!--            </template>-->
-<!--          </td>         -->
+          <td>
+            <template v-if="props.item.shipment_details.length >0">
+              <v-layout v-for="(details, index) in map_details(props.item)" :key="index" justify-start>
+                <v-flex>
+                  {{details.product}}
+                </v-flex>
+                <v-flex>
+                  {{details.units}}
+                </v-flex>
+              </v-layout>
+            </template>
+            <template v-else>
+              <div class="text-md-left pa-2" v-if="props.item.status === 'pendiente'">
+                Sin productos
+              </div>
+            </template>
+          </td>
           <td> () </td>
           <td >{{ item.amount | currency('$')}}</td>
         </tr>
@@ -54,16 +54,12 @@ export default {
   name: "PendingInvoicesDash",
   data() {
     return {
-      items: [
-        { invoice: 55545, paymentDate: new Date(), status: "pendiente", contract: 554335, amount: 5000 },
-        { invoice: 12334, paymentDate: new Date(), status: "entregado", contract: 111144, amount: 1000 },
-        { invoice: 654457, paymentDate: new Date(), status: "pendiente", contract: 123000, amount: 4500 },
-      ]
+      items: []
     }
   },
   async mounted(){
     const { data } = await get_invoices_dash()
-    console.log('STUFF', data)
+    this.items = data;
   },
   computed: {
     totalAmount(){
@@ -71,6 +67,13 @@ export default {
         return a + b.amount
       }, 0)
     }
+  },
+  methods: {
+    map_details(item){
+      if(item.shipment_details && item.shipment_details.length > 0)
+        return item.shipment_details.map((details) => ({ product: this.product_name(details.product_id) , units: details.units}))
+      else return []
+    },
   }
 }
 </script>

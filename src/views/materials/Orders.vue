@@ -504,6 +504,10 @@ export default {
 
     async save() {
       if (this.$refs.form.validate()) {
+        if( !(this.editedItem.order_details && this.editedItem.order_details.length > 0)){
+          this.$store.commit('setSnack', { text: 'Asegúrate de agregar por lo menos 1 producto', color: 'warning' })
+          return;
+        }
         this.loading = true
         let makeOperation = 0
         /* Set the  calculated cost as the total_cost */

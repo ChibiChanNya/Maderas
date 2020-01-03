@@ -512,6 +512,11 @@ export default {
 
     save() {
       if (this.$refs.form.validate()) {
+        /* make sure at least one product is added */
+        if( !(this.editedItem.order_details && this.editedItem.order_details.length > 0)){
+          this.$store.commit('setSnack', { text: 'Asegúrate de agregar por lo menos 1 producto', color: 'warning' })
+          return;
+        }
         this.loading = true
         // Editing an User
         /* Set the  calculated cost as the total_cost */

@@ -17,7 +17,6 @@ class ShipmentController extends Controller
         $v = Validator::make($request->all(), [
             'order_id' => 'required',
             'cost' => 'required',
-            'certificate' => 'required',
             'status' => 'required',
             'shipment_details' => 'required',
         ]);
@@ -31,7 +30,7 @@ class ShipmentController extends Controller
         $shipment = new Shipment();
         $shipment->order_id = $request->order_id;
         $shipment->cost = $request->cost;
-        $shipment->certificate = $request->certificate;
+        $shipment->certificate = $request->certificate ?? null;
         $shipment->delivery_date = $request->delivery_date ?? null;
         $shipment->status = $request->status;
         $shipment->save();

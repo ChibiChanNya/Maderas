@@ -227,9 +227,20 @@ class ClientOrderController extends Controller
 
     private function calculateCompleteness($order)
     {
-        $total = $order->shipments->count();
-        $complete = $order->shipments->where('operation_dispatched',1)->count();
+        $details = $order->order_details;
+        $total_units = 0;
+        foreach($details as $detail){
+            $total_units += $detail['units'];
+        }
+        
+        $total_units_shipments = 0;
+        $shipments = $order->shipments->where('operation_dispatched',1);
+        foreach($shipments as $shipment){
+            $shipment_details = $shipment->detailed_order;
+            $total_units_shipments += $shipment_details->sum('units');
+        }
+        dd(($total_units_shipments/$total_units) * 100);
 
-        return $total > 0 ? ($complete/$total) * 100 : 100;
+        return $total_units > 0 ? ($total_units_shipments/$total_units) * 100 : 100;
     }
 }

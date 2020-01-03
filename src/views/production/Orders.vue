@@ -295,7 +295,7 @@
                   <h3>Procentaje de avance</h3>
                 </div>
                 <div>
-                  <h2>{{ props.item.completeness || 0 }} %</h2>
+                  <h2>{{ props.item.completeness | number('0.0') }} %</h2>
                 </div>
               </v-flex>
             </v-layout>

@@ -346,7 +346,7 @@ export default {
     },
     isEditingLocked(){
       if (this.editedItem){
-        return this.editedItem.operation_dispatched || this.isProductDelivered(this.editedItem)
+        return Boolean(this.editedItem.operation_dispatched || this.isProductDelivered(this.editedItem))
       }
     }
   },
@@ -452,8 +452,8 @@ export default {
             makeOperation = await this.$dialog
               .confirm('El cambió de status resultará en regresar los productos al inventario por cancelación, ¿continuar?')
               .then((dialog) => {
-                return -1
                 dialog.close()
+                return -1
               }).catch(() => {
                 return 'stop'
               })
@@ -464,7 +464,6 @@ export default {
             return false
           }
           // Editing a Shipment
-          console.log(payload)
           if (this.editedIndex > -1) {
             update_shipment(payload).then(async ({ data: newItem }) => {
               this.editedItem.id = newItem.id
@@ -505,7 +504,6 @@ export default {
       const id = this.editedItem.id
       rest_operation(id).then(() => {
         this.editedItem.operation_dispatched = true
-        this.items[this.editedIndex].operation_dispatched = true
         this.$store.commit('setSnack', { text: 'Insumos eliminados del inventario', color: 'success' })
       }).catch(err => {
         this.$store.commit('setSnack', { text: err, color: 'red' })
@@ -522,7 +520,6 @@ export default {
       const id = this.editedItem.id
       revert_operation(id).then(() => {
         this.editedItem.operation_dispatched = false
-        this.items[this.editedIndex].operation_dispatched = false
         this.$store.commit('setSnack', { text: 'Insumos regresados al inventario', color: 'info' })
       }).catch(err => {
         this.$store.commit('setSnack', { text: err, color: 'red' })

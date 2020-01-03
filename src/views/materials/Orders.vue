@@ -577,7 +577,7 @@ export default {
       add_operation(id).then(() => {
         this.editedItem.operation_dispatched = true
         this.items[this.editedIndex].operation_dispatched = true
-        this.$store.commit('setSnack', { text: 'Insumos agregados al inventario', color: 'success' })
+        this.$store.commit('setSnack', { text: 'Insumos agregados al inventario', color: 'info' })
       }).catch(err => {
         this.$store.commit('setSnack', { text: err, color: 'red' })
       }).finally(() => {

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Product;
 use App\Ledger;
 use App\Provider;
+use App\Shipment;
 
 class DashBoardController extends Controller
 {
@@ -33,7 +34,9 @@ class DashBoardController extends Controller
 
     public function graph_two(Request $request)
     {
+        $shipments = Shipment::where('operation_dispatched','1')->where('buy_order',null)->get();
 
+        return $shipments;
     }
 
     public function graph_three(Request $request)

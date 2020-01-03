@@ -123,8 +123,13 @@ export default {
       this.$dialog
         .confirm('¿Estás seguro de que quieres cancelar esta factura? No podrá recuperarse')
         .then((dialog) => {
-          this.delete_fn({cfdi_uid: uid}).then(() => {
-            this.$store.commit('setSnack', {text: "Factura cancelada exitosamente", color: 'success'});
+          this.delete_fn({cfdi_uid: uid}).then(({data}) => {
+            if(data.response === 'error'){
+              this.$store.commit('setSnack', {text: data.message, color: 'red'});
+            }
+            else{
+              this.$store.commit('setSnack', {text: "Factura cancelada exitosamente", color: 'success'});
+            }
           }).catch(err => {
             this.$store.commit('setSnack', {text: err.status || err, color: 'red'});
           }).finally( ()=> {

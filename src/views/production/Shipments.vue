@@ -106,6 +106,7 @@
                       <v-flex xs8>
                         <v-select
                           v-model="product.product_id"
+                          :disabled="isEditingLocked"
                           hint="Producto"
                           item-value="id"
                           label="Elije un producto"
@@ -124,12 +125,14 @@
                       </v-flex>
                       <v-flex xs2>
                         <v-text-field v-model="product.units"
+                                      :disabled="isEditingLocked"
                                       :rules="numberRules"
                                       type="number"
                                       label="Cantidad"/>
                       </v-flex>
                       <v-flex xs1>
                         <v-btn flat icon style="align-self:center"
+                               :disabled="isEditingLocked"
                                @click="removeProduct(product)">
                           <v-icon class="red--text">close</v-icon>
                         </v-btn>
@@ -140,7 +143,10 @@
                       <h4>No se han registrado productos para este envío</h4>
                     </template>
                     <v-flex>
-                      <v-btn flat color="info" @click="addProduct">Agregar nuevo producto
+                      <v-btn
+                        :disabled="isEditingLocked"
+                        flat color="info" @click="addProduct">
+                        {{ isEditingLocked ? 'Productos ya no son modificables' : 'Agregar Producto' }}
                       </v-btn>
                     </v-flex>
                   </v-layout>
@@ -151,21 +157,12 @@
 
             <v-card-actions>
               <v-spacer/>
-              <v-btn color="red darken-1" v-if="editedIndex >= 0" flat @click="startInvoice">Factura</v-btn>
               <v-btn color="blue darken-1" flat @click="close">Cancelar</v-btn>
               <v-btn color="blue darken-1" flat @click="save">Guardar</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
         <v-spacer/>
-<!--        <v-text-field-->
-<!--          v-model="search"-->
-<!--          @input="isTyping = true"-->
-<!--          append-icon="search"-->
-<!--          label="Buscar..."-->
-<!--          single-line-->
-<!--          hide-details-->
-<!--        />-->
       </v-card-title>
 
       <v-data-table
@@ -342,9 +339,16 @@ export default {
       return this.editedIndex === -1 ? 'Nuevo Envío' : 'Editar Envío'
     },
     totalPrice() {
-      if (this.editedItem)
-        return this.calculateTotalPrice(this.editedItem) || 0
+      if (this.editedItem){
+        if(this.isProductDelivered(this.editedItem)) return this.editedItem.cost;
+        else return this.calculateTotalPrice(this.editedItem) || 0
+      }
     },
+    isEditingLocked(){
+      if (this.editedItem){
+        return this.editedItem.operation_dispatched || this.isProductDelivered(this.editedItem)
+      }
+    }
   },
 
   mounted() {
@@ -427,11 +431,12 @@ export default {
         this.loading = true
         /* Set the  calculated cost as the total_cost */
         this.editedItem.cost = this.totalPrice
+        const payload = JSON.parse(JSON.stringify(this.editedItem))
         // prepare to check operation
         let makeOperation = 0
         if (this.editedIndex > -1) {
           const oldItem = this.items[this.editedIndex]
-          /* Check if the prder is moving from pending -> delivered or forward*/
+          /* Check if the prder is moving from pending -> delivered or forward */
           if (!this.isProductDelivered(oldItem) && this.isProductDelivered(this.editedItem)) {
             makeOperation = await this.$dialog
               .confirm('El cambió de status resultará en sacar los productos seleccionados del inventario, ¿continuar?')
@@ -459,7 +464,7 @@ export default {
             return false
           }
           // Editing a Shipment
-          const payload = JSON.parse(JSON.stringify(this.editedItem))
+          console.log(payload)
           if (this.editedIndex > -1) {
             update_shipment(payload).then(async ({ data: newItem }) => {
               this.editedItem.id = newItem.id
@@ -476,7 +481,7 @@ export default {
               this.loading = false
             })
           }
-          //  Creating a new User
+          //  Creating a new Shipment
         } else {
           create_shipment(payload).then(({ data: newItem }) => {
             this.editedItem.id = newItem.id
@@ -526,9 +531,6 @@ export default {
       })
     },
 
-    startInvoice() {
-      this.$store.commit('setSnack', { text: 'End desarrollo...', color: 'blue' })
-    },
 
   },
 

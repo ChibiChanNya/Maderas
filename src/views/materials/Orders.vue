@@ -183,6 +183,7 @@
                         <v-select
                           v-model="mat.material_id"
                           hint="Insumo"
+                          :disabled="isEditingLocked"
                           item-value="id"
                           label="Elije un insumo"
                           :items="material_choices"
@@ -201,11 +202,13 @@
                       <v-flex xs2>
                         <v-text-field v-model="mat.units"
                                       :rules="numberRules"
+                                      :disabled="isEditingLocked"
                                       type="number"
                                       label="Cantidad"></v-text-field>
                       </v-flex>
                       <v-flex xs1>
                         <v-btn flat icon style="align-self:center"
+                               :disabled="isEditingLocked"
                                @click="removeMaterial(mat)">
                           <v-icon class="red--text">close</v-icon>
                         </v-btn>
@@ -215,7 +218,10 @@
                       <h4>No se han registrado insumos para este pedido</h4>
                     </template>
                     <v-flex>
-                      <v-btn flat color="info" @click="addMaterial">Agregar nuevo insumo
+                      <v-btn flat color="info"
+                             :disabled="isEditingLocked"
+                             @click="addMaterial">
+                        {{ isEditingLocked ? 'Productos ya no son modificables' : 'Agregar Insumo' }}
                       </v-btn>
                     </v-flex>
                   </v-layout>
@@ -436,9 +442,17 @@ export default {
       return (this.providers.length > 0 && this.editedItem.provider_id && this.materials.length > 0 && this.materials.filter((mat) => mat.provider_id === this.editedItem.provider_id)) || []
     },
     totalPrice() {
-      if (this.editedItem)
-        return this.calculateTotalPrice(this.editedItem)
+      if (this.editedItem){
+        if(this.isProductDelivered(this.editedItem)) return this.editedItem.total_price;
+        else return this.calculateTotalPrice(this.editedItem) || 0
+      }
+
     },
+    isEditingLocked(){
+      if (this.editedItem){
+        return this.editedItem.operation_dispatched || this.isProductDelivered(this.editedItem)
+      }
+    }
   },
   mounted() {
     this.axios.all([index_materials(), index_suppliers()])

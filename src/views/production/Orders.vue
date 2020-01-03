@@ -65,7 +65,7 @@
                     </v-flex>
                     <v-flex xs6 sm4>
                       <v-text-field v-model="editedItem.contract"
-                                    label="No. Contrato"/>
+                                    label="Orden de Compra"/>
                     </v-flex>
 
                     <v-flex xs12 sm6>
@@ -144,6 +144,7 @@
 
                       <v-flex xs9>
                         <v-select
+                          :disabled="isOrderComplete(editedItem)"
                           v-model="product.product_id"
                           hint="Producto"
                           item-value="id"
@@ -163,12 +164,14 @@
                       </v-flex>
                       <v-flex xs2>
                         <v-text-field v-model="product.units"
+                                      :disabled="isOrderComplete(editedItem)"
                                       :rules="numberRules"
                                       type="number"
                                       label="Cantidad"/>
                       </v-flex>
                       <v-flex xs1>
                         <v-btn flat icon style="align-self:center"
+                               :disabled="isOrderComplete(editedItem)"
                                @click="removeProduct(product)">
                           <v-icon class="red--text">close</v-icon>
                         </v-btn>
@@ -178,7 +181,10 @@
                       <h4>No se han registrado productos para este pedido</h4>
                     </template>
                     <v-flex>
-                      <v-btn flat color="info" @click="addProduct">Agregar nuevo producto
+                      <v-btn
+                        :disabled="isOrderComplete(editedItem)"
+                        flat color="info" @click="addProduct">
+                        {{ isOrderComplete(editedItem) ? 'Productos ya no son modificables' : 'Agregar Producto' }}
                       </v-btn>
                     </v-flex>
                   </v-layout>
@@ -415,6 +421,7 @@ export default {
       return this.editedIndex === -1 ? 'Nuevo Pedido' : 'Editar Pedido'
     },
     totalPrice() {
+      if(this.isOrderComplete(this.editedItem)) return this.editedItem.total_cost;
       if (this.editedItem)
         return this.calculateTotalPrice(this.editedItem) || 0
     },
@@ -472,6 +479,10 @@ export default {
       return ships || []
     },
 
+    isOrderComplete(item) {
+      return ['standby', 'parcial', 'completo'].includes(item.status)
+    },
+
     calculateTotalPrice(item) {
       const details = item.order_details || []
       return details.reduce((total, next) => {
@@ -505,6 +516,7 @@ export default {
         // Editing an User
         /* Set the  calculated cost as the total_cost */
         this.editedItem.total_cost = this.totalPrice
+        if(!this.editedItem.contract) this.editedItem.contract = "Sin Contrato"
         const payload = JSON.parse(JSON.stringify(this.editedItem))
         if (this.editedIndex > -1) {
           update_order(payload).then(({ data: newItem }) => {

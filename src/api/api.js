@@ -18,6 +18,9 @@ const apiCall = ({url, method, ...args}) => new Promise((resolve, reject) => {
       else if(response.status === 401){
         reject("No cuentas con los permisos necesarios para realizar esta acción");
       }
+      else if(response.status === 422){
+        reject(response.data.errors);
+      }
       else if(response.status === 504){
         reject("Sin respuesta del servidor. Intenta de nuevo más tarde");
       }

@@ -16,7 +16,7 @@
 
       <v-flex mb-4 md8>
         <h2 class="display-2 font-weight-bold mb-3">
-          Bienvenidos al sistema de administración de Empaques y Tarimas Cuautla
+          Bienvenidos al sistema de administración de empaques, maderas y tarimas Cuautla
         </h2>
       </v-flex>
 

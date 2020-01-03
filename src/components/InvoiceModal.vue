@@ -100,7 +100,7 @@ export default {
       payment_methods: [],
       payment_forms: [],
       loading: false,
-      valid_form: true
+      valid_form: true,
     }
   },
 
@@ -116,21 +116,26 @@ export default {
     async create_cfdi() {
       if (this.$refs.form.validate()) {
         this.loading = true
-        try{
+        try {
           const item = {
             shipment_id: this.shipment_id,
             cfdi_use: this.cfdi_use,
-            payment_form: this.payment_form
+            payment_form: this.payment_form,
           }
-          const result = await create_cfdi(item)
-        } catch(err){
+          const { data } = await create_cfdi(item)
+          console.log('DATA', data)
+          if (data.response === 'success') {
+            this.$store.commit('setSnack', { text: data.message, color: 'success' })
+            this.dialog = false
+          } else {
+            this.$store.commit('setSnack', { text: data.message, color: 'red' })
+          }
+        } catch (err) {
           this.$store.commit('setSnack', { text: err, color: 'red' })
-
-        } finally{
+        } finally {
           this.loading = false
         }
-      }
-      else{
+      } else {
         console.log('not ready')
       }
       this.loading = false

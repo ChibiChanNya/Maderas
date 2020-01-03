@@ -239,7 +239,6 @@ class ClientOrderController extends Controller
             $shipment_details = $shipment->detailed_order;
             $total_units_shipments += $shipment_details->sum('units');
         }
-        dd(($total_units_shipments/$total_units) * 100);
 
         return $total_units > 0 ? ($total_units_shipments/$total_units) * 100 : 100;
     }

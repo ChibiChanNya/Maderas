@@ -469,6 +469,7 @@ export default {
             return false
           }
           // Editing a Shipment
+
           if (this.editedIndex > -1) {
             update_shipment(payload).then(async ({ data: newItem }) => {
               this.editedItem.id = newItem.id
@@ -487,10 +488,13 @@ export default {
           }
           //  Creating a new Shipment
         } else {
-          create_shipment(payload).then(({ data: newItem }) => {
+          create_shipment(payload).then(async ({ data: newItem }) => {
             this.editedItem.id = newItem.id
             this.items.push(JSON.parse(JSON.stringify(this.editedItem)))
             this.$store.commit('setSnack', { text: 'Pedido creado exitosamente', color: 'success' })
+            /* Run the make operation or reverse if required now that we have ID */
+            if (makeOperation > 0) await this.make_operation()
+            else if (makeOperation < 0) await this.revert_operation()
             this.close()
           }).catch(err => {
             this.$store.commit('setSnack', { text: err, color: 'red' })
@@ -508,7 +512,7 @@ export default {
       this.loading = true
       const id = this.editedItem.id
       rest_operation(id).then(() => {
-        this.editedItem.operation_dispatched = true
+        this.editedItem.operation_dispatched = 1
         this.$store.commit('setSnack', { text: 'Insumos eliminados del inventario', color: 'success' })
       }).catch(err => {
         this.$store.commit('setSnack', { text: err, color: 'red' })
@@ -524,7 +528,7 @@ export default {
       this.loading = true
       const id = this.editedItem.id
       revert_operation(id).then(() => {
-        this.editedItem.operation_dispatched = false
+        this.editedItem.operation_dispatched = 0
         this.$store.commit('setSnack', { text: 'Insumos regresados al inventario', color: 'info' })
       }).catch(err => {
         this.$store.commit('setSnack', { text: err, color: 'red' })

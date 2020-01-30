@@ -22,11 +22,13 @@ trait OperationsOrder
             $item_name = 'material_id';
             $supply_class = Supply::class;
             $stock_name = 'available_stock';
+            $dispatched = true;
         }
         if ($class_table === Shipment::class) {
             $item_name = 'product_id';
             $supply_class = Product::class;
             $stock_name = 'stock';
+            $dispatched = false;
         }
         // if ($class_table === ClientOrder::class) {
         //     $item_name = 'product_id';
@@ -46,7 +48,7 @@ trait OperationsOrder
             $supply->save();
         });
 
-        $this->operation_dispatched = true;
+        $this->operation_dispatched = $dispatched;
         $this->save();
     }    
 
@@ -59,11 +61,13 @@ trait OperationsOrder
             $item_name = 'material_id';
             $supply_class = Supply::class;
             $stock_name = 'available_stock';
+            $dispatched = false;
         }
         if ($class_table === Shipment::class) {
             $item_name = 'product_id';
             $supply_class = Product::class;
             $stock_name = 'stock';
+            $dispatched = true;
         }
         // if ($class_table === ClientOrder::class) {
         //     $item_name = 'product_id';
@@ -82,7 +86,7 @@ trait OperationsOrder
             $supply->save();
         });
 
-        $this->operation_dispatched = false;
+        $this->operation_dispatched = $dispatched;
         $this->save();
     }    
 

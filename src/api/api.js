@@ -6,13 +6,13 @@ import store from '../store'
 
 const apiCall = ({url, method, ...args}) => new Promise((resolve, reject) => {
   try {
-    console.log('request: ', {method: method, url: url, body: args.data, params: args.params});
+    // console.log('request: ', {method: method, url: url, body: args.data, params: args.params});
     axios({method: method, url: `${process.env.VUE_APP_SERVER}${url}`, data: args.data, params: args.params}, ).then(response => {
-      console.log('response: ', response.data);
+      // console.log('response: ', response.data);
       resolve(response);
     }).catch (({response}) => {
-      console.log("Axios error");
-      console.log(response);
+      // console.log("Axios error");
+      // console.log(response);
       if(response.status === 500)
         reject("Error de Servidor, contacta a los desarrolladores");
       else if(response.status === 401){

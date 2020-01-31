@@ -90,28 +90,30 @@ export default {
       type: Number,
       default: 0,
     },
+    cfdi_uses: {
+      type: Array,
+      default: [],
+    },
+    payment_methods: {
+      type: Array,
+      default: [],
+    },
+    payment_forms: {
+      type: Array,
+      default: [],
+    },
   },
   data() {
     return {
       dialog: false,
       cfdi_use: '',
       payment_form: '',
-      cfdi_uses: [],
-      payment_methods: [],
-      payment_forms: [],
       loading: false,
       valid_form: true,
     }
   },
 
-  async mounted() {
-    const { data: { data: cfdiUses } } = await get_cfdi_uses()
-    const { data: { data: paymentMethods } } = await get_payment_methods()
-    const { data: { data: paymentForms } } = await get_payment_forms()
-    this.cfdi_uses = cfdiUses
-    this.payment_forms = paymentForms
-    this.payment_methods = paymentMethods
-  },
+
   methods: {
     async create_cfdi() {
       if (this.$refs.form.validate()) {

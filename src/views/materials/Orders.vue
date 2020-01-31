@@ -443,7 +443,7 @@ export default {
     },
     totalPrice() {
       if (this.editedItem){
-        if(this.isProductDelivered(this.editedItem)) return this.editedItem.total_price;
+        if(this.isProductDelivered(this.editedItem) && this.editedIndex > -1) return this.editedItem.total_price;
         else return this.calculateTotalPrice(this.editedItem) || 0
       }
 
@@ -490,7 +490,7 @@ export default {
     },
 
     isProductDelivered(item) {
-      return ['entregado', 'pagado'].includes(item.status)
+      return item && ['entregado', 'pagado'].includes(item.status)
     },
 
     calculateTotalPrice(item) {
@@ -512,36 +512,38 @@ export default {
         let makeOperation = 0
         /* Set the  calculated cost as the total_cost */
         this.editedItem.total_cost = this.totalPrice
-        // Editing an User
+        // Editing an Order
+
+        const oldItem = this.items[this.editedIndex]
+        /* Check if the prder is moving from pending/nonexistent -> delivered or forward*/
+        if (!this.isProductDelivered(oldItem) && this.isProductDelivered(this.editedItem)) {
+          makeOperation = await this.$dialog
+            .confirm('El cambió de status resultará en agregar los nuevos insumos a inventario, ¿continuar?')
+            .then((dialog) => {
+              dialog.close()
+              return 1
+            }).catch(() => {
+              return 'stop'
+            })
+        }
+        /* Check if an order is being reverted */
+        else if (this.isProductDelivered(oldItem) && !this.isProductDelivered(this.editedItem)) {
+          makeOperation = await this.$dialog
+            .confirm('El cambió de status resultará en sacar los insumos del inventario por cancelación, ¿continuar?')
+            .then((dialog) => {
+              dialog.close()
+              return -1
+            }).catch(() => {
+              return 'stop'
+            })
+        }
+        if (makeOperation === 'stop') {
+          this.close()
+          this.loading = false
+          return false
+        }
         if (this.editedIndex > -1) {
-          const oldItem = this.items[this.editedIndex]
-          /* Check if the prder is moving from pending -> delivered or forward*/
-          if (!this.isProductDelivered(oldItem) && this.isProductDelivered(this.editedItem)) {
-            makeOperation = await this.$dialog
-              .confirm('El cambió de status resultará en agregar los nuevos insumos a inventario, ¿continuar?')
-              .then((dialog) => {
-                dialog.close()
-                return 1
-              }).catch(() => {
-                return 'stop'
-              })
-          }
-          /* Check if an order is being reverted */
-          else if (this.isProductDelivered(oldItem) && !this.isProductDelivered(this.editedItem)) {
-            makeOperation = await this.$dialog
-              .confirm('El cambió de status resultará en sacar los insumos del inventario por cancelación, ¿continuar?')
-              .then((dialog) => {
-                dialog.close()
-                return -1
-              }).catch(() => {
-                return 'stop'
-              })
-          }
-          if (makeOperation === 'stop') {
-            this.close()
-            this.loading = false
-            return false
-          }
+
           update_order(this.editedItem).then(async ({ data: newItem }) => {
             this.editedItem.id = newItem.id
             this.$set(this.items, this.editedIndex, JSON.parse(JSON.stringify(this.editedItem)))

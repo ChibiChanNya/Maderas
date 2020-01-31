@@ -179,8 +179,10 @@
             <td class="">{{ order_data(props.item.order_id) }}</td>
             <td class="">{{ props.item.cost | currency('$') }}</td>
             <!-- If it's 30 days behind on payment, show alert -->
-            <td v-if="isShipmentBehindOnPayments(props.item)" class="red--text text--darken-3 font-weight-bold">SIN PAGAR</td>
-            <td v-else>{{  status_name(props.item.status) }}</td>
+            <td v-if="isShipmentBehindOnPayments(props.item)" class="red--text text--darken-3 font-weight-bold">SIN
+              PAGAR
+            </td>
+            <td v-else>{{ status_name(props.item.status) }}</td>
             <template v-if="props.item.delivery_date">
               {{ props.item.delivery_date | moment('DD/M/YYYY')}}
             </template>
@@ -205,8 +207,9 @@
               </template>
             </td>
             <td class="justify-start layout px-0">
-              <invoice-modal :shipment_id="props.item.id" :shipment_details="map_details(props.item)"  :cost="Number(props.item.cost)" />
-
+              <invoice-modal :shipment_id="props.item.id" :shipment_details="map_details(props.item)"
+                             :cost="Number(props.item.cost)" :cfdi_uses="cfdi_uses" :payment_forms="payment_forms"
+                             :payment_methods="payment_methods"/>
               <v-icon
                 small
                 class="mr-5 "
@@ -262,6 +265,7 @@ import utils from '../../mixins/utils'
 import server_pagination from '../../mixins/server_pagination'
 import Vue2Filters from 'vue2-filters'
 import InvoiceModal from '../../components/InvoiceModal'
+import { get_cfdi_uses, get_payment_forms, get_payment_methods } from '../../api/documents_controller'
 
 export default {
   name: 'Shipments',
@@ -306,6 +310,9 @@ export default {
 
       valid_form: true,
 
+      cfdi_uses: [],
+      payment_methods: [],
+      payment_forms: [],
 
       editedIndex: -1,
       editedItem: {
@@ -339,25 +346,28 @@ export default {
       return this.editedIndex === -1 ? 'Nuevo Envío' : 'Editar Envío'
     },
     totalPrice() {
-      if (this.editedItem){
-        if(this.isProductDelivered(this.editedItem)) return this.editedItem.cost;
+      if (this.editedItem) {
+        if (this.isProductDelivered(this.editedItem) && this.editedIndex > -1) return this.editedItem.cost
         else return this.calculateTotalPrice(this.editedItem) || 0
       }
     },
-    isEditingLocked(){
-      if (this.editedItem){
+    isEditingLocked() {
+      if (this.editedItem) {
         return Boolean(this.editedItem.operation_dispatched || this.isProductDelivered(this.editedItem))
       }
-    }
+    },
   },
 
   mounted() {
-    this.axios.all([index_orders_lite(), index_clients(), index_products()])
-      .then(this.axios.spread(function(orders, clients, products) {
+    this.axios.all([index_orders_lite(), index_clients(), index_products(), get_cfdi_uses(), get_payment_methods(), get_payment_forms()])
+      .then(this.axios.spread(function(orders, clients, products, uses, methods, forms) {
           // Both requests are now complete
           this.orders = orders.data
           this.clients = clients.data
           this.products = products.data
+          this.cfdi_uses = uses.data.data
+          this.payment_methods = methods.data.data
+          this.payment_forms = forms.data.data
         }.bind(this),
       ))
       .catch(error => {
@@ -372,7 +382,7 @@ export default {
 
     isShipmentBehindOnPayments(item) {
       const res = item.delivery_date && item.status !== 'completo' && this.$moment().diff(this.$moment(item.delivery_date), 'days') > 30
-      return res;
+      return res
     },
 
     ordersFilter(item, queryText, itemText) {
@@ -384,9 +394,12 @@ export default {
         textTwo.indexOf(searchText) > -1
     },
 
-    map_details(item){
-      if(item.shipment_details && item.shipment_details.length > 0)
-        return item.shipment_details.map((details) => ({ product: this.product_name(details.product_id) , units: details.units}))
+    map_details(item) {
+      if (item.shipment_details && item.shipment_details.length > 0)
+        return item.shipment_details.map((details) => ({
+          product: this.product_name(details.product_id),
+          units: details.units,
+        }))
       else return []
     },
 
@@ -423,15 +436,15 @@ export default {
     },
 
     isProductDelivered(item) {
-      return ['enviado', 'facturado', 'pendiente pago', 'completo'].includes(item.status)
+      return item && ['enviado', 'facturado', 'pendiente pago', 'completo'].includes(item.status)
     },
 
     async save() {
       if (this.$refs.form.validate()) {
         /* make sure at least one product is added */
-        if( !(this.editedItem.shipment_details && this.editedItem.shipment_details.length > 0)){
+        if (!(this.editedItem.shipment_details && this.editedItem.shipment_details.length > 0)) {
           this.$store.commit('setSnack', { text: 'Asegúrate de agregar por lo menos 1 producto', color: 'warning' })
-          return;
+          return
         }
         this.loading = true
         /* Set the  calculated cost as the total_cost */
@@ -439,53 +452,51 @@ export default {
         const payload = JSON.parse(JSON.stringify(this.editedItem))
         // prepare to check operation
         let makeOperation = 0
-        if (this.editedIndex > -1) {
-          const oldItem = this.items[this.editedIndex]
-          /* Check if the prder is moving from pending -> delivered or forward */
-          if (!this.isProductDelivered(oldItem) && this.isProductDelivered(this.editedItem)) {
-            makeOperation = await this.$dialog
-              .confirm('El cambió de status resultará en sacar los productos seleccionados del inventario, ¿continuar?')
-              .then((dialog) => {
-                dialog.close()
-                return 1
-              }).catch(() => {
-                return 'stop'
-              })
-          }
-          /* Check if an order is being reverted */
-          else if (this.isProductDelivered(oldItem) && !this.isProductDelivered(this.editedItem)) {
-            makeOperation = await this.$dialog
-              .confirm('El cambió de status resultará en regresar los productos al inventario por cancelación, ¿continuar?')
-              .then((dialog) => {
-                dialog.close()
-                return -1
-              }).catch(() => {
-                return 'stop'
-              })
-          }
-          if (makeOperation === 'stop') {
-            this.close()
-            this.loading = false
-            return false
-          }
-          // Editing a Shipment
-
-          if (this.editedIndex > -1) {
-            update_shipment(payload).then(async ({ data: newItem }) => {
-              this.editedItem.id = newItem.id
-              this.$set(this.items, this.editedIndex, payload)
-              this.$store.commit('setSnack', { text: 'Pedido actualizado exitosamente', color: 'success' })
-              /* Run the make operation or reverse if required now that we have ID */
-              if (makeOperation > 0) await this.make_operation()
-              else if (makeOperation < 0) await this.revert_operation()
-              /* Close the editor */
-              this.close()
-            }).catch(err => {
-              this.$store.commit('setSnack', { text: err, color: 'red' })
-            }).finally(() => {
-              this.loading = false
+        const oldItem = this.items[this.editedIndex]
+        /* Check if the prder is moving from pending/nonexistant -> delivered or forward */
+        if (!this.isProductDelivered(oldItem) && this.isProductDelivered(this.editedItem)) {
+          makeOperation = await this.$dialog
+            .confirm('El cambió de status resultará en sacar los productos seleccionados del inventario, ¿continuar?')
+            .then((dialog) => {
+              dialog.close()
+              return 1
+            }).catch(() => {
+              return 'stop'
             })
-          }
+        }
+        /* Check if an order is being reverted */
+        else if ((this.isProductDelivered(oldItem)) && !this.isProductDelivered(this.editedItem)) {
+          makeOperation = await this.$dialog
+            .confirm('El cambió de status resultará en regresar los productos al inventario por cancelación, ¿continuar?')
+            .then((dialog) => {
+              dialog.close()
+              return -1
+            }).catch(() => {
+              return 'stop'
+            })
+        }
+        if (makeOperation === 'stop') {
+          this.close()
+          this.loading = false
+          return false
+        }
+        // Editing a Shipment
+        if (this.editedIndex > -1) {
+          update_shipment(payload).then(async ({ data: newItem }) => {
+            this.editedItem.id = newItem.id
+            this.$set(this.items, this.editedIndex, payload)
+            this.$store.commit('setSnack', { text: 'Pedido actualizado exitosamente', color: 'success' })
+            /* Run the make operation or reverse if required now that we have ID */
+            if (makeOperation > 0) await this.make_operation()
+            else if (makeOperation < 0) await this.revert_operation()
+            /* Close the editor */
+            this.close()
+          }).catch(err => {
+            this.$store.commit('setSnack', { text: err, color: 'red' })
+          }).finally(() => {
+            this.loading = false
+          })
+
           //  Creating a new Shipment
         } else {
           create_shipment(payload).then(async ({ data: newItem }) => {

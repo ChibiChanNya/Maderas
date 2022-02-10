@@ -14,7 +14,7 @@
     "chartjs-plugin-labels": "^1.1.0",
     "core-js": "^2.6.9",
     "lodash.debounce": "^4.0.8",
-    "node-sass": "^4.12.0",
+    "node-sass": "^7.0.0",
     "vue": "^2.6.10",
     "vue-axios": "^2.1.4",
     "vue-chartjs": "^3.4.2",
